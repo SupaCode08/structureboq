@@ -1,0 +1,467 @@
+{
+  "variant": "ฐานรากเสาเข็ม",
+  "engine": "paddleocr + tesseract.js (offline)",
+  "generatedAt": "2026-10-21T10:07:44.686Z",
+  "report": {
+    "rows": [
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 7,
+        "diff": -7,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.2  ขุดดิน",
+            "quantity": 7,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "sand_m3",
+        "label": "ทรายรองพื้น/ทรายอัดแน่น",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 8,
+        "diff": -8,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.3  ทรายราดน้ำอัดแน่น",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "lean_concrete_m3",
+        "label": "คอนกรีตหยาบ",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 0.5,
+        "diff": -0.5,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.4  คอนกรีตหยาบ 1 : 3 : 5",
+            "quantity": 0.5,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "unit": "ลบ.ม.",
+        "system": 0.12,
+        "boq": 8,
+        "diff": -7.88,
+        "pct": -98.5,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.5  คอนกรีตโครงสร้าง 1 : 2 : 4",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "unit": "ตร.ม.",
+        "system": 2.4,
+        "boq": 60,
+        "diff": -57.6,
+        "pct": -96,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 60,
+            "unit": "ตร.ม."
+          }
+        ]
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "unit": "กก.",
+        "system": 18.25,
+        "boq": 544,
+        "diff": -525.751,
+        "pct": -96.6,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.7  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          },
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          },
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB6_kg",
+        "label": "เหล็ก RB6 (SR24)",
+        "unit": "กก.",
+        "system": 2.48,
+        "boq": 74,
+        "diff": -71.522,
+        "pct": -96.7,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.7  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB9_kg",
+        "label": "เหล็ก RB9 (SR24)",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 170,
+        "diff": -170,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB12_kg",
+        "label": "เหล็ก DB12 (SD40)",
+        "unit": "กก.",
+        "system": 15.77,
+        "boq": 300,
+        "diff": -284.229,
+        "pct": -94.7,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      }
+    ],
+    "headline": [
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "pct": -98.5,
+        "verdict": "off"
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "pct": -96,
+        "verdict": "off"
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "pct": -96.6,
+        "verdict": "off"
+      },
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "pct": -100,
+        "verdict": "missing_in_takeoff"
+      }
+    ],
+    "meanAbsPct": 97.8,
+    "boqRoundedToInteger": false,
+    "notes": []
+  },
+  "reportWithSuggestions": {
+    "rows": [
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 7,
+        "diff": -7,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.2  ขุดดิน",
+            "quantity": 7,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "sand_m3",
+        "label": "ทรายรองพื้น/ทรายอัดแน่น",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 8,
+        "diff": -8,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.3  ทรายราดน้ำอัดแน่น",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "lean_concrete_m3",
+        "label": "คอนกรีตหยาบ",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 0.5,
+        "diff": -0.5,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "1.4  คอนกรีตหยาบ 1 : 3 : 5",
+            "quantity": 0.5,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "unit": "ลบ.ม.",
+        "system": 0.12,
+        "boq": 8,
+        "diff": -7.88,
+        "pct": -98.5,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.5  คอนกรีตโครงสร้าง 1 : 2 : 4",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "unit": "ตร.ม.",
+        "system": 2.4,
+        "boq": 60,
+        "diff": -57.6,
+        "pct": -96,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 60,
+            "unit": "ตร.ม."
+          }
+        ]
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "unit": "กก.",
+        "system": 18.25,
+        "boq": 544,
+        "diff": -525.751,
+        "pct": -96.6,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.7  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          },
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          },
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB6_kg",
+        "label": "เหล็ก RB6 (SR24)",
+        "unit": "กก.",
+        "system": 2.48,
+        "boq": 74,
+        "diff": -71.522,
+        "pct": -96.7,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "1.7  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB9_kg",
+        "label": "เหล็ก RB9 (SR24)",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 170,
+        "diff": -170,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB12_kg",
+        "label": "เหล็ก DB12 (SD40)",
+        "unit": "กก.",
+        "system": 15.77,
+        "boq": 300,
+        "diff": -284.229,
+        "pct": -94.7,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-002",
+          "QS-C-007",
+          "QS-C-008"
+        ],
+        "boqSources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      }
+    ],
+    "headline": [
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "pct": -98.5,
+        "verdict": "off"
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "pct": -96,
+        "verdict": "off"
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "pct": -96.6,
+        "verdict": "off"
+      },
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "pct": -100,
+        "verdict": "missing_in_takeoff"
+      }
+    ],
+    "meanAbsPct": 97.8,
+    "boqRoundedToInteger": false,
+    "notes": []
+  },
+  "reportAfterReview": null,
+  "reviewEdits": 0,
+  "notes": [
+    "หน้า 9: มาตราส่วนที่อ่านได้ 1:75 ไม่ตรงกับระยะเส้นบอกระยะ — ใช้ 1:50 ตามระยะที่วาด",
+    "หน้า 10: มาตราส่วนที่อ่านได้ 1:75 ไม่ตรงกับระยะเส้นบอกระยะ — ใช้ 1:50 ตามระยะที่วาด",
+    "แบบมีผังฐานราก 2 ทางเลือก (แปลนฐานรากเสาเข็ม / แปลนคาน ชั้น 1); ใช้: แปลนฐานรากเสาเข็ม",
+    "แบบขยายกำหนด B2A ไว้ (หน้า 12) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด S6 ไว้ (หน้า 12) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด B5 ไว้ (หน้า 12) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด S2 ไว้ (หน้า 12) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "ตอม่อ 2 ต้น (A/3, C/5) ไม่มีฐานรากกำกับ — เพิ่มฐานรากเบอร์ F1 แล้วแก้เบอร์ให้ตรงแบบ"
+  ]
+}

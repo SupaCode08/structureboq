@@ -1,0 +1,2398 @@
+{
+  "source": "real_drawings/house_ready_3/Bann_Sumrejroop03.pdf",
+  "model": "gemini-flash-latest",
+  "extractedAt": "2026-10-18T17:51:47.283Z",
+  "pages": [
+    {
+      "page": 16,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "A-09",
+        "sheet_title": "รูปตัด A-A",
+        "sheet_type": "building_section",
+        "level": null,
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": []
+        },
+        "instances": [],
+        "sections": [],
+        "levels": [
+          {
+            "label": "ระดับหลังอะเส",
+            "elevation_m": 5
+          },
+          {
+            "label": "ระดับพื้นชั้นบน",
+            "elevation_m": 2.6
+          },
+          {
+            "label": "ระดับห้องน้ำ",
+            "elevation_m": 2.55
+          },
+          {
+            "label": "ระดับพื้นชั้นล่าง",
+            "elevation_m": 0.2
+          },
+          {
+            "label": "ระดับใต้ถุน",
+            "elevation_m": 0.1
+          },
+          {
+            "label": "ระดับดินเดิม",
+            "elevation_m": 0
+          }
+        ],
+        "notes": [
+          "หลังคากระเบื้องลอนคู่ โครงหลังคา (ดูแบบวิศวกรรมโครงสร้าง)"
+        ],
+        "page": 16
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 24,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-01",
+        "sheet_title": "สารบัญแบบวิศวกรรมโครงสร้าง รายการประกอบแบบงานโครงสร้าง",
+        "sheet_type": "other",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [],
+        "notes": [
+          "คอนกรีตให้ใช้ ค.3 กำลังอัดประลัยของแท่งคอนกรีตรูปทรงกระบอกมาตรฐานที่อายุ 28 วัน ไม่น้อยกว่า 210 กิโลกรัมต่อตารางเซนติเมตร (fc' = 210 ksc cylinder)",
+          "เหล็กเส้นกลม Ø 6 มม. และ Ø 9 มม. ใช้เหล็กเส้นกลม SR-24 (กำลังคราก fy >= 2,400 ksc)",
+          "เหล็กเส้นขนาด Ø 12 มม. ขึ้นไป ใช้เหล็กข้ออ้อย SD-40 หรือ SD-40T (กำลังคราก fy >= 4,000 ksc)",
+          "เมื่อดินฐานรากรับน้ำหนักบรรทุกปลอดภัย < 8 ตัน/ตร.ม. ให้ใช้เสาเข็มตอกสี่เหลี่ยมตัน ขนาดไม่น้อยกว่า 0.15 x 0.15 ม. รับน้ำหนักบรรทุกปลอดภัยไม่น้อยกว่า 1.7 ตัน/ต้น (ความยาวประมาณราคา 6.00 ม.)",
+          "เมื่อดินฐานรากรับน้ำหนักบรรทุกปลอดภัย >= 8 ตัน/ตร.ม. ให้ใช้ฐานรากแผ่",
+          "พื้นคอนกรีตสำเร็จรูป SP ระบบ SOLID PLANK หนา 5 ซม. เทคอนกรีตทับหน้าหนา 5 ซม. เสริม RB6@0.20 ม. หรือ Wire Mesh Ø4 มม.@0.15 ม. รับน้ำหนักบรรทุกรวมไม่น้อยกว่า 250 กก./ตร.ม.",
+          "เหล็กโครงสร้างรูปพรรณ ความต้านแรงดึงที่จุดครากไม่น้อยกว่า 2,400 กิโลกรัมต่อตารางเซนติเมตร เชื่อมด้วยไฟฟ้า (ARC WELDING) ทาสีกันสนิม LEAD OXIDE อย่างน้อย 2 ชั้น"
+        ],
+        "page": 24
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 25,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-02",
+        "sheet_title": "แปลนฐานรากแผ่ , เสาตอม่อ",
+        "sheet_type": "footing_plan",
+        "level": "ฐานรากและเสาตอม่อ",
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": [
+            {
+              "label": "A",
+              "offset_m": 0
+            },
+            {
+              "label": "B",
+              "offset_m": 3.6
+            },
+            {
+              "label": "C",
+              "offset_m": 5.4
+            }
+          ]
+        },
+        "instances": [
+          {
+            "tag": "F0.90X0.90X0.30,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/1",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              296,
+              276,
+              381,
+              363
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.95x0.95,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/2",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              294,
+              372,
+              383,
+              455
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.95x0.95,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              294,
+              477,
+              381,
+              569
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.90X0.90X0.30,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              294,
+              587,
+              380,
+              706
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.90X0.90X0.30,C1",
+            "member_type": "FOOTING",
+            "from_grid": "B/1",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              536,
+              274,
+              622,
+              361
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.95x0.95,C1",
+            "member_type": "FOOTING",
+            "from_grid": "B/2",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              536,
+              372,
+              622,
+              455
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.95x0.95,C1",
+            "member_type": "FOOTING",
+            "from_grid": "B/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              535,
+              492,
+              622,
+              570
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.95x0.95,C1",
+            "member_type": "FOOTING",
+            "from_grid": "B/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              535,
+              590,
+              623,
+              677
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.50x0.50,C2",
+            "member_type": "FOOTING",
+            "from_grid": "C/1+1.60m",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              672,
+              303,
+              729,
+              374
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "F0.50x0.95,C2",
+            "member_type": "FOOTING",
+            "from_grid": "C/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              672,
+              477,
+              729,
+              567
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.50x0.95,C2",
+            "member_type": "FOOTING",
+            "from_grid": "C/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              672,
+              590,
+              729,
+              680
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "sections": [],
+        "notes": [],
+        "page": 25
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 26,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-03",
+        "sheet_title": "แปลนฐานรากเสาเข็ม , เสาตอม่อ",
+        "sheet_type": "footing_plan",
+        "level": null,
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": [
+            {
+              "label": "A",
+              "offset_m": 0
+            },
+            {
+              "label": "B",
+              "offset_m": 5.4
+            }
+          ]
+        },
+        "instances": [
+          {
+            "tag": "F3,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/1",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              297,
+              277,
+              377,
+              332
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/2",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              295,
+              407,
+              378,
+              461
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              295,
+              477,
+              378,
+              532
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F3,C1",
+            "member_type": "FOOTING",
+            "from_grid": "A/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              295,
+              587,
+              377,
+              645
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F3,C1",
+            "member_type": "FOOTING",
+            "from_grid": null,
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              539,
+              277,
+              619,
+              332
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4,C1",
+            "member_type": "FOOTING",
+            "from_grid": null,
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              538,
+              407,
+              620,
+              461
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4,C1",
+            "member_type": "FOOTING",
+            "from_grid": null,
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              538,
+              477,
+              620,
+              532
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4,C1",
+            "member_type": "FOOTING",
+            "from_grid": null,
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              537,
+              590,
+              620,
+              646
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F1,C1",
+            "member_type": "FOOTING",
+            "from_grid": "B/null",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              672,
+              347,
+              726,
+              386
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "F2,C2",
+            "member_type": "FOOTING",
+            "from_grid": "B/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              673,
+              478,
+              726,
+              542
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "F2,C2",
+            "member_type": "FOOTING",
+            "from_grid": "B/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              673,
+              591,
+              726,
+              654
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "sections": [],
+        "notes": [
+          "มาตราส่วน 1:50",
+          "แบบบ้านสานฝัน ของขวัญปีใหม่ คนไทยมีความสุข",
+          "แบบบ้านสำเร็จรูป 3 (ระบบประสานพิกัด)"
+        ],
+        "page": 26
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 27,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-04",
+        "sheet_title": "แปลน เสา, คาน, พื้นชั้น 1",
+        "sheet_type": "framing_plan",
+        "level": "ชั้น 1",
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": [
+            {
+              "label": "A",
+              "offset_m": 0
+            },
+            {
+              "label": "B",
+              "offset_m": 3.6
+            },
+            {
+              "label": "C",
+              "offset_m": 5.4
+            }
+          ]
+        },
+        "instances": [
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "A/2",
+            "length_m": 2.7,
+            "box_2d": [
+              283,
+              356,
+              296,
+              374
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "A/3",
+            "length_m": 1.5,
+            "box_2d": [
+              283,
+              454,
+              296,
+              471
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "A/4",
+            "length_m": 2.4,
+            "box_2d": [
+              283,
+              538,
+              296,
+              556
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "B/1",
+            "to_grid": "B/2",
+            "length_m": 2.7,
+            "box_2d": [
+              525,
+              349,
+              538,
+              367
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "B/2",
+            "to_grid": "B/3",
+            "length_m": 1.5,
+            "box_2d": [
+              525,
+              462,
+              538,
+              480
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "B/4",
+            "length_m": 2.4,
+            "box_2d": [
+              525,
+              547,
+              538,
+              564
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "C/2",
+            "to_grid": "C/3",
+            "length_m": 1.5,
+            "box_2d": [
+              671,
+              421,
+              684,
+              439
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "C/3",
+            "to_grid": "C/4",
+            "length_m": 2.4,
+            "box_2d": [
+              671,
+              547,
+              683,
+              565
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "B/1",
+            "length_m": 3.6,
+            "box_2d": [
+              412,
+              289,
+              436,
+              299
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "B/2",
+            "length_m": 3.6,
+            "box_2d": [
+              411,
+              417,
+              437,
+              426
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB1",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "B/3",
+            "length_m": 3.6,
+            "box_2d": [
+              413,
+              487,
+              436,
+              496
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB1",
+            "member_type": "BEAM",
+            "from_grid": "A/4",
+            "to_grid": "B/4",
+            "length_m": 3.6,
+            "box_2d": [
+              413,
+              600,
+              436,
+              609
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "BST2",
+            "member_type": "BEAM",
+            "from_grid": "B/2",
+            "to_grid": "C/2",
+            "length_m": 1.8,
+            "box_2d": [
+              587,
+              344,
+              619,
+              354
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "C/3",
+            "length_m": 1.8,
+            "box_2d": [
+              593,
+              504,
+              618,
+              513
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "from_grid": "B/4",
+            "to_grid": "C/4",
+            "length_m": 1.8,
+            "box_2d": [
+              594,
+              616,
+              618,
+              626
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S0",
+            "member_type": "SLAB",
+            "from_grid": "A/1",
+            "to_grid": "B/2",
+            "length_m": null,
+            "box_2d": [
+              416,
+              351,
+              431,
+              365
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S0",
+            "member_type": "SLAB",
+            "from_grid": "A/2",
+            "to_grid": "B/3",
+            "length_m": null,
+            "box_2d": [
+              416,
+              463,
+              431,
+              478
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "SP",
+            "member_type": "SLAB",
+            "from_grid": "A/3",
+            "to_grid": "B/4",
+            "length_m": null,
+            "box_2d": [
+              416,
+              548,
+              431,
+              563
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S0",
+            "member_type": "SLAB",
+            "from_grid": "B/1",
+            "to_grid": "C/2",
+            "length_m": null,
+            "box_2d": [
+              597,
+              319,
+              612,
+              334
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S0",
+            "member_type": "SLAB",
+            "from_grid": "B/2",
+            "to_grid": "C/3",
+            "length_m": null,
+            "box_2d": [
+              597,
+              388,
+              612,
+              402
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "sections": [],
+        "notes": [],
+        "page": 27
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 28,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-05",
+        "sheet_title": "แปลน เสา, คาน, พื้นชั้น 2",
+        "sheet_type": "framing_plan",
+        "level": "ชั้น 2",
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": [
+            {
+              "label": "A",
+              "offset_m": 0
+            },
+            {
+              "label": "B",
+              "offset_m": 3.6
+            },
+            {
+              "label": "C",
+              "offset_m": 5.4
+            }
+          ]
+        },
+        "instances": [
+          {
+            "tag": "B3",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "A/2",
+            "length_m": 2.7,
+            "box_2d": [
+              279,
+              354,
+              297,
+              366
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3A",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "A/3",
+            "length_m": 1.5,
+            "box_2d": [
+              278,
+              465,
+              295,
+              482
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "A/4",
+            "length_m": 2.4,
+            "box_2d": [
+              280,
+              552,
+              297,
+              566
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3",
+            "member_type": "BEAM",
+            "from_grid": "B/1",
+            "to_grid": "B/2",
+            "length_m": 2.7,
+            "box_2d": [
+              523,
+              353,
+              539,
+              367
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3A",
+            "member_type": "BEAM",
+            "from_grid": "B/2",
+            "to_grid": "B/3",
+            "length_m": 1.5,
+            "box_2d": [
+              549,
+              464,
+              565,
+              482
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3B",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "B/4",
+            "length_m": 2.4,
+            "box_2d": [
+              523,
+              550,
+              539,
+              569
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B4",
+            "member_type": "BEAM",
+            "from_grid": "C/3",
+            "to_grid": "C/4",
+            "length_m": 2.4,
+            "box_2d": [
+              667,
+              551,
+              684,
+              564
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B1",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "B/1",
+            "length_m": 3.6,
+            "box_2d": [
+              414,
+              290,
+              431,
+              300
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B2",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "B/2",
+            "length_m": 3.6,
+            "box_2d": [
+              414,
+              417,
+              432,
+              427
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B2",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "B/3",
+            "length_m": 3.6,
+            "box_2d": [
+              414,
+              505,
+              433,
+              516
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B1",
+            "member_type": "BEAM",
+            "from_grid": "A/4",
+            "to_grid": "B/4",
+            "length_m": 3.6,
+            "box_2d": [
+              414,
+              617,
+              431,
+              629
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "BST1",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "C/3",
+            "length_m": 1.8,
+            "box_2d": [
+              579,
+              504,
+              612,
+              516
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B4",
+            "member_type": "BEAM",
+            "from_grid": "B/4",
+            "to_grid": "C/4",
+            "length_m": 1.8,
+            "box_2d": [
+              593,
+              617,
+              614,
+              628
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3A",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "A/3",
+            "length_m": 1.5,
+            "box_2d": [
+              445,
+              464,
+              463,
+              482
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "C/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              669,
+              498,
+              686,
+              513
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "C/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              669,
+              612,
+              686,
+              626
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "SP",
+            "member_type": "SLAB",
+            "from_grid": "A/1",
+            "to_grid": "B/2",
+            "length_m": null,
+            "box_2d": [
+              410,
+              347,
+              437,
+              370
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S1",
+            "member_type": "SLAB",
+            "from_grid": "A/2",
+            "to_grid": "B/3",
+            "length_m": null,
+            "box_2d": [
+              372,
+              455,
+              398,
+              477
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "SP",
+            "member_type": "SLAB",
+            "from_grid": "A/2",
+            "to_grid": "B/3",
+            "length_m": null,
+            "box_2d": [
+              488,
+              455,
+              518,
+              480
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "SP",
+            "member_type": "SLAB",
+            "from_grid": "A/3",
+            "to_grid": "B/4",
+            "length_m": null,
+            "box_2d": [
+              409,
+              547,
+              436,
+              569
+            ],
+            "confidence": 0.95
+          },
+          {
+            "tag": "S1",
+            "member_type": "SLAB",
+            "from_grid": "B/3",
+            "to_grid": "C/4",
+            "length_m": null,
+            "box_2d": [
+              591,
+              547,
+              619,
+              568
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "sections": [],
+        "notes": [
+          "แบบสำเร็จรูป 3 (ระบบประสานพิกัด)",
+          "มาตราส่วน 1:50"
+        ],
+        "page": 28
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 29,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-06",
+        "sheet_title": "แปลนโครงหลังคา",
+        "sheet_type": "framing_plan",
+        "level": "หลังคา",
+        "grid": {
+          "x": [
+            {
+              "label": "1",
+              "offset_m": 0
+            },
+            {
+              "label": "2",
+              "offset_m": 2.7
+            },
+            {
+              "label": "3",
+              "offset_m": 4.2
+            },
+            {
+              "label": "4",
+              "offset_m": 6.6
+            }
+          ],
+          "y": [
+            {
+              "label": "A",
+              "offset_m": 0
+            },
+            {
+              "label": "B",
+              "offset_m": 5.4
+            }
+          ]
+        },
+        "instances": [
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "A/1",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              308,
+              308,
+              326,
+              323
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "A/2",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              308,
+              412,
+              326,
+              426
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "A/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              308,
+              506,
+              326,
+              520
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "A/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              308,
+              594,
+              326,
+              610
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "A/2",
+            "length_m": 2.7,
+            "box_2d": [
+              310,
+              369,
+              326,
+              388
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "A/3",
+            "length_m": 1.5,
+            "box_2d": [
+              310,
+              451,
+              326,
+              470
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "A/4",
+            "length_m": 2.4,
+            "box_2d": [
+              310,
+              550,
+              326,
+              569
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "B/1",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              292,
+              420,
+              303
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/1",
+            "to_grid": "B/1",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              305,
+              420,
+              316
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "B/2",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              418,
+              420,
+              429
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/2",
+            "to_grid": "B/2",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              432,
+              420,
+              443
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "B/3",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              489,
+              420,
+              500
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/3",
+            "to_grid": "B/3",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              503,
+              420,
+              514
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "from_grid": "A/4",
+            "to_grid": "B/4",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              602,
+              420,
+              612
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "from_grid": "A/4",
+            "to_grid": "B/4",
+            "length_m": 3.6,
+            "box_2d": [
+              393,
+              616,
+              420,
+              626
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "B/3",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              655,
+              485,
+              671,
+              501
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "from_grid": "B/4",
+            "to_grid": null,
+            "length_m": null,
+            "box_2d": [
+              655,
+              616,
+              671,
+              630
+            ],
+            "confidence": 0.9
+          },
+          {
+            "tag": "BS2",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "B/3",
+            "length_m": 1.8,
+            "box_2d": [
+              638,
+              508,
+              664,
+              520
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS2",
+            "member_type": "BEAM",
+            "from_grid": "B/4",
+            "to_grid": "B/4",
+            "length_m": 1.8,
+            "box_2d": [
+              638,
+              595,
+              666,
+              606
+            ],
+            "confidence": 0.85
+          },
+          {
+            "tag": "BS4",
+            "member_type": "BEAM",
+            "from_grid": "B/3",
+            "to_grid": "B/4",
+            "length_m": 2.4,
+            "box_2d": [
+              657,
+              550,
+              671,
+              569
+            ],
+            "confidence": 0.9
+          }
+        ],
+        "sections": [
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.15,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              805,
+              181,
+              820,
+              285
+            ],
+            "evidence": "BS1 = [ -150x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS2",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              825,
+              182,
+              841,
+              286
+            ],
+            "evidence": "BS2 = [ -100x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.125,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              846,
+              182,
+              861,
+              286
+            ],
+            "evidence": "BS3 = [ -125x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS4",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              867,
+              182,
+              882,
+              287
+            ],
+            "evidence": "BS4 = [ -100x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "width_m": 0.1,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              887,
+              182,
+              903,
+              276
+            ],
+            "evidence": "CS = 口 -100x100x3.2 มม.",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "แปเหล็ก C -100x50x20x3.2 มม. @ 1.00 ม.หรือน้อยกว่า",
+          "ปิดด้วยเหล็ก C -100x50x20x3.2 มม."
+        ],
+        "page": 29
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 30,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-07",
+        "sheet_title": "ขยายฐานรากแผ่ F0.50X0.50, F0.50X0.95 F0.90X0.90X0.30",
+        "sheet_type": "section_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "F0.50X0.50",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.5,
+            "plan_l_m": 0.5,
+            "top_rebar": null,
+            "bottom_rebar": "3+3-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 1,
+            "box_2d": [
+              94,
+              76,
+              545,
+              298
+            ],
+            "evidence": "F0.50X0.50, 3+3-Ø12 มม., ความหนา 0.20, ขนาด 0.50x0.50, ความลึก 1.00",
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.50X0.95",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.5,
+            "plan_l_m": 0.95,
+            "top_rebar": null,
+            "bottom_rebar": "5+5-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 1,
+            "box_2d": [
+              94,
+              298,
+              546,
+              547
+            ],
+            "evidence": "F0.50X0.95, 5+5-Ø12 มม., ความหนา 0.20, ขนาด 0.50x0.95, ความลึก 1.00",
+            "confidence": 0.95
+          },
+          {
+            "tag": "F0.90X0.90X0.30",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.9,
+            "plan_l_m": 0.9,
+            "top_rebar": null,
+            "bottom_rebar": "3-DB12 + 3-DB12, 2-DB12, 3-DB12@0.15",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 1,
+            "box_2d": [
+              93,
+              552,
+              882,
+              824
+            ],
+            "evidence": "F0.90X0.90X0.30, 2-Ø12 มม., 3-Ø12 มม., 3-Ø12 มม.+3-Ø12 มม.@0.15 ม.",
+            "confidence": 0.9
+          }
+        ],
+        "notes": [
+          "คอนกรีตหยาบ 1:3:5 หนา 0.05 ม.",
+          "ทรายหยาบอัดแน่น หนา 0.10 ม.",
+          "ตอม่อดูขยายเสา",
+          "ระดับที่กำหนด"
+        ],
+        "page": 30
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 31,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-08",
+        "sheet_title": "ขยายฐานรากเสาเข็มตอก F1, F2, F3",
+        "sheet_type": "section_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "F1",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.3,
+            "thickness_m": 0.3,
+            "length_m": null,
+            "plan_w_m": 0.5,
+            "plan_l_m": 0.5,
+            "top_rebar": null,
+            "bottom_rebar": "3+3-RB9",
+            "side_rebar": null,
+            "stirrup": "2-RB9@0.10",
+            "main_rebar": "8-RB9",
+            "height_m": null,
+            "box_2d": [
+              75,
+              47,
+              574,
+              292
+            ],
+            "evidence": "F1 มาตราส่วน 1:25, 0.50 x 0.50 ม., หนา 0.30 ม., เสาเข็มสี่เหลี่ยมตัน จำนวน 1 ต้น ขนาด 0.15x0.15x6.00 ม., 8 -Ø9 มม., 2ป.Ø9 มม.@ 0.10 ม., 3+3-Ø9 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "F2",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.5,
+            "plan_l_m": 0.95,
+            "top_rebar": null,
+            "bottom_rebar": "5-DB12, 3-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              76,
+              296,
+              567,
+              562
+            ],
+            "evidence": "F2 มาตราส่วน 1:25, 0.50 x 0.95 ม., หนา 0.20 ม., เสาเข็มสี่เหลี่ยมตัน จำนวน 2 ต้น ขนาด 0.15x0.15x6.00 ม., 5-Ø12 มม., 3-Ø12 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "F3",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.9,
+            "plan_l_m": 0.9,
+            "top_rebar": null,
+            "bottom_rebar": "3-DB12 + 3-DB12@0.15, 2-DB12, 3-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              76,
+              569,
+              876,
+              836
+            ],
+            "evidence": "F3 มาตราส่วน 1:25, 0.90 x 0.90 ม., หนา 0.20 ม., เสาเข็มสี่เหลี่ยมตัน จำนวน 3 ต้น ขนาด 0.15x0.15x6.00 ม., 3-Ø12 มม.+3-Ø12 มม.@0.15 ม., 2-Ø12 มม., 3-Ø12 มม.",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "คอนกรีตหยาบ 1:3:5 หนา 0.05 ม.",
+          "ทรายหยาบราดน้ำอัดแน่น หนา 0.10 ม.",
+          "เสาเข็มสี่เหลี่ยมตัน ขนาด 0.15x0.15x6.00 ม.",
+          "ตอม่อดูขยายเสา",
+          "ระดับหัวเสาเข็มโผล่พ้นคอนกรีตหยาบ 0.05 ม."
+        ],
+        "page": 31
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 32,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-09",
+        "sheet_title": "ขยายฐานรากแผ่ F0.95X0.95 ขยายฐานรากเสาเข็มตอก F4",
+        "sheet_type": "section_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "F0.95X0.95",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.95,
+            "plan_l_m": 0.95,
+            "top_rebar": null,
+            "bottom_rebar": "5-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 1,
+            "box_2d": [
+              136,
+              143,
+              631,
+              399
+            ],
+            "evidence": "F0.95X0.95 0.95X0.95 5-Ø12 มม. คอนกรีตหยาบ 1:3:5 ทรายราดน้ำอัดแน่น",
+            "confidence": 0.95
+          },
+          {
+            "tag": "F4",
+            "member_type": "FOOTING",
+            "width_m": null,
+            "depth_m": 0.2,
+            "thickness_m": 0.2,
+            "length_m": null,
+            "plan_w_m": 0.95,
+            "plan_l_m": 0.95,
+            "top_rebar": null,
+            "bottom_rebar": "5-DB12",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 1,
+            "box_2d": [
+              152,
+              458,
+              698,
+              786
+            ],
+            "evidence": "F4 5-Ø12 มม. เสาเข็มสี่เหลี่ยมตัน จำนวน 4 ต้น ขนาด 0.15x0.15x6.00 ม. 0.95 0.20",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "ตอม่อดูขยายเสา",
+          "คอนกรีตหยาบ 1:3:5 หนา 0.05 ม.",
+          "ทรายราดน้ำอัดแน่น หนา 0.10 ม.",
+          "เสาเข็มสี่เหลี่ยมตัน จำนวน 4 ต้น ขนาด 0.15x0.15x6.00 ม."
+        ],
+        "page": 32
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 33,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-10",
+        "sheet_title": "ขยายฐานรากแผ่ F0.95X0.95 ขยายฐานรากเสาเข็มตอก F4",
+        "sheet_type": "schedule",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "C1",
+            "member_type": "COLUMN",
+            "width_m": 0.2,
+            "depth_m": 0.2,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": "RB6@0.20",
+            "main_rebar": "4-DB12",
+            "height_m": null,
+            "from_level": "ฐานราก",
+            "to_level": "ระดับอะเส",
+            "box_2d": [
+              140,
+              237,
+              579,
+              355
+            ],
+            "evidence": "C1 ขนาด 0.20x0.20 4 Ø12 มม. ป.Ø6 มม.@0.20 ม.",
+            "confidence": 0.95
+          }
+        ],
+        "levels": [],
+        "notes": [],
+        "page": 33
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 34,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-11",
+        "sheet_title": "ขยายคาน ค.ส.ล.B1-B4, ขยายคาน ค.ส.ล.BST1,BST2,G1, ขยายพื้น ค.ส.ล.S0,S1",
+        "sheet_type": "section_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "B1",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.4,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB16",
+            "bottom_rebar": "2-DB16",
+            "side_rebar": null,
+            "stirrup": "RB6@0.175",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              80,
+              117,
+              237,
+              241
+            ],
+            "evidence": "B1 0.15x0.40 ป. Ø6 มม.@0.175 ม. 2-Ø16 มม. บน-ล่าง",
+            "confidence": 0.95
+          },
+          {
+            "tag": "B2",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.4,
+            "thickness_m": null,
+            "length_m": 3.6,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB16",
+            "bottom_rebar": "2-Ø16 + 2-Ø12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.175",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              85,
+              368,
+              276,
+              690
+            ],
+            "evidence": "B2 3.60 ม. หน้าตัด 2-2: 0.15x0.40 2-Ø16 มม. บน, 2-Ø12 มม. + 2-Ø16 มม. ล่าง ป. Ø6 มม.@0.175 ม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "B3,B3A,B3B",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.4,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB12",
+            "bottom_rebar": "2-DB12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.175",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              301,
+              114,
+              451,
+              237
+            ],
+            "evidence": "B3,B3A,B3B 0.15x0.40 ป. Ø6 มม.@0.175 ม. 2-Ø12 มม. บน-ล่าง",
+            "confidence": 0.95
+          },
+          {
+            "tag": "B4",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.35,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB12",
+            "bottom_rebar": "2-DB12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.15",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              301,
+              248,
+              444,
+              345
+            ],
+            "evidence": "B4 0.15x0.35 ป. Ø6 มม.@0.15 ม. 2-Ø12 มม. บน-ล่าง",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BST1",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.35,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB12",
+            "bottom_rebar": "2-DB12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.15",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              287,
+              354,
+              444,
+              456
+            ],
+            "evidence": "BST1 0.15x0.35 ป. Ø6 มม.@0.15 ม. 2-Ø12 มม. บน-ล่าง บันได ST1",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BST2",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.35,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB12",
+            "bottom_rebar": "2-DB12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.15",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              288,
+              469,
+              443,
+              580
+            ],
+            "evidence": "BST2 0.15x0.35 ป. Ø6 มม.@0.15 ม. 2-Ø12 มม. บน-ล่าง บันได ST1",
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB1",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.35,
+            "thickness_m": null,
+            "length_m": 3.6,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB16",
+            "bottom_rebar": "2-DB16",
+            "side_rebar": null,
+            "stirrup": "RB6@0.15",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              463,
+              116,
+              642,
+              555
+            ],
+            "evidence": "GB1 (G1-G1) 0.15x0.35 ป. Ø6 มม.@0.15 ม. 2-Ø16 มม. บน-ล่าง",
+            "confidence": 0.95
+          },
+          {
+            "tag": "GB2",
+            "member_type": "BEAM",
+            "width_m": 0.15,
+            "depth_m": 0.35,
+            "thickness_m": null,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "2-DB12",
+            "bottom_rebar": "2-DB12",
+            "side_rebar": null,
+            "stirrup": "RB6@0.15",
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              458,
+              608,
+              606,
+              712
+            ],
+            "evidence": "GB2 0.15x0.35 ป. Ø6 มม.@0.15 ม. 2-Ø12 มม. บน-ล่าง",
+            "confidence": 0.95
+          },
+          {
+            "tag": "S0",
+            "member_type": "SLAB",
+            "width_m": null,
+            "depth_m": null,
+            "thickness_m": 0.1,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "RB6@0.20",
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              680,
+              134,
+              846,
+              417
+            ],
+            "evidence": "S0 หนา 0.10 ม. ตะแกรง Ø6 มม.@0.20 ม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "S1",
+            "member_type": "SLAB",
+            "width_m": null,
+            "depth_m": null,
+            "thickness_m": 0.1,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "RB6@0.20",
+            "bottom_rebar": "RB6@0.20",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              655,
+              521,
+              866,
+              792
+            ],
+            "evidence": "S1 หนา 0.10 ม. เสริมพิเศษ Ø6 มม.@ 0.20 ม. ล่าง: Ø6 มม.@ 0.20 ม.ตรง 1 คอม้า 1 / Ø6 มม.@ 0.10 ม.ตรง 1 คอม้า 1",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "แบบบ้านสานฝัน ของขวัญปีใหม่ คนไทยมีความสุข",
+          "บ้านสำเร็จรูป 3 (ระบบประสานพิกัด)"
+        ],
+        "page": 34
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 35,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-12",
+        "sheet_title": "ขยายบันได ST1",
+        "sheet_type": "stair_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "ST1",
+            "member_type": "STAIR",
+            "width_m": null,
+            "depth_m": null,
+            "thickness_m": 0.12,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": "RB9@0.25",
+            "bottom_rebar": "DB12@0.175 ม. / RB9@ตามแบบ",
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": 2.4,
+            "box_2d": [
+              784,
+              366,
+              834,
+              483
+            ],
+            "evidence": "ขยายบันได ST1 มาตราส่วน 1:20, ความหนา 0.12, ความสูง 2.40, ความยาวแนวราบ 3.10, Ø12 มม.@0.175 ม., Ø9 มม.@ตามแบบ, Ø6 มม.@0.20 ม., 1Ø9 มม.ทุกมุม, Ø9 มม.@0.25 ม., Ø12 มม.@0.25 ม.",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "ระยะลูกนอนตามแบบสถาปัตยกรรม"
+        ],
+        "page": 35
+      },
+      "model": "gemini-flash-latest"
+    },
+    {
+      "page": 36,
+      "imageWidth": 2516,
+      "imageHeight": 1760,
+      "reading": {
+        "sheet_id": "S-13",
+        "sheet_title": "รูปตัดโครงหลังคา แบบขยาย \"1\", \"2\" ขยายรายละเอียดรอยต่อพื้นสำเร็จรูป SP",
+        "sheet_type": "section_detail",
+        "level": null,
+        "grid": null,
+        "instances": [],
+        "sections": [
+          {
+            "tag": "BS1",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.15,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              778,
+              577,
+              792,
+              680
+            ],
+            "evidence": "BS1 = [ -150x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS2",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              801,
+              578,
+              814,
+              681
+            ],
+            "evidence": "BS2 = [ -100x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS3",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.125,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              819,
+              578,
+              832,
+              682
+            ],
+            "evidence": "BS3 = [ -125x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "BS4",
+            "member_type": "BEAM",
+            "width_m": 0.05,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              837,
+              577,
+              852,
+              681
+            ],
+            "evidence": "BS4 = [ -100x50x20x3.2 มม.",
+            "confidence": 0.95
+          },
+          {
+            "tag": "CS",
+            "member_type": "COLUMN",
+            "width_m": 0.1,
+            "depth_m": 0.1,
+            "thickness_m": 0.0032,
+            "length_m": null,
+            "plan_w_m": null,
+            "plan_l_m": null,
+            "top_rebar": null,
+            "bottom_rebar": null,
+            "side_rebar": null,
+            "stirrup": null,
+            "main_rebar": null,
+            "height_m": null,
+            "box_2d": [
+              859,
+              578,
+              874,
+              672
+            ],
+            "evidence": "CS = 口 -100x100x3.2 มม.",
+            "confidence": 0.95
+          }
+        ],
+        "notes": [
+          "แปเหล็ก C -100x50x20x3.2 มม. @ 1.00 ม.หรือน้อยกว่า",
+          "BS1 = C -150x50x20x3.2 มม.",
+          "BS2 = C -100x50x20x3.2 มม.",
+          "BS3 = C -125x50x20x3.2 มม.",
+          "BS4 = C -100x50x20x3.2 มม.",
+          "CS = 口 -100x100x3.2 มม.",
+          "ลักษณะการวางพื้น SP ภายใน: ระยะไม่น้อยกว่า 0.05 ม., TOPPING 0.05 ม., เสริมพิเศษ Ø6 มม.@0.20 ม., 1+1Ø6 มม.",
+          "ลักษณะการวางพื้น SP บริเวณพื้นห้องน้ำ: TOPPING 0.05 ม., ระดับพื้นห้องน้ำ -0.10 ม., 1+1Ø9 มม., Ø9 มม.@0.20 ม., เสริมพิเศษ Ø6 มม.@0.20 ม.",
+          "แบบขยาย 1: 2-Ø9 มม. เชื่อมติดกับ PL-200X200X9 มม. ตลอดแนวสัมผัส ฝังลึก 0.15 ม. ในเสาหรือคาน ค.ส.ล.",
+          "แบบขยาย 2: 2-Ø9 มม. เชื่อมติดกับ PL-200X200X9 มม. ตลอดแนวสัมผัส ฝังลึก 0.15 ม. ในเสาหรือคาน ค.ส.ล., PL หนา 6 มม. เต็มหน้าเสา CS"
+        ],
+        "page": 36
+      },
+      "model": "gemini-flash-latest"
+    }
+  ]
+}

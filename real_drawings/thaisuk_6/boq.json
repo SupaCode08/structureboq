@@ -1,0 +1,1420 @@
+{
+ "file_name": "บัญชีแสดงปริมาณงาน ครอบครัวเป็นสุข 6.xls",
+ "page_count": 2,
+ "legacy_font_pages": [],
+ "variants": [
+  "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+  "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ"
+ ],
+ "lines": [
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    5,
+    1,
+    6
+   ],
+   "itemNo": "",
+   "description": "1.1 ขุดดิน",
+   "quantity": 23,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "excavation_m3",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    6,
+    1,
+    7
+   ],
+   "itemNo": "",
+   "description": "1.2 เข็มสี่เหลี่ยม 0.18 x 0.18 x 21.00 ม.",
+   "quantity": 21,
+   "unit": "ต้น",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "piles_nos",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    7,
+    1,
+    8
+   ],
+   "itemNo": "",
+   "description": "1.3 ทรายราดน้ำอัดแน่น",
+   "quantity": 3,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "sand_m3",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    8,
+    1,
+    9
+   ],
+   "itemNo": "",
+   "description": "1.4 คอนกรีตหยาบ",
+   "quantity": 1,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "lean_concrete_m3",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    9,
+    1,
+    10
+   ],
+   "itemNo": "",
+   "description": "1.5 คอนกรีตโครงสร้าง ค2.",
+   "quantity": 29,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "structural_concrete_m3",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    10,
+    1,
+    11
+   ],
+   "itemNo": "",
+   "description": "1.6 เหล็กเสริม SR - 24 Dia 6 มม.",
+   "quantity": 522,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_RB6_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    11,
+    1,
+    12
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SR - 24 Dia 9 มม.",
+   "quantity": 282,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_RB9_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    12,
+    1,
+    13
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 12 มม.",
+   "quantity": 652,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_DB12_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    13,
+    1,
+    14
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 16 มม.",
+   "quantity": 1667,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_DB16_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    14,
+    1,
+    15
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 20 มม.",
+   "quantity": 296,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_DB20_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    15,
+    1,
+    16
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 25 มม.",
+   "quantity": 131,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "rebar_DB25_kg",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    16,
+    1,
+    17
+   ],
+   "itemNo": "",
+   "description": "- ลวดผูกเหล็ก",
+   "quantity": 107,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    17,
+    1,
+    18
+   ],
+   "itemNo": "",
+   "description": "1.7 ไม้แบบ",
+   "quantity": 256,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "formwork_m2",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    18,
+    1,
+    19
+   ],
+   "itemNo": "",
+   "description": "- ค่าแรงไม้แบบ",
+   "quantity": 458,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "formwork_labour_m2",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    19,
+    1,
+    20
+   ],
+   "itemNo": "",
+   "description": "- ไม้เคร่า",
+   "quantity": 137,
+   "unit": "ลบ.ฟ.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    20,
+    1,
+    21
+   ],
+   "itemNo": "",
+   "description": "- ไม้ค้ำ Dia 3 x 3.00",
+   "quantity": 210,
+   "unit": "ต้น",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    21,
+    1,
+    22
+   ],
+   "itemNo": "",
+   "description": "- ตะปู",
+   "quantity": 92,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    22,
+    1,
+    23
+   ],
+   "itemNo": "",
+   "description": "- พื้นสำเร็จรูป",
+   "quantity": 156,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "precast_plank_m2",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    23,
+    1,
+    24
+   ],
+   "itemNo": "",
+   "description": "1.8 เหล็กโครงหลังคาเหล็กรูปพรรณ",
+   "quantity": 0,
+   "unit": "",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    24,
+    1,
+    25
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 150 x 50 x 20 x 2.3 มม.",
+   "quantity": 804,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    25,
+    1,
+    26
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 125 x 50 x 20 x 2.3 มม.",
+   "quantity": 690,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    26,
+    1,
+    27
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 110 x 50 x 20 x 2.3 มม.",
+   "quantity": 958,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    27,
+    1,
+    28
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก L 25 x 25 x 3 มม.",
+   "quantity": 265,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 1,
+   "bbox": [
+    0,
+    28,
+    1,
+    29
+   ],
+   "itemNo": "",
+   "description": "- ทาสีโครงเหล็ก",
+   "quantity": 303,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 239
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    5,
+    1,
+    6
+   ],
+   "itemNo": "",
+   "description": "1.1 ขุดดิน",
+   "quantity": 113,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "excavation_m3",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    6,
+    1,
+    7
+   ],
+   "itemNo": "",
+   "description": "1.2 ทรายราดน้ำอัดแน่น",
+   "quantity": 3,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "sand_m3",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    7,
+    1,
+    8
+   ],
+   "itemNo": "",
+   "description": "1.3 คอนกรีตหยาบ",
+   "quantity": 5,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "lean_concrete_m3",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    8,
+    1,
+    9
+   ],
+   "itemNo": "",
+   "description": "1.4 คอนกรีตโครงสร้าง",
+   "quantity": 40,
+   "unit": "ลบ.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "structural_concrete_m3",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    9,
+    1,
+    10
+   ],
+   "itemNo": "",
+   "description": "1.5 เหล็กเสริม SR - 24 Dia 6 มม.",
+   "quantity": 522,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "rebar_RB6_kg",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    10,
+    1,
+    11
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SR - 24 Dia 9 มม.",
+   "quantity": 260,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "rebar_RB9_kg",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    11,
+    1,
+    12
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 12 มม.",
+   "quantity": 504,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "rebar_DB12_kg",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    12,
+    1,
+    13
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 16 มม.",
+   "quantity": 2468,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "rebar_DB16_kg",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    13,
+    1,
+    14
+   ],
+   "itemNo": "",
+   "description": "- เหล็กเสริม SD - 30 Dia 25 มม.",
+   "quantity": 1550,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "rebar_DB25_kg",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    14,
+    1,
+    15
+   ],
+   "itemNo": "",
+   "description": "- ลวดผูกเหล็ก",
+   "quantity": 184,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    15,
+    1,
+    16
+   ],
+   "itemNo": "",
+   "description": "1.6 ไม้แบบ",
+   "quantity": 229,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "formwork_m2",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    16,
+    1,
+    17
+   ],
+   "itemNo": "",
+   "description": "- ค่าแรงไม้แบบ",
+   "quantity": 458,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "formwork_labour_m2",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    17,
+    1,
+    18
+   ],
+   "itemNo": "",
+   "description": "- ไม้เคร่า",
+   "quantity": 64,
+   "unit": "ลบ.ฟ.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    18,
+    1,
+    19
+   ],
+   "itemNo": "",
+   "description": "- ไม้ค้ำ Dia 3 x 3.00",
+   "quantity": 205,
+   "unit": "ต้น",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    19,
+    1,
+    20
+   ],
+   "itemNo": "",
+   "description": "- ตะปู",
+   "quantity": 92,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    20,
+    1,
+    21
+   ],
+   "itemNo": "",
+   "description": "1.7 พื้นสำเร็จรูป",
+   "quantity": 156,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "precast_plank_m2",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    21,
+    1,
+    22
+   ],
+   "itemNo": "",
+   "description": "1.8 เหล็กโครงหลังคาระดับชั้นบน",
+   "quantity": 0,
+   "unit": "",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    22,
+    1,
+    23
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 200 x 75 x 20 x 4.5 มม.",
+   "quantity": 127,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    23,
+    1,
+    24
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 225 x 50 x 20 x 3.2 มม.",
+   "quantity": 96,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    24,
+    1,
+    25
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก L 40 x 40 x 3 มม.",
+   "quantity": 92,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    25,
+    1,
+    26
+   ],
+   "itemNo": "",
+   "description": "1.9 เหล็กโครงหลังคา",
+   "quantity": 0,
+   "unit": "",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    26,
+    1,
+    27
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 125 x 50 x 20 x 3.2 มม.",
+   "quantity": 1060,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    27,
+    1,
+    28
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก [ 200 x 75 x 20 x 4.5 มม.",
+   "quantity": 623,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    28,
+    1,
+    29
+   ],
+   "itemNo": "",
+   "description": "- เหล็ก L 40 x 40 x 3 มม.",
+   "quantity": 1159,
+   "unit": "กก.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  },
+  {
+   "page": 2,
+   "bbox": [
+    0,
+    29,
+    1,
+    30
+   ],
+   "itemNo": "",
+   "description": "- ทาสีโครงเหล็ก",
+   "quantity": 230,
+   "unit": "ตร.ม.",
+   "section": "หมวดงานวิศวกรรมโครงสร้าง",
+   "sheetTitle": "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ",
+   "key": "",
+   "pageWidth": 1,
+   "pageHeight": 388
+  }
+ ],
+ "warnings": [],
+ "structural_by_variant": {
+  "บ้านครอบครัวไทยเป็นสุข6(ตอกเข็ม": {
+   "excavation_m3": {
+    "quantity": 23,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       5,
+       1,
+       6
+      ],
+      "text": "1.1 ขุดดิน",
+      "quantity": 23,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "piles_nos": {
+    "quantity": 21,
+    "unit": "ต้น",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       6,
+       1,
+       7
+      ],
+      "text": "1.2 เข็มสี่เหลี่ยม 0.18 x 0.18 x 21.00 ม.",
+      "quantity": 21,
+      "unit": "ต้น",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "sand_m3": {
+    "quantity": 3,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       7,
+       1,
+       8
+      ],
+      "text": "1.3 ทรายราดน้ำอัดแน่น",
+      "quantity": 3,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "lean_concrete_m3": {
+    "quantity": 1,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       8,
+       1,
+       9
+      ],
+      "text": "1.4 คอนกรีตหยาบ",
+      "quantity": 1,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "structural_concrete_m3": {
+    "quantity": 29,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       9,
+       1,
+       10
+      ],
+      "text": "1.5 คอนกรีตโครงสร้าง ค2.",
+      "quantity": 29,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_RB6_kg": {
+    "quantity": 522,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       10,
+       1,
+       11
+      ],
+      "text": "1.6 เหล็กเสริม SR - 24 Dia 6 มม.",
+      "quantity": 522,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_RB9_kg": {
+    "quantity": 282,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       11,
+       1,
+       12
+      ],
+      "text": "- เหล็กเสริม SR - 24 Dia 9 มม.",
+      "quantity": 282,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_DB12_kg": {
+    "quantity": 652,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       12,
+       1,
+       13
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 12 มม.",
+      "quantity": 652,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_DB16_kg": {
+    "quantity": 1667,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       13,
+       1,
+       14
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 16 มม.",
+      "quantity": 1667,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_DB20_kg": {
+    "quantity": 296,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       14,
+       1,
+       15
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 20 มม.",
+      "quantity": 296,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "rebar_DB25_kg": {
+    "quantity": 131,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       15,
+       1,
+       16
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 25 มม.",
+      "quantity": 131,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "formwork_m2": {
+    "quantity": 256,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       17,
+       1,
+       18
+      ],
+      "text": "1.7 ไม้แบบ",
+      "quantity": 256,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "formwork_labour_m2": {
+    "quantity": 458,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       18,
+       1,
+       19
+      ],
+      "text": "- ค่าแรงไม้แบบ",
+      "quantity": 458,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   },
+   "precast_plank_m2": {
+    "quantity": 156,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 1,
+      "bbox": [
+       0,
+       22,
+       1,
+       23
+      ],
+      "text": "- พื้นสำเร็จรูป",
+      "quantity": 156,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 239
+     }
+    ]
+   }
+  },
+  "บ้านครอบครัวไทยเป็นสข6 (ไม่ตอกเ": {
+   "excavation_m3": {
+    "quantity": 113,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       5,
+       1,
+       6
+      ],
+      "text": "1.1 ขุดดิน",
+      "quantity": 113,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "sand_m3": {
+    "quantity": 3,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       6,
+       1,
+       7
+      ],
+      "text": "1.2 ทรายราดน้ำอัดแน่น",
+      "quantity": 3,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "lean_concrete_m3": {
+    "quantity": 5,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       7,
+       1,
+       8
+      ],
+      "text": "1.3 คอนกรีตหยาบ",
+      "quantity": 5,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "structural_concrete_m3": {
+    "quantity": 40,
+    "unit": "ลบ.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       8,
+       1,
+       9
+      ],
+      "text": "1.4 คอนกรีตโครงสร้าง",
+      "quantity": 40,
+      "unit": "ลบ.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "rebar_RB6_kg": {
+    "quantity": 522,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       9,
+       1,
+       10
+      ],
+      "text": "1.5 เหล็กเสริม SR - 24 Dia 6 มม.",
+      "quantity": 522,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "rebar_RB9_kg": {
+    "quantity": 260,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       10,
+       1,
+       11
+      ],
+      "text": "- เหล็กเสริม SR - 24 Dia 9 มม.",
+      "quantity": 260,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "rebar_DB12_kg": {
+    "quantity": 504,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       11,
+       1,
+       12
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 12 มม.",
+      "quantity": 504,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "rebar_DB16_kg": {
+    "quantity": 2468,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       12,
+       1,
+       13
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 16 มม.",
+      "quantity": 2468,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "rebar_DB25_kg": {
+    "quantity": 1550,
+    "unit": "กก.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       13,
+       1,
+       14
+      ],
+      "text": "- เหล็กเสริม SD - 30 Dia 25 มม.",
+      "quantity": 1550,
+      "unit": "กก.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "formwork_m2": {
+    "quantity": 229,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       15,
+       1,
+       16
+      ],
+      "text": "1.6 ไม้แบบ",
+      "quantity": 229,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "formwork_labour_m2": {
+    "quantity": 458,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       16,
+       1,
+       17
+      ],
+      "text": "- ค่าแรงไม้แบบ",
+      "quantity": 458,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   },
+   "precast_plank_m2": {
+    "quantity": 156,
+    "unit": "ตร.ม.",
+    "sources": [
+     {
+      "page": 2,
+      "bbox": [
+       0,
+       20,
+       1,
+       21
+      ],
+      "text": "1.7 พื้นสำเร็จรูป",
+      "quantity": 156,
+      "unit": "ตร.ม.",
+      "page_width": 1,
+      "page_height": 388
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+  "note": "อ่านด้วยตาจากแบบ ศพด.2 (กรมส่งเสริมการปกครองท้องถิ่น): น.7 แปลนฐานราก คานคอดิน พื้น + แปลนอเส ค.ส.ล. (สองผังในแผ่นเดียว), น.16 แบบขยาย — ชุดทดสอบแยก",
+  "readBy": "Claude reading the scanned sheets, 2026-10-19",
+  "split": "heldout",
+  "scale": { "plans": 100, "details": 20 },
+  "grid": { "x": [0, 4.0, 8.0, 11.0], "y": [0, 3.0, 6.0, 11.0, 14.0, 17.0] },
+  "members": [
+    { "tag": "F1", "type": "FOOTING", "count": 6, "width": 1.2, "depth": 1.2, "thickness": 0.25, "bottomRebar": "RB12@0.15" },
+    { "tag": "F2", "type": "FOOTING", "count": 11, "width": 1.0, "depth": 1.0, "thickness": 0.25, "bottomRebar": "RB12@0.15" },
+    { "tag": "C1", "type": "COLUMN", "width": 0.2, "depth": 0.2, "mainRebar": "4-RB12", "stirrup": "RB6@0.20", "remark": "แบบขยายเสา C1=C2 ยาวตลอด; ป้ายในผัง 'C1 F2'" },
+    { "tag": "GB1", "type": "BEAM", "width": 0.15, "depth": 0.4, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20", "remark": "บางช่วงในผังไม่มีป้าย — ไม่ใส่จำนวน" },
+    { "tag": "GB2", "type": "BEAM", "count": 6, "width": 0.15, "depth": 0.4, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GB3", "type": "BEAM", "count": 5, "width": 0.15, "depth": 0.4, "topRebar": "3-RB12+2-DB16", "bottomRebar": "2-DB16+3-RB12", "stirrup": "RB6@0.15" },
+    { "tag": "RB1", "type": "BEAM", "width": 0.15, "depth": 0.35, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "RB2", "type": "BEAM", "count": 4, "width": 0.15, "depth": 0.35, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "RB3", "type": "BEAM", "width": 0.15, "depth": 0.35, "topRebar": "4-RB12", "bottomRebar": "4-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GS", "type": "SLAB", "thickness": 0.1, "topRebar": "RB6@0.25" }
+  ],
+  "conventions": [
+    "ผังฐานรากกับผังคานคอดินรวมเป็นผังเดียว ป้ายเสา+ฐานรากคู่กัน 'C1 F2'",
+    "สองผัง (ฐานราก/คานคอดิน กับ อเส/โครงหลังคา) อยู่ในแผ่นเดียวกัน กริดต่างกัน (ผังหลังคามีชายคา 1.20)",
+    "เบอร์มีเครื่องหมาย prime: GB', GB1'",
+    "ระยะกริดย่อยในช่อง C–D (1.50 / 5.00 / 1.50) สำหรับบ่อ/พื้น"
+  ]
+}

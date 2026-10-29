@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/*
+ * One light theme for the whole app. Components use Tailwind's slate / blue / amber names;
+ * the palette is remapped here so the look changes in one place:
+ *   slate -> neutral ink on paper, blue -> the single action colour, amber -> "needs a look".
+ */
+@theme {
+  --font-sans: "IBM Plex Sans Thai", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-slate-50: #f7f7f5;
+  --color-slate-100: #efefec;
+  --color-slate-200: #e2e2dd;
+  --color-slate-300: #cbcbc4;
+  --color-slate-400: #9a9a92;
+  --color-slate-500: #6f6f68;
+  --color-slate-600: #53534d;
+  --color-slate-700: #3d3d38;
+  --color-slate-800: #2a2a26;
+  --color-slate-900: #1c1c19;
+  --color-slate-950: #121210;
+
+  --color-blue-50: #eef3fb;
+  --color-blue-100: #dbe5f6;
+  --color-blue-200: #b8cbed;
+  --color-blue-300: #8eabe0;
+  --color-blue-400: #5f85cf;
+  --color-blue-500: #3a66bd;
+  --color-blue-600: #2453a8;
+  --color-blue-700: #1d438a;
+  --color-blue-800: #19376f;
+  --color-blue-900: #152d5a;
+  --color-blue-950: #0e1d3b;
+
+  --color-indigo-500: #3a66bd;
+  --color-indigo-600: #2453a8;
+}
+
+@layer base {
+  html {
+    font-size: 15px;
+  }
+  body {
+    background: var(--color-slate-50);
+    color: var(--color-slate-800);
+    font-feature-settings: "tnum" 1;
+  }
+  /* Thai glyphs sit taller than Latin: give lines room */
+  body, button, input, select, textarea {
+    line-height: 1.55;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-blue-500);
+    outline-offset: 2px;
+  }
+}
+
+/* Tailwind's text-[10px]/[11px] are too small for Thai marks; floor them */
+.text-\[10px\] { font-size: 11.5px !important; }
+.text-\[11px\] { font-size: 12px !important; }
+
+/*
+ * Older panels written dark-only (manual calculator, material specs): inside .flip-light the dark
+ * shades become paper and the light text shades become ink, so they match the light theme.
+ */
+.flip-light {
+  --color-slate-950: #f7f7f5;
+  --color-slate-900: #ffffff;
+  --color-slate-800: #e2e2dd;
+  --color-slate-700: #cbcbc4;
+  --color-slate-600: #9a9a92;
+  --color-slate-500: #6f6f68;
+  --color-slate-400: #53534d;
+  --color-slate-300: #3d3d38;
+  --color-slate-200: #2a2a26;
+  --color-slate-100: #1c1c19;
+  --color-white: #1c1c19;
+  --color-amber-300: #92400e;
+  --color-amber-400: #b45309;
+  --color-sky-300: #075985;
+  --color-sky-400: #0369a1;
+  --color-emerald-300: #065f46;
+  --color-emerald-400: #047857;
+  --color-cyan-300: #155e75;
+  --color-cyan-400: #0e7490;
+  --color-purple-300: #6b21a8;
+  --color-purple-400: #7e22ce;
+  --color-rose-300: #9f1239;
+  --color-rose-400: #be123c;
+  color: #2a2a26;
+}
+/* buttons that keep a solid fill keep white text */
+.flip-light .bg-amber-500, .flip-light .bg-blue-600, .flip-light .bg-emerald-600 { color: #fff; }
+/* light-styled parts placed inside a .flip-light panel keep the normal palette */
+.flip-light .no-flip {
+  --color-slate-950: #121210; --color-slate-900: #1c1c19; --color-slate-800: #2a2a26; --color-slate-700: #3d3d38;
+  --color-slate-600: #53534d; --color-slate-500: #6f6f68; --color-slate-400: #9a9a92; --color-slate-300: #cbcbc4;
+  --color-slate-200: #e2e2dd; --color-slate-100: #efefec; --color-white: #fff;
+  --color-amber-300: #fcd34d; --color-amber-400: #fbbf24; --color-sky-300: #7dd3fc; --color-sky-400: #38bdf8;
+  --color-emerald-300: #6ee7b7; --color-emerald-400: #34d399; --color-cyan-300: #67e8f9; --color-cyan-400: #22d3ee;
+  --color-purple-300: #d8b4fe; --color-purple-400: #c084fc; --color-rose-300: #fda4af; --color-rose-400: #fb7185;
+}

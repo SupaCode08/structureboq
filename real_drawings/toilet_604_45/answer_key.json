@@ -1,0 +1,23 @@
+{
+  "note": "อ่านด้วยตาจากแบบห้องน้ำ สปช. 604/45 แผ่นที่ 4 (แปลนฐานราก คาน พื้น 1:50 + หน้าตัด) — สแกน ไม่มี BOQ ในไฟล์",
+  "readBy": "Claude reading the sheets, 2026-10-20 (before running the reader on this set)",
+  "split": "dev",
+  "scale": { "plans": 50 },
+  "grid": { "x": [0, 2.6, 5.2], "y": [0, 2.8] },
+  "members": [
+    { "tag": "F1", "type": "FOOTING", "count": 6, "width": 0.8, "depth": 0.8, "thickness": 0.2, "bottomRebar": "5+5-Ø9", "remark": "เข็ม 0.15x5.00 ม. 4 ต้น/ฐาน; ป้าย 'F1, C1'" },
+    { "tag": "C1", "type": "COLUMN", "count": 6, "width": 0.15, "depth": 0.15, "mainRebar": "4-Ø12", "stirrup": "Ø6@0.15", "remark": "ตอม่อ (ไม่มีเบอร์) 0.20x0.20 2+2-ø12 ป ø6@0.20" },
+    { "tag": "B", "type": "BEAM", "count": 2, "width": 0.15, "depth": 0.25, "topRebar": "2-Ø12", "bottomRebar": "2-Ø12", "stirrup": "Ø6@0.15" },
+    { "tag": "B1", "type": "BEAM", "count": 6, "width": 0.15, "depth": 0.3, "topRebar": "2-Ø15", "bottomRebar": "2-Ø15", "stirrup": "Ø6@0.15" },
+    { "tag": "B2", "type": "BEAM", "count": 2, "width": 0.15, "depth": 0.3, "topRebar": "2-Ø12", "bottomRebar": "2-Ø12", "stirrup": "Ø6@0.15" },
+    { "tag": "B3", "type": "BEAM", "count": 1, "width": 0.2, "depth": 0.3, "topRebar": "2-Ø15", "bottomRebar": "2-Ø15", "stirrup": "Ø6@0.15" },
+    { "tag": "B4", "type": "BEAM", "count": 1, "width": 0.15, "depth": 0.4, "topRebar": "2-Ø15", "bottomRebar": "4-Ø15", "stirrup": "Ø6@0.20" },
+    { "tag": "B5", "type": "BEAM", "count": 1, "width": 0.2, "depth": 0.3, "topRebar": "2-Ø15", "bottomRebar": "3-Ø15", "stirrup": "Ø6@0.15" },
+    { "tag": "GS", "type": "SLAB", "thickness": 0.08, "topRebar": "Ø6@0.20", "remark": "พื้นวางบนดิน ทรายรองพื้น 0.10" }
+  ],
+  "conventions": [
+    "เหล็กเขียนเป็น ø ไม่ระบุชั้น (เหล็กกลม) รวมขนาด ø15 ตามมาตรฐานเหล็กกลมเก่า",
+    "ป้ายในผัง 'F1, C1' ที่จุดตัด; คาน B/B3/B4/B5 เขียนแนวตั้ง",
+    "กริดเสา 2.60 + 2.60 × 2.80 (แนวคาน B1 กลางอยู่ที่ 1.70 ไม่ใช่แนวเสา)"
+  ]
+}

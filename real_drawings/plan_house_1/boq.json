@@ -1,0 +1,204 @@
+{
+  "file_name": "แปลนบ้าน บ้านประหยัดแบบ 1.pdf",
+  "page_count": 15,
+  "legacy_font_pages": [],
+  "variants": [
+    "ฐานรากเสาเข็ม",
+    "ฐานรากแผ่"
+  ],
+  "lines": [],
+  "warnings": [],
+  "structural_by_variant": {
+    "ฐานรากเสาเข็ม": {
+      "piles_count": {
+        "quantity": 26,
+        "unit": "ต้น",
+        "sources": [
+          {
+            "text": "1.1  เสาเข็มหกเหลี่ยมกลวงขนาด 0.15  ยาว  6.00 ม.",
+            "quantity": 26,
+            "unit": "ต้น"
+          }
+        ]
+      },
+      "excavation_m3": {
+        "quantity": 7,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.2  ขุดดิน",
+            "quantity": 7,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "sand_m3": {
+        "quantity": 8,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.3  ทรายราดน้ำอัดแน่น",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "lean_concrete_m3": {
+        "quantity": 0.5,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.4  คอนกรีตหยาบ 1 : 3 : 5",
+            "quantity": 0.5,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "structural_concrete_m3": {
+        "quantity": 8,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.5  คอนกรีตโครงสร้าง 1 : 2 : 4",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "formwork_m2": {
+        "quantity": 60,
+        "unit": "ตร.ม.",
+        "sources": [
+          {
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 60,
+            "unit": "ตร.ม."
+          }
+        ]
+      },
+      "rebar_RB6_kg": {
+        "quantity": 74,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "1.7  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          }
+        ]
+      },
+      "rebar_RB9_kg": {
+        "quantity": 170,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          }
+        ]
+      },
+      "rebar_DB12_kg": {
+        "quantity": 300,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      }
+    },
+    "ฐานรากแผ่": {
+      "excavation_m3": {
+        "quantity": 7,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.1  ขุดดิน",
+            "quantity": 7,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "sand_m3": {
+        "quantity": 8,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.2  ทรายราดน้ำอัดแน่น",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "lean_concrete_m3": {
+        "quantity": 0.5,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.3  คอนกรีตหยาบ 1:3:5",
+            "quantity": 0.5,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "structural_concrete_m3": {
+        "quantity": 8,
+        "unit": "ลบ.ม.",
+        "sources": [
+          {
+            "text": "1.4  คอนกรีตโครงสร้าง 1:2:4",
+            "quantity": 8,
+            "unit": "ลบ.ม."
+          }
+        ]
+      },
+      "formwork_m2": {
+        "quantity": 60,
+        "unit": "ตร.ม.",
+        "sources": [
+          {
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 60,
+            "unit": "ตร.ม."
+          }
+        ]
+      },
+      "rebar_RB6_kg": {
+        "quantity": 74,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "1.6  เหล็กเสริม SR  -  24  Dia   6  มม.",
+            "quantity": 74,
+            "unit": "กก."
+          }
+        ]
+      },
+      "rebar_RB9_kg": {
+        "quantity": 170,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  24  Dia   9  มม.",
+            "quantity": 170,
+            "unit": "กก."
+          }
+        ]
+      },
+      "rebar_DB12_kg": {
+        "quantity": 300,
+        "unit": "กก.",
+        "sources": [
+          {
+            "text": "-  เหล็กเสริม SR  -  30  Dia   12  มม.",
+            "quantity": 300,
+            "unit": "กก."
+          }
+        ]
+      }
+    }
+  }
+}

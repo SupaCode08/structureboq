@@ -1,0 +1,42 @@
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "test": "node --test src/engine/qsEngine.test.ts src/engine/pipeline.test.ts src/engine/reviewLog.test.ts && tsx --test src/pdf/offline.test.ts src/pdf/barNotation.test.ts src/pdf/geometry.test.ts src/pdf/sheetDetails.test.ts src/pdf/dxfParser.test.ts src/pdf/structuralNotesParser.test.ts src/pdf/docLifecycle.test.ts tools/compareWords.test.ts",
+    "test:paddle": "tsx --test tools/paddleFixtures.test.ts",
+    "test:vector": "tsx --test tools/vectorFixtures.test.ts",
+    "benchmark:offline": "tsx scripts/benchmark_offline.ts real_drawings/house_ready_1 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_2 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_3 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_4 && tsx scripts/benchmark_offline.ts real_drawings/dot32_pavilion",
+    "check:full": "npm run benchmark:offline && tsx scripts/eval_reading.ts real_drawings/house_ready_1 real_drawings/house_ready_2 real_drawings/house_ready_3 real_drawings/house_ready_4",
+    "datasets:sync": "tsx scripts/sync_datasets.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gutenye/ocr-models": "^1.4.2",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "lucide-react": "^0.546.0",
+    "onnxruntime-web": "^1.30.0",
+    "pdfjs-dist": "^4.10.38",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "tesseract.js": "^5.1.1",
+    "vite": "^8.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2"
+  }
+}

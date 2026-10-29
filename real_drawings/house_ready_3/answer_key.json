@@ -1,0 +1,128 @@
+{
+  "note": "อ่านด้วยตาจากแบบบ้าน 3 (สแกน, กรมโยธาฯ): น.25 ผังฐานรากแผ่ S-02, น.27 แปลนชั้น 1, น.33 ตารางเสา — เฉลยบางส่วน: จำนวน/ขนาดฐานรากและเสา และหน้าตัดคาน/พื้นจาก น.34 S-11 (ยังไม่ได้เฉลยจำนวนคาน)",
+  "readBy": "Claude reading the sheets, 2026-10-20",
+  "split": "dev",
+  "scale": {
+    "plans": 50,
+    "details": 20
+  },
+  "grid": {
+    "x": [
+      0,
+      2.7,
+      4.2,
+      6.6
+    ],
+    "y": [
+      0,
+      3.6,
+      5.4
+    ]
+  },
+  "members": [
+    {
+      "tag": "F0.90X0.90X0.30",
+      "type": "FOOTING",
+      "count": 3,
+      "width": 0.9,
+      "depth": 0.9
+    },
+    {
+      "tag": "F0.95X0.95",
+      "type": "FOOTING",
+      "count": 5,
+      "width": 0.95,
+      "depth": 0.95
+    },
+    {
+      "tag": "F0.50X0.50",
+      "type": "FOOTING",
+      "count": 1,
+      "width": 0.5,
+      "depth": 0.5
+    },
+    {
+      "tag": "F0.50X0.95",
+      "type": "FOOTING",
+      "count": 2,
+      "width": 0.5,
+      "depth": 0.95
+    },
+    {
+      "tag": "C1",
+      "type": "COLUMN",
+      "width": 0.2,
+      "depth": 0.2,
+      "mainRebar": "4-DB12",
+      "stirrup": "RB6@0.20"
+    },
+    {
+      "tag": "B1",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.4,
+      "topRebar": "2-DB16",
+      "bottomRebar": "2-DB16",
+      "stirrup": "RB6@0.175"
+    },
+    {
+      "tag": "B2",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.4,
+      "topRebar": "2-DB16",
+      "bottomRebar": "2-DB16+2-DB12",
+      "stirrup": "RB6@0.175",
+      "remark": "หน้าตัดชื่อ 2–2"
+    },
+    {
+      "tag": "B4",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.35,
+      "topRebar": "2-DB12",
+      "bottomRebar": "2-DB12",
+      "stirrup": "RB6@0.15"
+    },
+    {
+      "tag": "BST2",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.35,
+      "topRebar": "2-DB12",
+      "bottomRebar": "2-DB12",
+      "stirrup": "RB6@0.15"
+    },
+    {
+      "tag": "GB1",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.35,
+      "topRebar": "2-DB16",
+      "bottomRebar": "2-DB16",
+      "stirrup": "RB6@0.15",
+      "remark": "หน้าตัดชื่อ G1–G1"
+    },
+    {
+      "tag": "GB2",
+      "type": "BEAM",
+      "width": 0.15,
+      "depth": 0.35,
+      "topRebar": "2-DB12",
+      "bottomRebar": "2-DB12",
+      "stirrup": "RB6@0.15"
+    },
+    {
+      "tag": "S0",
+      "type": "SLAB",
+      "thickness": 0.1,
+      "topRebar": "RB6@0.20"
+    }
+  ],
+  "conventions": [
+    "ชื่อฐานรากมีขนาดในชื่อไม่มีวงเล็บ 'F0.95x0.95,C1'; เสาตอม่อ C2 ใต้ฐาน F0.50x…",
+    "กริดมีเส้นย่อยที่ 1.10 ม. (เสา C2 แถว C) ไม่มีวงกลมชื่อกริด — ไม่นับเป็นเส้นกริดหลัก",
+    "ตารางเสา: เสาเดียวกันตลอดความสูง 4ø12 มม. ป.ø6 มม.@0.20",
+    "ระยะปลอก 0.175 ม.; หน้าตัด G1–G1 = GB1 (ชื่อรอยตัดไม่ใช่ชื่อคาน)"
+  ]
+}

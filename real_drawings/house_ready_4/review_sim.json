@@ -1,0 +1,18 @@
+{
+  "note": "ค่าที่ผู้ตรวจอ่านจากแบบขยาย S-07..S-15 ของบ้าน 4 (ฐานราก น.33–36, คาน/เสา น.37, พื้น/บันได น.38–39) — นับเฉพาะบรรทัดที่เปลี่ยนค่าจากที่ระบบอ่านได้",
+  "acceptCompleteness": true,
+  "entries": [
+    { "tag": "C1", "patch": { "width": 0.2, "depth": 0.2, "topRebar": "4-DB12", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "F0.90X0.90X0.30", "patch": { "length": 0.2, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F0.95X0.95", "patch": { "length": 0.2, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F1.05X1.05", "patch": { "length": 0.25, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F1.45X0.95", "patch": { "length": 0.25, "bottomRebar": "7+8-DB12" } },
+    { "tag": "F0.95X0.50", "patch": { "length": 0.2, "bottomRebar": "5+3-DB12" } },
+    { "tag": "B1", "patch": { "width": 0.2, "depth": 0.4, "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B2", "patch": { "width": 0.2, "depth": 0.4, "topRebar": "2-DB16", "bottomRebar": "3-DB16", "stirrupRebar": "RB9@0.20" } },
+    { "tag": "B3", "patch": { "width": 0.2, "depth": 0.4, "topRebar": "2-DB16", "bottomRebar": "3-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "BX", "patch": { "width": 0.2, "depth": 0.25, "length": 1.08, "count": 2, "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "S1", "patch": { "length": 0.1, "topRebar": "RB9@0.25", "bottomRebar": "RB9@0.25" } },
+    { "tag": "SP", "patch": { "length": 0.05 } }
+  ]
+}

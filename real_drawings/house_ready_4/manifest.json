@@ -1,0 +1,12 @@
+{
+  "id": "dpt-house-ready-4",
+  "name": "บ้านสำเร็จรูป 4 (ระบบประสานพิกัด) — กรมโยธาธิการและผังเมือง",
+  "pdf": "Bann_Sumrejroop04.pdf",
+  "source": "https://www.yotathai.com/plan/house-ready-4",
+  "structuralPages": "16,23-41",
+  "boqPages": "46-67",
+  "boqOcr": "boq_ocr.json",
+  "boqJson": "boq.json",
+  "boqVariant": "แผ่",
+  "footingVariant": "แผ่"
+}

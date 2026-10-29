@@ -1,0 +1,11 @@
+{
+  "id": "dpt-house-ready-1",
+  "name": "บ้านสำเร็จรูป 1 (ระบบประสานพิกัด) — กรมโยธาธิการและผังเมือง",
+  "pdf": "Bann_Sumrejroop01.pdf",
+  "source": "https://www.yotathai.com/plan/house-ready-1",
+  "structuralPages": "16,24-32",
+  "visionCache": "vision_sheets.json",
+  "boqJson": "boq.json",
+  "boqVariant": "ฐานรากแผ่",
+  "footingVariant": "แผ่"
+}

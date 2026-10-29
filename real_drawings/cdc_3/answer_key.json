@@ -1,0 +1,22 @@
+{
+  "note": "อ่านด้วยตาจากแบบ ศพด.3: น.10 แปลนคานหลังคา (1:100), น.14 แบบขยาย — จำนวนใส่เฉพาะคานหลังคาที่นับครบ; ชุดทดสอบแยก",
+  "readBy": "Claude reading the scanned sheets, 2026-10-19",
+  "split": "heldout",
+  "scale": { "plans": 100, "details": 20 },
+  "grid": { "x": [0, 4.0, 8.0, 12.0, 16.0, 20.0], "y": [0, 4.0, 7.0, 10.0, 13.5, 16.5, 20.0, 23.0] },
+  "members": [
+    { "tag": "F1", "type": "FOOTING", "width": 1.2, "depth": 1.2, "thickness": 0.25, "bottomRebar": "RB12@0.15" },
+    { "tag": "F2", "type": "FOOTING", "width": 1.0, "depth": 1.0, "thickness": 0.25, "bottomRebar": "RB12@0.15" },
+    { "tag": "C1", "type": "COLUMN", "width": 0.2, "depth": 0.2, "mainRebar": "4-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GB1", "type": "BEAM", "width": 0.15, "depth": 0.4, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GB2", "type": "BEAM", "width": 0.15, "depth": 0.4, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GB3", "type": "BEAM", "width": 0.15, "depth": 0.4, "topRebar": "3-RB12+2-DB16", "bottomRebar": "2-DB16+3-RB12", "stirrup": "RB6@0.15" },
+    { "tag": "RB1", "type": "BEAM", "count": 8, "width": 0.15, "depth": 0.35, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "RB2", "type": "BEAM", "count": 27, "width": 0.15, "depth": 0.35, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20" },
+    { "tag": "GS", "type": "SLAB", "thickness": 0.1, "topRebar": "RB6@0.25" }
+  ],
+  "conventions": [
+    "กริดกลับด้าน: ตัวอักษร A–F ตามแนวนอน ตัวเลข 1–8 ตามแนวตั้ง",
+    "T1/T2 ในผังหลังคาเป็นโครงถักเหล็ก ไม่ใช่ ค.ส.ล."
+  ]
+}

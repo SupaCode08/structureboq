@@ -1,0 +1,1207 @@
+{
+  "name": "บ้านครอบครัวไทยเป็นสุข 5 (แบบบ้านเพื่อประชาชน — กรมโยธาธิการและผังเมือง)",
+  "variant": "บ้านไทยเป็นสุข5(ไม่ตอกเข็ม)",
+  "engine": "paddleocr + tesseract.js (offline)",
+  "generatedAt": "2026-10-23T18:55:48.219Z",
+  "report": {
+    "rows": [
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 92,
+        "diff": -92,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              6,
+              1,
+              7
+            ],
+            "text": "1.2 ขุดดิน",
+            "quantity": 92,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "sand_m3",
+        "label": "ทรายรองพื้น/ทรายอัดแน่น",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 2,
+        "diff": -2,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              7,
+              1,
+              8
+            ],
+            "text": "1.3 ทรายราดน้ำอัดแน่น",
+            "quantity": 2,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "lean_concrete_m3",
+        "label": "คอนกรีตหยาบ",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 1,
+        "diff": -1,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              8,
+              1,
+              9
+            ],
+            "text": "1.4 คอนกรีตหยาบ",
+            "quantity": 1,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "unit": "ลบ.ม.",
+        "system": 4.23,
+        "boq": 36,
+        "diff": -31.767,
+        "pct": -88.2,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              9,
+              1,
+              10
+            ],
+            "text": "1.5 คอนกรีตโครงสร้าง ค.1",
+            "quantity": 36,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "unit": "ตร.ม.",
+        "system": 58.69,
+        "boq": 312,
+        "diff": -253.311,
+        "pct": -81.2,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              17,
+              1,
+              18
+            ],
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 312,
+            "unit": "ตร.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "unit": "กก.",
+        "system": 476.24,
+        "boq": 3466,
+        "diff": -2989.757,
+        "pct": -86.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              10,
+              1,
+              11
+            ],
+            "text": "1.6 เหล็ก SR 24 Ø 6 มม.",
+            "quantity": 753,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              11,
+              1,
+              12
+            ],
+            "text": "- เหล็ก SR 24 Ø 9 มม.",
+            "quantity": 474,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              12,
+              1,
+              13
+            ],
+            "text": "- เหล็ก SD 30 Ø 12 มม.",
+            "quantity": 544,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              13,
+              1,
+              14
+            ],
+            "text": "- เหล็ก SD 30 Ø 16 มม.",
+            "quantity": 1431,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              14,
+              1,
+              15
+            ],
+            "text": "- เหล็ก SD 30 Ø 20 มม.",
+            "quantity": 264,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB6_kg",
+        "label": "เหล็ก RB6 (SR24)",
+        "unit": "กก.",
+        "system": 103.3,
+        "boq": 753,
+        "diff": -649.699,
+        "pct": -86.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              10,
+              1,
+              11
+            ],
+            "text": "1.6 เหล็ก SR 24 Ø 6 มม.",
+            "quantity": 753,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB9_kg",
+        "label": "เหล็ก RB9 (SR24)",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 474,
+        "diff": -474,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              11,
+              1,
+              12
+            ],
+            "text": "- เหล็ก SR 24 Ø 9 มม.",
+            "quantity": 474,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB12_kg",
+        "label": "เหล็ก DB12 (SD40)",
+        "unit": "กก.",
+        "system": 227.06,
+        "boq": 544,
+        "diff": -316.944,
+        "pct": -58.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-035",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              12,
+              1,
+              13
+            ],
+            "text": "- เหล็ก SD 30 Ø 12 มม.",
+            "quantity": 544,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB16_kg",
+        "label": "เหล็ก DB16 (SD40)",
+        "unit": "กก.",
+        "system": 145.89,
+        "boq": 1431,
+        "diff": -1285.114,
+        "pct": -89.8,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-034",
+          "QS-B-045"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              13,
+              1,
+              14
+            ],
+            "text": "- เหล็ก SD 30 Ø 16 มม.",
+            "quantity": 1431,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB20_kg",
+        "label": "เหล็ก DB20",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 264,
+        "diff": -264,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              14,
+              1,
+              15
+            ],
+            "text": "- เหล็ก SD 30 Ø 20 มม.",
+            "quantity": 264,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "precast_plank_m2",
+        "label": "แผ่นพื้นสำเร็จรูป",
+        "unit": "ตร.ม.",
+        "system": 0,
+        "boq": 114,
+        "diff": -114,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              21,
+              1,
+              22
+            ],
+            "text": "1.8 พื้นสำเร็จรูป หนา 5 มม.",
+            "quantity": 114,
+            "unit": "ตร.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      }
+    ],
+    "headline": [
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "pct": -88.2,
+        "verdict": "off"
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "pct": -81.2,
+        "verdict": "off"
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "pct": -86.3,
+        "verdict": "off"
+      },
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "pct": -100,
+        "verdict": "missing_in_takeoff"
+      }
+    ],
+    "meanAbsPct": 88.9,
+    "boqRoundedToInteger": true,
+    "notes": [
+      "ไม้แบบ: เทียบกับบรรทัด \"ค่าแรงแบบหล่อ\" 312 ตร.ม. (พื้นที่ผิวสัมผัส); ค่าวัสดุ 94 ตร.ม. = ใช้ซ้ำ ~0.30 เท่าของพื้นที่"
+    ]
+  },
+  "reportWithSuggestions": {
+    "rows": [
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 92,
+        "diff": -92,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              6,
+              1,
+              7
+            ],
+            "text": "1.2 ขุดดิน",
+            "quantity": 92,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "sand_m3",
+        "label": "ทรายรองพื้น/ทรายอัดแน่น",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 2,
+        "diff": -2,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              7,
+              1,
+              8
+            ],
+            "text": "1.3 ทรายราดน้ำอัดแน่น",
+            "quantity": 2,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "lean_concrete_m3",
+        "label": "คอนกรีตหยาบ",
+        "unit": "ลบ.ม.",
+        "system": 0,
+        "boq": 1,
+        "diff": -1,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              8,
+              1,
+              9
+            ],
+            "text": "1.4 คอนกรีตหยาบ",
+            "quantity": 1,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "unit": "ลบ.ม.",
+        "system": 4.23,
+        "boq": 36,
+        "diff": -31.767,
+        "pct": -88.2,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              9,
+              1,
+              10
+            ],
+            "text": "1.5 คอนกรีตโครงสร้าง ค.1",
+            "quantity": 36,
+            "unit": "ลบ.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "unit": "ตร.ม.",
+        "system": 58.69,
+        "boq": 312,
+        "diff": -253.311,
+        "pct": -81.2,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              17,
+              1,
+              18
+            ],
+            "text": "- ค่าแรงไม้แบบ",
+            "quantity": 312,
+            "unit": "ตร.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "unit": "กก.",
+        "system": 476.24,
+        "boq": 3466,
+        "diff": -2989.757,
+        "pct": -86.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              10,
+              1,
+              11
+            ],
+            "text": "1.6 เหล็ก SR 24 Ø 6 มม.",
+            "quantity": 753,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              11,
+              1,
+              12
+            ],
+            "text": "- เหล็ก SR 24 Ø 9 มม.",
+            "quantity": 474,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              12,
+              1,
+              13
+            ],
+            "text": "- เหล็ก SD 30 Ø 12 มม.",
+            "quantity": 544,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              13,
+              1,
+              14
+            ],
+            "text": "- เหล็ก SD 30 Ø 16 มม.",
+            "quantity": 1431,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          },
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              14,
+              1,
+              15
+            ],
+            "text": "- เหล็ก SD 30 Ø 20 มม.",
+            "quantity": 264,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB6_kg",
+        "label": "เหล็ก RB6 (SR24)",
+        "unit": "กก.",
+        "system": 103.3,
+        "boq": 753,
+        "diff": -649.699,
+        "pct": -86.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-034",
+          "QS-B-035",
+          "QS-C-036",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-C-044",
+          "QS-B-045",
+          "QS-B-046",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              10,
+              1,
+              11
+            ],
+            "text": "1.6 เหล็ก SR 24 Ø 6 มม.",
+            "quantity": 753,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_RB9_kg",
+        "label": "เหล็ก RB9 (SR24)",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 474,
+        "diff": -474,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              11,
+              1,
+              12
+            ],
+            "text": "- เหล็ก SR 24 Ø 9 มม.",
+            "quantity": 474,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB12_kg",
+        "label": "เหล็ก DB12 (SD40)",
+        "unit": "กก.",
+        "system": 227.06,
+        "boq": 544,
+        "diff": -316.944,
+        "pct": -58.3,
+        "verdict": "off",
+        "itemIds": [
+          "QS-B-027",
+          "QS-B-028",
+          "QS-B-029",
+          "QS-B-030",
+          "QS-B-031",
+          "QS-B-032",
+          "QS-B-033",
+          "QS-B-035",
+          "QS-B-037",
+          "QS-B-038",
+          "QS-B-039",
+          "QS-B-040",
+          "QS-B-041",
+          "QS-B-042",
+          "QS-B-043",
+          "QS-B-046",
+          "QS-S-047",
+          "QS-B-048",
+          "QS-B-049",
+          "QS-B-050",
+          "QS-B-051"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              12,
+              1,
+              13
+            ],
+            "text": "- เหล็ก SD 30 Ø 12 มม.",
+            "quantity": 544,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB16_kg",
+        "label": "เหล็ก DB16 (SD40)",
+        "unit": "กก.",
+        "system": 145.89,
+        "boq": 1431,
+        "diff": -1285.114,
+        "pct": -89.8,
+        "verdict": "off",
+        "itemIds": [
+          "QS-C-001",
+          "QS-C-007",
+          "QS-C-009",
+          "QS-C-017",
+          "QS-C-021",
+          "QS-C-022",
+          "QS-C-023",
+          "QS-C-024",
+          "QS-C-025",
+          "QS-B-026",
+          "QS-B-034",
+          "QS-B-045"
+        ],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              13,
+              1,
+              14
+            ],
+            "text": "- เหล็ก SD 30 Ø 16 มม.",
+            "quantity": 1431,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "rebar_DB20_kg",
+        "label": "เหล็ก DB20",
+        "unit": "กก.",
+        "system": 0,
+        "boq": 264,
+        "diff": -264,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              14,
+              1,
+              15
+            ],
+            "text": "- เหล็ก SD 30 Ø 20 มม.",
+            "quantity": 264,
+            "unit": "กก.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      },
+      {
+        "key": "precast_plank_m2",
+        "label": "แผ่นพื้นสำเร็จรูป",
+        "unit": "ตร.ม.",
+        "system": 0,
+        "boq": 114,
+        "diff": -114,
+        "pct": -100,
+        "verdict": "missing_in_takeoff",
+        "itemIds": [],
+        "boqSources": [
+          {
+            "page": 2,
+            "bbox": [
+              0,
+              21,
+              1,
+              22
+            ],
+            "text": "1.8 พื้นสำเร็จรูป หนา 5 มม.",
+            "quantity": 114,
+            "unit": "ตร.ม.",
+            "page_width": 1,
+            "page_height": 369
+          }
+        ]
+      }
+    ],
+    "headline": [
+      {
+        "key": "structural_concrete_m3",
+        "label": "คอนกรีตโครงสร้าง",
+        "pct": -88.2,
+        "verdict": "off"
+      },
+      {
+        "key": "formwork_m2",
+        "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
+        "pct": -81.2,
+        "verdict": "off"
+      },
+      {
+        "key": "rebar_total_kg",
+        "label": "เหล็กเสริมรวม",
+        "pct": -86.3,
+        "verdict": "off"
+      },
+      {
+        "key": "excavation_m3",
+        "label": "ขุดดิน",
+        "pct": -100,
+        "verdict": "missing_in_takeoff"
+      }
+    ],
+    "meanAbsPct": 88.9,
+    "boqRoundedToInteger": true,
+    "notes": [
+      "ไม้แบบ: เทียบกับบรรทัด \"ค่าแรงแบบหล่อ\" 312 ตร.ม. (พื้นที่ผิวสัมผัส); ค่าวัสดุ 94 ตร.ม. = ใช้ซ้ำ ~0.30 เท่าของพื้นที่"
+    ]
+  },
+  "reportAfterReview": null,
+  "reviewEdits": 0,
+  "notes": [
+    "หน้า 19: มาตราส่วนที่อ่านได้ 1:100 ไม่ตรงกับระยะเส้นบอกระยะ — ใช้ 1:40 ตามระยะที่วาด",
+    "แบบมีผังฐานราก 3 ทางเลือก (แปลนฐานรากเสาเข็ม / แปลนคาน ชั้น 1 / แปลนฐานรากเสาเข็ม); ใช้: แปลนฐานรากเสาเข็ม",
+    "แบบขยายกำหนด B1 ไว้ (หน้า 21) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด GS ไว้ (หน้า 22) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด S1 ไว้ (หน้า 22) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด S2 ไว้ (หน้า 22) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด B6N ไว้ (หน้า 22) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด B3A ไว้ (หน้า 23) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด B4 ไว้ (หน้า 23) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "แบบขยายกำหนด B2D ไว้ (หน้า 23) แต่ไม่พบในผัง — อาจถอดตกหล่น",
+    "ฐานราก 16 ตำแหน่ง แต่มีตอม่อ 9 ต้น — ตรวจเสาตอม่อที่ขาด"
+  ]
+}

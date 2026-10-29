@@ -1,0 +1,19 @@
+{
+  "note": "อ่านด้วยตาจากแบบศาลาพักคอย กรมการท่องเที่ยว DOT.32/2563: น.18 ST-03 แปลนฐานราก (เข็ม / แผ่), น.19 ST-04 แปลนโครงสร้างพื้น, น.20 ST-05 ขยายคาน/ตอม่อ/พื้น, น.21 ST-06 ขยายฐานราก — ชุดฐานแผ่",
+  "readBy": "Claude reading the sheets, 2026-10-20 (before running the reader on this set)",
+  "split": "dev",
+  "scale": { "plans": 50, "details": 20 },
+  "grid": { "x": [0, 2.5], "y": [0, 2.0, 4.0] },
+  "members": [
+    { "tag": "F", "type": "FOOTING", "count": 6, "width": 1.2, "depth": 1.2, "thickness": 0.25, "bottomRebar": "7+7-DB12", "remark": "ฐานแผ่ 1.20x1.20 หนา 0.25; ป้ายในผัง 'F,C'" },
+    { "tag": "C", "type": "COLUMN", "count": 6, "width": 0.25, "depth": 0.25, "mainRebar": "4-DB12", "stirrup": "RB6@0.15", "remark": "ตอม่อ C ค.ส.ล. (เสาบนเป็นเหล็กกล่อง 150x150x5.0 ไม่ใช่ ค.ส.ล.)" },
+    { "tag": "GB1", "type": "BEAM", "width": 0.2, "depth": 0.35, "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrup": "RB6@0.15" },
+    { "tag": "GB1'", "type": "BEAM", "width": 0.2, "depth": 0.35, "topRebar": "3-DB12", "bottomRebar": "2-DB12", "stirrup": "RB6@0.15" },
+    { "tag": "S", "type": "SLAB", "thickness": 0.1, "remark": "RB9@0.25 เสริมพิเศษ + เหล็กคอม้า L/4" }
+  ],
+  "conventions": [
+    "แบบดิจิทัล มีชั้นข้อความ (ไม่ต้อง OCR)",
+    "สองผังฐานรากในแผ่นเดียว: เข็ม (ซ้าย) และ แผ่ (ขวา) — BOQ ชุดนี้คือฐานแผ่",
+    "เบอร์ฐานรากไม่มีเลข: 'F,C'"
+  ]
+}

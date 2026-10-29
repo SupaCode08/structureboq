@@ -1,0 +1,3 @@
+# Only for the sample generators scripts/generate_sample_pdf.py and scripts/generate_sample_dxf.py
+PyMuPDF>=1.24.0
+ezdxf>=1.4.0

@@ -1,0 +1,6 @@
+{
+  "name": "StructBOQ - AI Construction Quantity Surveying",
+  "description": "Browser-only Quantity Surveying MVP for Structural Concrete (Beams & Columns) from PDF and DXF construction drawings with formula traceability, engineering validation, and Excel export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

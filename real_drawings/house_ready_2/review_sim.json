@@ -1,0 +1,25 @@
+{
+  "note": "ค่าที่ผู้ตรวจอ่านจากแบบขยาย S-12..S-17 (ตารางเสา/คาน/ฐานราก/พื้น) — นับเฉพาะบรรทัดที่เปลี่ยนค่าจากที่ระบบอ่านได้",
+  "acceptCompleteness": true,
+  "entries": [
+    { "tag": "C1", "patch": { "width": 0.2, "depth": 0.2, "topRebar": "4-DB12", "stirrupRebar": "RB6@0.20" } },
+    { "tag": "F0.90X0.90X0.30", "patch": { "length": 0.2, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F0.95X0.95", "patch": { "length": 0.2, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F1.05X1.05", "patch": { "length": 0.25, "bottomRebar": "5+5-DB12" } },
+    { "tag": "F1.45X0.95", "patch": { "length": 0.25, "bottomRebar": "7+8-DB12" } },
+    { "tag": "BA", "patch": { "width": 0.15, "depth": 0.3, "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B1", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B2", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB12", "bottomRebar": "3-DB12", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B3", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B3X", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "3-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B4", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB16+1-DB12", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B4A", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB16", "bottomRebar": "2-DB16+1-DB12", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B4X", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "3-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B5", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "2-DB16", "bottomRebar": "4-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B5A", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "4-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.175" } },
+    { "tag": "B5X", "patch": { "width": 0.2, "depth": 0.35, "topRebar": "3-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "S0", "patch": { "length": 0.1, "topRebar": "RB9@0.25" } },
+    { "tag": "S1", "patch": { "length": 0.1, "topRebar": "RB9@0.25", "bottomRebar": "RB9@0.25" } },
+    { "tag": "SP", "patch": { "length": 0.05 } }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "note": "ค่าที่ผู้ตรวจกรอกในตารางหน้าตัด (อ่านจากแบบ S-05, S-06, S-07, S-09) — 1 บรรทัด = 1 การแก้ไข",
+  "acceptCompleteness": true,
+  "entries": [
+    { "tag": "C1", "patch": { "width": 0.2, "depth": 0.2, "topRebar": "4-DB12", "stirrupRebar": "RB6@0.20" } },
+    { "tag": "F0.90X0.90X0.30", "patch": { "length": 0.2, "bottomRebar": "6+6-DB12" } },
+    { "tag": "F0.95X0.95", "patch": { "length": 0.2, "bottomRebar": "5-DB12" } },
+    { "tag": "B1", "patch": { "width": 0.2, "depth": 0.3, "topRebar": "2-DB12", "bottomRebar": "3-DB12", "stirrupRebar": "RB6@0.15" } },
+    { "tag": "B2", "patch": { "topRebar": "2-DB20", "bottomRebar": "2-DB20", "stirrupRebar": "RB6@0.20" } },
+    { "tag": "B3", "patch": { "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.20" } },
+    { "tag": "S1", "patch": { "length": 0.1, "topRebar": "RB9@0.25" } },
+    { "tag": "GS", "patch": { "length": 0.1, "topRebar": "RB9@0.20" } },
+    { "tag": "S0", "patch": { "length": 0.1, "topRebar": "RB9@0.25" } },
+    { "tag": "ST1", "patch": { "width": 0.9, "depth": 0.125, "length": 3.6, "bottomRebar": "DB12@0.125", "topRebar": "RB9@0.20" } }
+  ]
+}

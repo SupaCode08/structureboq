@@ -1,0 +1,27 @@
+{
+  "note": "อ่านด้วยตาจากแบบ ศพด.1 (กรมส่งเสริมการปกครองท้องถิ่น) หน้า 18 ผังฐานราก, 19 แปลนโครงสร้าง (คานคอดิน), 20 แปลนโครงสร้างหลังคา, 22 ขยายฐานราก/คาน/เสา — ชุดทดสอบแยก (ไม่ใช้ปรับระบบ)",
+  "readBy": "Claude reading the scanned sheets, 2026-10-19",
+  "split": "dev",
+  "scale": { "plans": 100, "details": 20 },
+  "grid": { "x": [0, 4.0, 8.0, 14.0, 18.0], "y": [0, 3.0, 6.0, 9.0, 12.0] },
+  "members": [
+    { "tag": "F1", "type": "FOOTING", "count": 13, "width": 1.2, "depth": 1.2, "thickness": 0.25, "bottomRebar": "RB12@0.15", "page": 22 },
+    { "tag": "F2", "type": "FOOTING", "count": 9, "width": 1.0, "depth": 1.0, "thickness": 0.25, "bottomRebar": "RB12@0.15", "page": 22 },
+    { "tag": "C1", "type": "COLUMN", "width": 0.2, "depth": 0.2, "mainRebar": "4-RB12", "stirrup": "RB6@0.20", "page": 22, "remark": "แบบขยายเสา C1=C2 ยาวตลอด" },
+    { "tag": "GB1", "type": "BEAM", "count": 16, "width": 0.15, "depth": 0.4, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20", "page": 22 },
+    { "tag": "GB2", "type": "BEAM", "count": 9, "width": 0.15, "depth": 0.4, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20", "page": 22 },
+    { "tag": "GB3", "type": "BEAM", "count": 4, "width": 0.15, "depth": 0.4, "topRebar": "3-RB12+2-DB16", "bottomRebar": "2-DB16+3-RB12", "stirrup": "RB6@0.15", "page": 22, "remark": "แถว C ไม่มีเสาที่ 2: GB3 ช่วงเดียว C/1–C/3 ยาว 8 ม." },
+    { "tag": "B4", "type": "BEAM", "count": 2, "width": 0.15, "depth": 0.4, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.15", "page": 22, "remark": "คานบันไดลึก 0.20–0.40" },
+    { "tag": "RB1", "type": "BEAM", "count": 16, "width": 0.15, "depth": 0.35, "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrup": "RB6@0.20", "page": 22 },
+    { "tag": "RB2", "type": "BEAM", "count": 6, "width": 0.15, "depth": 0.35, "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrup": "RB6@0.20", "page": 22 },
+    { "tag": "GS", "type": "SLAB", "thickness": 0.1, "topRebar": "RB6@0.25", "page": 22, "remark": "พื้นวางบนดิน หนา 0.08–0.10" }
+  ],
+  "conventions": [
+    "ชื่อฐานรากไม่มีขนาด (F1, F2) — ขนาดอยู่ในชื่อแบบขยาย 'แบบขยายฐานราก F1' และตัวเลข 1.20x1.20 ใต้รูปตัด",
+    "ชื่อแบบขยายรวมหลายเบอร์: 'แบบขยายเสา C1=C2'",
+    "เหล็กเขียนแบบ 'จำนวน - RB ขนาด mm.' และ 'ป- RB6 mm.@ 0.20 m.' (ป = ปลอก)",
+    "ตะแกรงฐานรากเขียนเป็นระยะห่าง 'Ø 12mm.@0.15m.' ไม่ใช่จำนวนเส้น",
+    "เบอร์คานหลังคา RB1/RB2 ชนกับสัญลักษณ์เหล็กกลม RB12 — แยกด้วยรูปแบบ: เบอร์อยู่โดด ๆ ในผัง, เหล็กมีจำนวนนำหน้า",
+    "ผังมาตราส่วน 1:100 (บ้าน DPT ใช้ 1:50)"
+  ]
+}
