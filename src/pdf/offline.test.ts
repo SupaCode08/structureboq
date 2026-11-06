@@ -7,7 +7,7 @@ import { parseScheduleLine } from './scheduleParser.ts';
 import { readSheets, isDrawingIndexSheet } from './sheetReader.ts';
 import { extractSmallStrokes, rasterize } from './vectorText.ts';
 import { parseDxf } from './dxfParser.ts';
-import { ocrPdfPage } from './pdfOcrPipeline.ts';
+import { ocrPdfPage, parsePageSpec, partitionDrawingPages } from './pdfOcrPipeline.ts';
 import type { OcrWord, PageOcr } from './types.ts';
 
 const VP = { width: 842, height: 595, transform: [1, 0, 0, -1, 0, 595] };
@@ -248,4 +248,150 @@ test('DPT House 1 Page 26: column stubs resolved to C1 instead of C?', async () 
   assert.ok(cols.length >= 6, 'Must detect columns on framing plan');
   assert.ok(cols.every(c => c.tag === 'C1'), 'All columns must be resolved to C1 (no C?)');
   assert.ok(cols.some(c => c.from_grid === 'C/1'), 'Must have column at C/1');
+});
+
+test('Scanned page with skew=0 (already deskewed in place) preserves exact words and hsegs [x0, y, x1]', async () => {
+  const OPS = { save: 1, restore: 2, transform: 3, constructPath: 4, moveTo: 5, lineTo: 6, curveTo: 7, curveTo2: 8, curveTo3: 9, closePath: 10, rectangle: 11, paintImageXObject: 12 };
+  const page = { getViewport: () => ({ width: 842, height: 595, transform: [1, 0, 0, 1, 0, 0] }), getOperatorList: async () => ({ fnArray: [OPS.paintImageXObject], argsArray: [['img0']] }) };
+  const wordsIn: OcrWord[] = Array.from({ length: 6 }, (_, i) => ({ text: `F${i + 1}`, conf: 95, vertical: false, x0: 0.1 * (i + 1), y0: 0.2, x1: 0.1 * (i + 1) + 0.05, y1: 0.25 }));
+  const r = await ocrPdfPage(page, 1, {
+    worker: { recognize: async () => ({ data: { words: [] } }) },
+    OPS,
+    toImage: (d: Uint8Array) => d,
+    renderPage: async () => ({ image: null, width: 4680, height: 3300, raster: { data: new Uint8Array(16), width: 4, height: 4 }, skew: 0, lines: { h: [[0.1, 0.5, 0.9]], v: [[0.5, 0.1, 0.9]] }, circles: [[0.5, 0.5, 0.02]] }),
+    readScan: async () => wordsIn,
+  });
+  assert.equal(r.kind, 'raster');
+  assert.deepEqual(r.words, wordsIn);
+  assert.deepEqual(r.hsegs, [[0.1, 0.5, 0.9]]);
+});
+
+test('parsePageSpec: handles normal pages, ranges, reversed ranges, negative/invalid tokens, out-of-range, and empty specs', () => {
+  // Empty / whitespace -> undefined (automatic structural-only mode)
+  const w0: string[] = [];
+  assert.equal(parsePageSpec(undefined, 20, w0), undefined);
+  assert.equal(parsePageSpec('', 20, w0), undefined);
+  assert.equal(parsePageSpec('   ', 20, w0), undefined);
+  assert.deepEqual(w0, []);
+
+  // Normal comma-separated pages
+  const w1: string[] = [];
+  assert.deepEqual(parsePageSpec('1,3,5', 20, w1), [1, 3, 5]);
+  assert.deepEqual(w1, []);
+
+  // Page range
+  const w2: string[] = [];
+  assert.deepEqual(parsePageSpec('1-5', 20, w2), [1, 2, 3, 4, 5]);
+  assert.deepEqual(w2, []);
+
+  // Reversed range (e.g. 5-1 or 21-18) -> normalized + warning emitted
+  const w3: string[] = [];
+  assert.deepEqual(parsePageSpec('5-1', 20, w3), [1, 2, 3, 4, 5]);
+  assert.equal(w3.length, 1);
+  assert.match(w3[0], /5-1.*1-5/);
+
+  // Negative page numbers -> rejected with warning
+  const w4: string[] = [];
+  assert.deepEqual(parsePageSpec('-3, 2, -5--1', 20, w4), [2]);
+  assert.equal(w4.length, 1);
+  assert.match(w4[0], /รูปแบบเลขหน้าไม่ถูกต้อง/);
+
+  // Out-of-range page numbers -> kept within 1..max + warning emitted
+  const w5: string[] = [];
+  assert.deepEqual(parsePageSpec('2, 18-23, 30', 20, w5), [2, 18, 19, 20]);
+  assert.equal(w5.length, 1);
+  assert.match(w5[0], /เกินจำนวนหน้าทั้งหมด \(20 หน้า\)/);
+
+  // Non-numeric tokens
+  const w6: string[] = [];
+  assert.deepEqual(parsePageSpec('abc, 4, 1.5, 1-2-3', 20, w6), [4]);
+  assert.equal(w6.length, 1);
+  assert.match(w6[0], /รูปแบบเลขหน้าไม่ถูกต้อง/);
+
+  // Mixed input (duplicates, unsorted, valid range, reversed range, invalid, out-of-range)
+  const w7: string[] = [];
+  assert.deepEqual(parsePageSpec(' 5, 1-3, 3, 8-6, -2, abc, 99 ', 10, w7), [1, 2, 3, 5, 6, 7, 8]);
+  assert.equal(w7.length, 3);
+
+  // Input where no valid pages remain -> returns [] (not undefined) and warns user
+  const w8: string[] = [];
+  const resEmpty = parsePageSpec('99, -1, abc', 20, w8);
+  assert.deepEqual(resEmpty, []);
+  assert.ok(w8.some(msg => /ไม่มีเลขหน้าที่ใช้งานได้/.test(msg)));
+});
+
+test('partitionDrawingPages: separates OCR candidates, digital text sheets, and preserves ปร.4 BOQ pages', () => {
+  // 10-page document:
+  // p1..p2 = BOQ (ปร.4, digital text)
+  // p3..p4 = Architectural digital text sheets
+  // p5..p6 = Structural digital text sheets (like dot32_pavilion)
+  // p7     = Vector stroke-lettered sheet (has text layer >= 40 chars AND >= 200 small strokes)
+  // p8..p10= Scanned drawing sheets (no text layer)
+  const textPages = new Set([1, 2, 3, 4, 5, 6, 7]);
+  const strokeLettered = new Set([7]);
+  const boqPages = new Set([1, 2]);
+
+  // 1) Automatic mode (requested = undefined)
+  const auto = partitionDrawingPages(10, textPages, strokeLettered, boqPages, undefined);
+  assert.deepEqual(auto.ocrCandidates, [7, 8, 9, 10], 'Scanned and stroke-lettered pages go to OCR');
+  assert.deepEqual(auto.textSheetPages, [3, 4, 5, 6], 'Digital text pages (non-BOQ, non-stroke) go to textSheets');
+
+  // 2) User selects only scanned pages 8-9 -> digital text pages 3..6 are NOT leaked into textSheets
+  const scanOnly = partitionDrawingPages(10, textPages, strokeLettered, boqPages, [8, 9]);
+  assert.deepEqual(scanOnly.ocrCandidates, [8, 9]);
+  assert.deepEqual(scanOnly.textSheetPages, [], 'Unselected digital text pages must be excluded');
+
+  // 3) User selects only digital structural page 5 and scanned page 8 (plus accidentally includes BOQ page 1)
+  const mixed = partitionDrawingPages(10, textPages, strokeLettered, boqPages, [1, 5, 8]);
+  assert.deepEqual(mixed.ocrCandidates, [8]);
+  assert.deepEqual(mixed.textSheetPages, [5], 'Only selected digital text page 5 is included; BOQ page 1 is excluded from drawing sheets');
+
+  // 4) User entered invalid page spec resulting in requested = [] -> neither OCR nor textSheets run
+  const none = partitionDrawingPages(10, textPages, strokeLettered, boqPages, []);
+  assert.deepEqual(none.ocrCandidates, []);
+  assert.deepEqual(none.textSheetPages, []);
+});
+
+test('Tesseract canvas memory: toImage is not called when PaddleOCR succeeds, and is created lazily on fallback', async () => {
+  const OPS = { save: 1, restore: 2, transform: 3, constructPath: 4, moveTo: 5, lineTo: 6, curveTo: 7, curveTo2: 8, curveTo3: 9, closePath: 10, rectangle: 11, paintImageXObject: 12 };
+  const page = { getViewport: () => ({ width: 842, height: 595, transform: [1, 0, 0, 1, 0, 0] }), getOperatorList: async () => ({ fnArray: [OPS.paintImageXObject], argsArray: [['img0']] }) };
+  const paddleWordsOut: OcrWord[] = Array.from({ length: 6 }, (_, i) => ({ text: `B${i + 1}`, conf: 92, vertical: false, x0: 0.1 * (i + 1), y0: 0.2, x1: 0.1 * (i + 1) + 0.04, y1: 0.24 }));
+
+  let toImageCalls = 0;
+  const rOk = await ocrPdfPage(page, 1, {
+    worker: { recognize: async () => ({ data: { words: [] } }) },
+    OPS,
+    toImage: () => { toImageCalls++; return { width: 100, height: 100 }; },
+    renderPage: async () => ({ image: null, width: 6619, height: 4680, raster: { data: new Uint8Array(16), width: 4, height: 4 }, skew: 0 }),
+    readScan: async () => paddleWordsOut,
+  });
+  assert.equal(rOk.kind, 'raster');
+  assert.equal(toImageCalls, 0, 'Must not allocate Tesseract canvas when PaddleOCR succeeds');
+
+  // Fallback case: readScan fails -> toImage is called lazily from prep.raster and disposed (width=0)
+  const createdCanvases: { width: number; height: number }[] = [];
+  const rFallback = await ocrPdfPage(page, 1, {
+    worker: {
+      recognize: async () => ({
+        data: {
+          words: Array.from({ length: 15 }, (_, i) => ({
+            text: `C${i + 1}`,
+            confidence: 88,
+            bbox: { x0: 10 * i, y0: 10, x1: 10 * i + 8, y1: 20 },
+          })),
+        },
+      }),
+    },
+    OPS,
+    toImage: (_d: Uint8Array, w: number, h: number) => {
+      const c = { width: w, height: h };
+      createdCanvases.push(c);
+      return c;
+    },
+    renderPage: async () => ({ image: null, width: 400, height: 300, raster: { data: new Uint8Array(16), width: 4, height: 4 }, skew: 0 }),
+    readScan: async () => { throw new Error('worker failed'); },
+  });
+  assert.equal(rFallback.kind, 'raster');
+  assert.ok(createdCanvases.length >= 1, 'Must lazily create canvas on Tesseract fallback');
+  assert.ok(createdCanvases.every(c => c.width === 0 && c.height === 0), 'Fallback canvas must be zeroed after recognition');
 });

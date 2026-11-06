@@ -72,9 +72,9 @@ function deskewLines(lines: { h: [number, number, number][]; v: [number, number,
     const dx = (x - 0.5) * W, dy = (y - 0.5) * H;
     return [(Math.cos(sk) * dx + Math.sin(sk) * dy + W / 2) / W, (-Math.sin(sk) * dx + Math.cos(sk) * dy + H / 2) / H];
   };
-  const h: [number, number, number][] = lines.h.map(([x0, x1, y]) => {
+  const h: [number, number, number][] = lines.h.map(([x0, y, x1]) => {
     const [ax, ay] = turn(x0, y), [bx, by] = turn(x1, y);
-    return [Math.min(ax, bx), Math.max(ax, bx), (ay + by) / 2];
+    return [Math.min(ax, bx), (ay + by) / 2, Math.max(ax, bx)];
   });
   const v: [number, number, number][] = lines.v.map(([x, y0, y1]) => {
     const [ax, ay] = turn(x, y0), [bx, by] = turn(x, y1);
@@ -98,6 +98,13 @@ function deskewCircles(circles: [number, number, number][], skewDeg: number, W: 
 
 export type PageKind = 'vector_text' | 'raster' | 'blank';
 
+/** a page with this many lettering strokes is read as vector text, otherwise as a scan or image */
+const VECTOR_TEXT_MIN_STROKES = 200;
+export async function isVectorTextPage(page: PdfJsPage, OPS: OpsTable, maxLetterPt = 15): Promise<boolean> {
+  const ops = await page.getOperatorList();
+  return extractSmallStrokes(ops.fnArray, ops.argsArray, OPS, page.getViewport({ scale: 1 }).transform, maxLetterPt).small.length >= VECTOR_TEXT_MIN_STROKES;
+}
+
 export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, scale = 300 / 72): Promise<PageOcr & { kind: PageKind; smallStrokes: number }> {
   const vp = page.getViewport({ scale: 1 });
   const clock = (step: string, t0: number) => env.onTime?.(step, performance.now() - t0);
@@ -110,7 +117,7 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
   let kind: PageKind = 'blank';
   clock('strokes', t);
 
-  if (strokes.small.length >= 200) {
+  if (strokes.small.length >= VECTOR_TEXT_MIN_STROKES) {
     kind = 'vector_text';
     if (env.labelWorkers?.length) {
       env.onProgress?.(`หน้า ${pageNo}: อ่านตัวอักษรทีละป้าย`);
@@ -175,10 +182,11 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
         if (!rot && prep.lines) scanLines = prep.skew ? deskewLines(prep.lines, prep.skew, prep.width, prep.height) : prep.lines;
         if (!rot && prep.circles) scanCircles = prep.skew ? deskewCircles(prep.circles, prep.skew, prep.width, prep.height) : prep.circles;
         t = performance.now();
-        const wp = await ocrRaster(env.worker, prep.image, prep.width, prep.height);
+        const img = prep.image ?? (prep.raster ? await env.toImage(prep.raster.data, prep.width, prep.height) : null);
+        const wp = await ocrRaster(env.worker, img, prep.width, prep.height);
         clock(`ocr scan ${rot ? 'v' : 'h'}`, t);
-        if (prep.image && typeof prep.image.width === 'number') {
-          prep.image.width = 0; prep.image.height = 0;
+        if (img && typeof img.width === 'number') {
+          img.width = 0; img.height = 0;
         }
         const deskewedWp = prep.skew ? deskewed(wp, prep.skew, prep.width, prep.height) : wp;
         words.push(...(rot ? unrotate(deskewedWp) : deskewedWp.map(w => ({ ...w, vertical: false }))));
@@ -191,10 +199,11 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
           const raw = await env.renderPage(page, scale, rot, false);
           if (raw) {
             t = performance.now();
-            const wr = await ocrRaster(env.worker, raw.image, raw.width, raw.height);
+            const rawImg = raw.image ?? (raw.raster ? await env.toImage(raw.raster.data, raw.width, raw.height) : null);
+            const wr = await ocrRaster(env.worker, rawImg, raw.width, raw.height);
             clock(`ocr raw ${rot ? 'v' : 'h'}`, t);
-            if (raw.image && typeof raw.image.width === 'number') {
-              raw.image.width = 0; raw.image.height = 0;
+            if (rawImg && typeof rawImg.width === 'number') {
+              rawImg.width = 0; rawImg.height = 0;
             }
             words.push(...(rot ? unrotate(wr) : wr.map(w => ({ ...w, vertical: false }))));
           }
@@ -219,4 +228,71 @@ export function sheetId(words: OcrWord[]): string | undefined {
   const cand = words.filter(w => w.x0 > 0.8 && w.y0 > 0.8).map(w => w.text.replace(/[—–]/g, '-').toUpperCase()).find(t => /^[A-Z]{1,2}-?\d{2}$/.test(t));
   return cand?.replace(/^([A-Z]{1,2})-?/, '$1-');
 }
+
+/**
+ * Parses a user-supplied page specification (e.g. "1, 3, 5-8") against a document with `max` pages.
+ * - Empty / whitespace input returns `undefined` (preserving automatic structural-only detection).
+ * - Non-empty input returns a sorted deduplicated array of valid 1-based page numbers (`[]` if none valid)
+ *   and appends human-readable Thai warnings to `warnings` for reversed ranges, invalid tokens, or out-of-range pages.
+ */
+export function parsePageSpec(spec: string | undefined, max: number, warnings?: string[]): number[] | undefined {
+  if (!spec?.trim()) return undefined;
+  const out: number[] = [];
+  const invalid: string[] = [];
+  const over: string[] = [];
+  for (const raw of spec.split(',')) {
+    const part = raw.trim();
+    if (!part) continue;
+    const single = part.match(/^(\d+)$/);
+    if (single) {
+      const p = Number(single[1]);
+      if (p < 1) invalid.push(part);
+      else if (p > max) over.push(String(p));
+      else out.push(p);
+      continue;
+    }
+    const range = part.match(/^(\d+)\s*-\s*(\d+)$/);
+    if (range) {
+      const a = Number(range[1]), b = Number(range[2]);
+      if (a < 1 || b < 1) {
+        invalid.push(part);
+        continue;
+      }
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      if (a > b) warnings?.push(`ช่วงหน้า ${part} เรียงย้อนกลับ — ปรับเป็น ${lo}-${hi}`);
+      if (lo > max) {
+        over.push(lo === hi ? String(lo) : `${lo}-${hi}`);
+      } else {
+        if (hi > max) over.push(max + 1 === hi ? String(hi) : `${max + 1}-${hi}`);
+        const end = Math.min(hi, max);
+        for (let p = lo; p <= end; p++) out.push(p);
+      }
+      continue;
+    }
+    invalid.push(part);
+  }
+  if (invalid.length) warnings?.push(`รูปแบบเลขหน้าไม่ถูกต้อง (${invalid.join(', ')}) — ใช้เลขหน้าตั้งแต่ 1 ถึง ${max}`);
+  if (over.length) warnings?.push(`หน้า ${over.join(', ')} เกินจำนวนหน้าทั้งหมด (${max} หน้า) — ข้ามหน้าที่เกิน`);
+  const valid = [...new Set(out)].sort((x, y) => x - y);
+  if (!valid.length) warnings?.push(`ไม่มีเลขหน้าที่ใช้งานได้จากที่ระบุ ("${spec.trim()}") ในไฟล์ ${max} หน้า — กรุณาระบุเลขหน้า 1-${max}`);
+  return valid;
+}
+
+/**
+ * Partitions drawing pages into OCR candidates (scanned or stroke-lettered) and digital text sheets,
+ * excluding BOQ (ปร.4) pages and respecting user-requested page numbers when provided.
+ */
+export function partitionDrawingPages(
+  numPages: number,
+  textPages: ReadonlySet<number>,
+  strokeLettered: ReadonlySet<number>,
+  boqPages: ReadonlySet<number>,
+  requested?: number[],
+): { ocrCandidates: number[]; textSheetPages: number[] } {
+  const pool = (requested ?? Array.from({ length: numPages }, (_, i) => i + 1)).filter(p => p >= 1 && p <= numPages && !boqPages.has(p));
+  const ocrCandidates = pool.filter(p => !textPages.has(p) || strokeLettered.has(p));
+  const textSheetPages = pool.filter(p => textPages.has(p) && !strokeLettered.has(p));
+  return { ocrCandidates, textSheetPages };
+}
+
 

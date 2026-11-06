@@ -11,16 +11,26 @@ import type { ExtractedMember, MaterialSpecs } from '../engine/qsEngine';
 import { DEFAULT_MATERIAL_SPECS } from '../engine/qsEngine';
 import { mergeSheetReadings, DEFAULT_MERGE_ASSUMPTIONS, type CompletenessFinding, type SheetReading } from '../engine/sheetMerge';
 import type { BoqTotals } from '../engine/boqCompare';
-import { toPageText, pageTextToOcr } from './pdfText';
+import { toPageText, pageTextToOcr, readTextLayers, type ProcessLog } from './pdfText';
 import { parseBoqPages, boqTotalsByVariant } from './boqParser';
 import { scheduleMembersFromPage } from './scheduleParser';
-import { ocrPdfPage, sheetId, type PdfJsPage } from './pdfOcrPipeline';
+import { isVectorTextPage, ocrPdfPage, sheetId, parsePageSpec, partitionDrawingPages, type PdfJsPage } from './pdfOcrPipeline';
+export { parsePageSpec, partitionDrawingPages };
 import { readSheets } from './sheetReader';
+import { reconcileScheduleRows } from '../engine/sourceConflicts';
 import { ocrBoqPage } from './boqOcr';
 import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds } from './scanPrep';
 import { extractSmallStrokes, pageGeometry } from './vectorText';
-import { imageBoxesOnPage } from './imageBoxes';
+import { imageBoxesOnPage, imageGray } from './imageBoxes';
 import type { OcrWord, PageOcr, PageText } from './types';
+import { laneCount, mapLanes, raceAbort, serialize } from './lanes';
+import { cachedRead, cacheWrite, indexedDbStore, pageCacheKey, type CachedOcr, type PageCacheStore } from './pageCache';
+import { OCR_ID } from './ocrIdentity';
+import { timingSummary, type PageTiming } from './pdfText';
+
+let pageStore: PageCacheStore | null | undefined;
+/** this browser's page OCR cache (created on first use; null where IndexedDB is unavailable) */
+const store = () => (pageStore === undefined ? (pageStore = indexedDbStore()) : pageStore);
 import type { Raster } from './ocr';
 import { extractStructuralNotesFromWords, applyGeneralNotesToSpecs, type ExtractedGeneralNotes } from './structuralNotesParser';
 import detUrl from '../../node_modules/@gutenye/ocr-models/assets/ch_PP-OCRv4_det_infer.onnx?url';
@@ -86,7 +96,74 @@ function grayToCanvas(data: Uint8Array, w: number, h: number): HTMLCanvasElement
   return c;
 }
 
+/** Largest embedded image of a scanned page as a 400-DPI prepared raster (same logic as scripts/scanImage.ts). */
+async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true) {
+  const ops = await page.getOperatorList();
+  const vp1 = page.getViewport({ scale: 1 });
+  const vt = vp1.transform;
+  type M = number[];
+  const mul = (m: M, n: M): M => [
+    m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+    m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+    m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
+  ];
+  let ctm: M = vt;
+  const stack: M[] = [];
+  let best: any = null;
+  let bestM: M = vt;
+  for (let i = 0; i < ops.fnArray.length; i++) {
+    const fn = ops.fnArray[i];
+    if (fn === pdfjs.OPS.save) stack.push(ctm);
+    else if (fn === pdfjs.OPS.restore) ctm = stack.pop() || ctm;
+    else if (fn === pdfjs.OPS.transform) ctm = mul(ctm, ops.argsArray[i]);
+    if (fn !== pdfjs.OPS.paintImageXObject) continue;
+    const name: string = ops.argsArray[i][0];
+    const store = name.startsWith('g_') && page.commonObjs ? page.commonObjs : page.objs;
+    const rawImg: any = store ? await Promise.race([
+      new Promise(res => { try { store.get(name, res); } catch { res(null); } }),
+      new Promise(res => setTimeout(res, 5000, null)),
+    ]) : null;
+    const w = rawImg?.width || rawImg?.bitmap?.width || 0;
+    const h = rawImg?.height || rawImg?.bitmap?.height || 0;
+    if (w * h > ((best?.width || best?.bitmap?.width || 0) * (best?.height || best?.bitmap?.height || 0))) {
+      best = rawImg;
+      bestM = ctm;
+    }
+  }
+  const bestPx = best?.data ? best : bitmapPixels(best);
+  if (!bestPx?.data) return null;
+  const { width: w, height: h } = bestPx;
+  let gray = imageGray(bestPx);
+  if (!gray) return null;
+  const [dx, dy] = [bestM[0], bestM[1]];
+  const base = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 180) : (dy > 0 ? 90 : 270);
+  const rot = (base + (rotate90 ? 90 : 0)) % 360;
+  let W = w, H = h;
+  const rotate = (src: Uint8Array, sw: number, sh: number) => {
+    const out = new Uint8Array(sw * sh);
+    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) out[x * sh + (sh - 1 - y)] = src[y * sw + x];
+    return out;
+  };
+  for (let r = 0; r < rot; r += 90) { gray = rotate(gray, W, H); [W, H] = [H, W]; }
+  const targetLong = (Math.max(vp1.width, vp1.height) * 400) / 72;
+  const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
+  if (!prepared) return { image: grayToCanvas(gray, W, H), width: W, height: H, skew: 0 };
+  let prep = prepareScan(gray, W, H, k);
+  const skew = estimateSkew(prep);
+  if (Math.abs(skew) >= 0.1) prep = rotateRaster(prep, -skew);
+  const pxPerMm = Math.max(prep.width, prep.height) / ((Math.max(vp1.width, vp1.height) / 72) * 25.4);
+  const lines = rotate90 ? undefined : extractLines(prep, Math.round(pxPerMm * 3));
+  const endRings = lines && !rotate90 ? ringsAtLineEnds(prep, lines, pxPerMm) : [];
+  prep = removeLines(prep, Math.round(pxPerMm * 5));
+  const blobs = rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
+  const circles = rotate90 ? undefined
+    : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], ((b[1] - e[1]) * prep.height) / prep.width) < b[2] / 2))];
+  return { image: null, raster: prep, width: prep.width, height: prep.height, skew: 0, lines, circles };
+}
+
 export async function renderForOcr(page: any, scale: number, rotate90: boolean, prepared = true) {
+  const emb = await embeddedScanForOcr(page, rotate90, prepared).catch(() => null);
+  if (emb) return emb;
   const vp1 = page.getViewport({ scale: 1 });
   const maxDim = Math.max(vp1.width, vp1.height);
   // Cap max canvas dimension at 2400 px for crisp OCR on engineering drawings
@@ -116,7 +193,7 @@ export async function renderForOcr(page: any, scale: number, rotate90: boolean, 
   prep = removeLines(prep, Math.round(pxPerMm * 5));
   const blobs = rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
   const circles = rotate90 ? undefined : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], ((b[1] - e[1]) * prep.height) / prep.width) < b[2] / 2))];
-  return { image: grayToCanvas(prep.data, prep.width, prep.height), raster: prep, width: prep.width, height: prep.height, skew: Math.abs(skew) >= 0.1 ? skew : 0, lines, circles };
+  return { image: null, raster: prep, width: prep.width, height: prep.height, skew: 0, lines, circles };
 }
 
 export interface SheetClassification {
@@ -242,7 +319,9 @@ function bitmapPixels(img: any) {
   c.width = bm.width; c.height = bm.height;
   const ctx = c.getContext('2d')!;
   ctx.drawImage(bm, 0, 0);
-  return { width: bm.width, height: bm.height, kind: 3, data: ctx.getImageData(0, 0, bm.width, bm.height).data };
+  const px = { width: bm.width, height: bm.height, kind: 3, data: ctx.getImageData(0, 0, bm.width, bm.height).data };
+  c.width = 0; c.height = 0;
+  return px;
 }
 
 /** Drawn geometry of a sheet with a text layer (same as the offline cache: scripts/add_rects.ts). */
@@ -296,6 +375,19 @@ async function drawingThaiWorker() {
   return drawingThaiPromise;
 }
 
+/** one full set of the four OCR workers a vector page needs; more lanes read other pages at the same time */
+export interface OcrLane { worker: any; thai: any; turned: any[] }
+const extraLanes: Promise<OcrLane>[] = [];
+async function ocrLane(k: number): Promise<OcrLane> {
+  if (k === 0) { const [worker, thai, turned] = await Promise.all([ocrWorker(), drawingThaiWorker(), turnedWorkers()]); return { worker, thai, turned }; }
+  return (extraLanes[k] ??= (async () => {
+    const T = await import('tesseract.js');
+    const make = async (lang: string, psm: string) => { const w = await T.createWorker(lang); await w.setParameters({ tessedit_pageseg_mode: psm as any }); return w; };
+    const [worker, thai, ta, tb] = await Promise.all([make('eng', '6'), make('tha+eng', '11'), make('eng', '6'), make('tha+eng', '11')]);
+    return { worker, thai, turned: [ta, tb] };
+  })());
+}
+
 let turnedPromise: Promise<any[]> | null = null;
 /** second pair set up like ocrWorker + drawingThaiWorker: reads a vector page's turned raster while they read the flat one */
 async function turnedWorkers() {
@@ -314,40 +406,212 @@ async function turnedWorkers() {
 
 const paddles: (Worker | null)[] = [];
 let paddleCalls = 0;
-/** timing only: receives each worker's PaddleStats (+ initMs, loads, totalMs) for the page being read */
-let paddleStatsSink: ((worker: number, stats: any) => void) | null = null;
-/** One band of a scan read by PaddleOCR worker k (paddleWorker.ts). */
-function readBand(k: number, raster: Raster): Promise<OcrWord[]> {
+let webGpuAvailable: boolean | null = null;
+
+export interface WorkerOcrResult {
+  status: 'success' | 'failed' | 'cancelled';
+  words: OcrWord[];
+  provider: 'webgpu' | 'wasm';
+  error?: string;
+  stats?: any;
+}
+
+const activeWorkerPromises = new Set<(err: Error) => void>();
+
+export async function checkWebGpuAvailability(): Promise<boolean> {
+  if (webGpuAvailable !== null) return webGpuAvailable;
+  const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+  if (!nav?.gpu) {
+    webGpuAvailable = false;
+    return false;
+  }
+  try {
+    const adapter = await nav.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    webGpuAvailable = !!adapter;
+    return webGpuAvailable;
+  } catch {
+    webGpuAvailable = false;
+    return false;
+  }
+}
+
+/** One pass ('flat' | 'turned' | 'both') of a scan read by PaddleOCR worker k (paddleWorker.ts). */
+function readBand(
+  k: number,
+  raster: Raster,
+  pass: 'flat' | 'turned' | 'both' = 'both',
+  onStats?: (worker: number, stats: any) => void,
+  preferGpu = true,
+  abortSignal?: AbortSignal,
+): Promise<WorkerOcrResult> {
+  if (abortSignal?.aborted) {
+    return Promise.reject(new DOMException('OCR aborted by user', 'AbortError'));
+  }
+
   const w = (paddles[k] ??= new Worker(new URL('./paddleWorker.ts', import.meta.url), { type: 'module' }));
   const id = ++paddleCalls;
-  return new Promise((resolve, reject) => {
-    const done = (e: MessageEvent) => {
-      if (e.data.id !== id) return;
-      w.removeEventListener('message', done);
-      if (e.data.stats) paddleStatsSink?.(k, e.data.stats);
-      if (e.data.error) reject(new Error(e.data.error)); else resolve(e.data.words);
+
+  return new Promise<WorkerOcrResult>((resolve, reject) => {
+    let settled = false;
+
+    const cleanup = () => {
+      w.removeEventListener('message', onMessage);
+      w.removeEventListener('error', onError);
+      if (abortSignal) {
+        abortSignal.removeEventListener('abort', onAbort);
+      }
+      activeWorkerPromises.delete(settleReject);
     };
-    w.addEventListener('message', done);
-    w.addEventListener('error', e => { paddles[k] = null; reject(new Error(e.message || 'PaddleOCR worker failed')); }, { once: true });
-    w.postMessage({ id, raster, urls: { det: detUrl, rec: recUrl, dict: dictUrl } });
+
+    const settleResolve = (res: WorkerOcrResult) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(res);
+    };
+
+    const settleReject = (err: Error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(err);
+    };
+
+    const onAbort = () => {
+      settleReject(new DOMException('OCR aborted by user', 'AbortError'));
+    };
+
+    if (abortSignal) {
+      abortSignal.addEventListener('abort', onAbort, { once: true });
+    }
+
+    activeWorkerPromises.add(settleReject);
+
+    const onMessage = (e: MessageEvent) => {
+      if (!e.data || e.data.id !== id) return;
+      if (e.data.status === 'failed' || e.data.error) {
+        settleReject(new Error(e.data.error || 'PaddleOCR worker failed'));
+      } else if (e.data.status === 'cancelled') {
+        settleReject(new DOMException('OCR cancelled by worker', 'AbortError'));
+      } else {
+        if (e.data.stats && onStats) onStats(k, e.data.stats);
+        settleResolve({
+          status: 'success',
+          words: e.data.words || [],
+          provider: e.data.provider || 'wasm',
+          stats: e.data.stats,
+        });
+      }
+    };
+
+    const onError = (e: ErrorEvent) => {
+      paddles[k] = null;
+      settleReject(new Error(e.message || 'PaddleOCR worker crashed'));
+    };
+
+    w.addEventListener('message', onMessage);
+    w.addEventListener('error', onError, { once: true });
+    w.postMessage({ id, raster, urls: { det: detUrl, rec: recUrl, dict: dictUrl }, pass, preferGpu });
   });
 }
 
 /**
- * Scan read in horizontal bands, one single-thread worker each (the WASM runtime cannot use threads
- * inside a worker); bands overlap by 400 px and a word is kept by the band whose core holds its centre.
- * A failed worker makes the page fall back to tesseract.
+ * Full-image scan read by PaddleOCR:
+ *  - Primary: WebGPU 1-worker sequential baseline (`pass: 'both'`), preventing duplicate VRAM allocations,
+ *    utilizing Dynamic Width (`bucket=0`) with explicit per-tile/crop tensor disposal and 100% exact parity.
+ *  - Fallback: WASM 2-worker parallel baseline (`worker 0: flat`, `worker 1: turned`).
+ *  - Ultimate fallback: Tesseract if both workers fail.
  */
-export async function readScan(r: Raster): Promise<OcrWord[]> {
-  // Cap workers at 2 to keep Chrome memory ceiling < 250MB while maintaining high throughput
-  const n = Math.max(1, Math.min(2, (navigator.hardwareConcurrency || 2) - 1)), step = Math.ceil(r.height / n), over = 200;
-  const bands = Array.from({ length: n }, (_, k) => ({ c0: k * step, c1: Math.min(r.height, (k + 1) * step), y0: Math.max(0, k * step - over), y1: Math.min(r.height, (k + 1) * step + over) }));
-  const read = await Promise.all(bands.map((b, k) => readBand(k, { data: r.data.slice(b.y0 * r.width, b.y1 * r.width), width: r.width, height: b.y1 - b.y0 })));
-  return read.flatMap((ws, k) => {
-    const b = bands[k], h = b.y1 - b.y0;
-    return ws.map(w => ({ ...w, y0: (b.y0 + w.y0 * h) / r.height, y1: (b.y0 + w.y1 * h) / r.height }))
-      .filter(w => ((w.y0 + w.y1) / 2) * r.height >= b.c0 && ((w.y0 + w.y1) / 2) * r.height < b.c1);
-  });
+export async function readScan(
+  r: Raster,
+  onStats?: (worker: number, stats: any) => void,
+  abortSignal?: AbortSignal,
+): Promise<OcrWord[]> {
+  if (abortSignal?.aborted) {
+    throw new DOMException('OCR aborted by user', 'AbortError');
+  }
+
+  const hasGpu = await checkWebGpuAvailability();
+  if (hasGpu) {
+    try {
+      const res = await readBand(0, r, 'both', onStats, true, abortSignal);
+      // Requirements:
+      // When Worker returns status === 'success', accept the result immediately regardless of provider!
+      // Even if words is empty, it is a valid completed OCR pass. Never duplicate OCR!
+      if (res.status === 'success') {
+        if (res.provider === 'wasm') {
+          // Worker 0 fell back to WASM internally. Record so subsequent pages bypass WebGPU attempt.
+          webGpuAvailable = false;
+        }
+        return res.words;
+      }
+    } catch (gpuErr: any) {
+      if (gpuErr?.name === 'AbortError' || abortSignal?.aborted) {
+        throw gpuErr;
+      }
+      console.warn('[readScan] WebGPU execution failed; cleanly falling back to WASM 2-worker parallel:', gpuErr);
+      webGpuAvailable = false;
+    }
+  }
+
+  // Fallback: WASM 2-worker parallel baseline
+  const n = typeof navigator !== 'undefined' ? Math.max(1, Math.min(2, (navigator.hardwareConcurrency || 2) - 1)) : 1;
+  if (n < 2) {
+    const res = await readBand(0, r, 'both', onStats, false, abortSignal);
+    return res.words;
+  }
+  const [flatRes, turnedRes] = await Promise.all([
+    readBand(0, r, 'flat', onStats, false, abortSignal),
+    readBand(1, r, 'turned', onStats, false, abortSignal),
+  ]);
+  return [...flatRes.words, ...turnedRes.words];
+}
+
+/**
+ * Terminates all running OCR workers (PaddleOCR and Tesseract.js) and frees all
+ * associated memory (WASM heap, WebGPU buffers, language models).
+ */
+export async function terminateAllWorkers(): Promise<void> {
+  // Reject all pending worker promises immediately to prevent hung/dangling promises
+  for (const rejectActive of activeWorkerPromises) {
+    try {
+      rejectActive(new DOMException('Worker terminated by user or session reset', 'AbortError'));
+    } catch {}
+  }
+  activeWorkerPromises.clear();
+
+  // Terminate Paddle workers
+  for (let i = 0; i < paddles.length; i++) {
+    const w = paddles[i];
+    if (w) {
+      try { w.terminate(); } catch {}
+      paddles[i] = null;
+    }
+  }
+  // Terminate Tesseract workers
+  if (workerPromise) {
+    try { const w = await workerPromise; await w?.terminate?.(); } catch {}
+    workerPromise = null;
+  }
+  if (drawingThaiPromise) {
+    try { const w = await drawingThaiPromise; await w?.terminate?.(); } catch {}
+    drawingThaiPromise = null;
+  }
+  if (turnedPromise) {
+    try {
+      const ws = await turnedPromise;
+      for (const w of ws) await w?.terminate?.();
+    } catch {}
+    turnedPromise = null;
+  }
+  for (const lane of extraLanes.splice(0)) {
+    try { const l = await lane; for (const w of [l.worker, l.thai, ...l.turned]) await w?.terminate?.(); } catch {}
+  }
+  if (thaiWorkerPromise) {
+    try { const w = await thaiWorkerPromise; await w?.terminate?.(); } catch {}
+    thaiWorkerPromise = null;
+  }
+  clearPageCache();
 }
 
 let workerPromise: Promise<any> | null = null;
@@ -379,134 +643,183 @@ export interface BrowserExtraction {
   skipped: { tag: string; page: number; reason: string }[];
   extractedNotes?: ExtractedGeneralNotes;
   materialSpecs?: MaterialSpecs;
+  /** pages each step opened, by original page number */
+  processLog: ProcessLog;
+  /** the pages the user selected (undefined = whole file, structural sheets found automatically) */
+  requestedPages?: number[];
+  /** where the time went: phases, every page, peak JS heap where the browser reports it */
+  timing: PageTiming;
 }
-
-export function parsePageSpec(spec: string | undefined, max: number): number[] | undefined {
-  if (!spec?.trim()) return undefined;
-  const out = spec.split(',').flatMap(part => {
-    const [a, b] = part.trim().split('-').map(Number);
-    if (!a) return [];
-    return b ? Array.from({ length: Math.max(0, b - a + 1) }, (_, i) => a + i) : [a];
-  });
-  return [...new Set(out)].filter(p => p >= 1 && p <= max).sort((x, y) => x - y);
-}
-
-/** Sheet number from the title block, e.g. "S-04" (bottom-right corner of Thai drawing sheets). */
 
 export async function extractInBrowser(
   doc: PdfDoc,
   fileName: string,
-  opts: { pages?: string; footingVariant?: string; cachedOcr?: PageOcr[]; cachedBoqOcr?: PageText[] },
+  opts: { pages?: string; footingVariant?: string; cachedOcr?: PageOcr[]; cachedBoqOcr?: PageText[]; abortSignal?: AbortSignal; /** SHA-256 of the file: enables the page OCR cache */ fileSha?: string | null },
   onProgress: (msg: string, frac: number) => void,
 ): Promise<BrowserExtraction> {
-  clearPageCache();
-  // timing only (console summary at the end): where reading a file spends its time
-  const tStart = performance.now();
-  const phase: Record<string, number> = {};
-  const perPage: { page: number; how: string; ms: number; steps: string }[] = [];
-  const warnings: string[] = [];
-  const texts: PageText[] = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const vp = page.getViewport({ scale: 1 });
-    texts.push(toPageText(i, vp, (await page.getTextContent()) as any));
-    onProgress(`อ่านข้อความหน้า ${i}/${doc.numPages}`, (0.15 * i) / doc.numPages);
-  }
+  const checkAbort = () => {
+    if (opts.abortSignal?.aborted) {
+      const err = new Error('Extraction aborted by user');
+      err.name = 'AbortError';
+      throw err;
+    }
+  };
+  checkAbort();
+
+  const onAbort = () => {
+    terminateAllWorkers();
+  };
+  opts.abortSignal?.addEventListener('abort', onAbort, { once: true });
+
+  try {
+    clearPageCache();
+    // timing only (console summary at the end): where reading a file spends its time
+    const tStart = performance.now();
+    const phase: Record<string, number> = {};
+    const perPage: { page: number; how: string; ms: number; steps: string }[] = [];
+    let peakHeap = 0;
+    const heap = () => { const m = (performance as any).memory?.usedJSHeapSize; if (typeof m === 'number') peakHeap = Math.max(peakHeap, m); };
+    heap();
+    const warnings: string[] = [];
+    const processLog: ProcessLog = [];
+    // a selection limits every step, the text layer included: pages outside it are never opened
+    const requested = parsePageSpec(opts.pages, doc.numPages, warnings);
+    const inSel = (p: number) => !requested || requested.includes(p);
+    const texts: PageText[] = await readTextLayers(doc as any, requested, processLog, (i, n) => { checkAbort(); onProgress(`อ่านข้อความหน้า ${i}/${n}`, (0.15 * i) / n); });
 
   phase['text layer'] = performance.now() - tStart;
-  const boqDoc = parseBoqPages([...texts, ...(opts.cachedBoqOcr || [])], fileName);
+  const boqDoc = parseBoqPages([...texts, ...(opts.cachedBoqOcr || []).filter(t => inSel(t.page))], fileName);
   const totals = boqTotalsByVariant(boqDoc);
   const boq = boqDoc.lines.length && Object.keys(totals).length
     ? { fileName, variants: Object.keys(totals), structuralByVariant: totals, warnings: boqDoc.warnings, lineCount: boqDoc.lines.length }
     : null;
   const boqPages = new Set(boqDoc.lines.map(l => l.page));
-  const scheduleMembers = texts.filter(t => !boqPages.has(t.page)).flatMap(t => scheduleMembersFromPage(t, fileName));
+  // one tag in schedules on several pages: rows stay members, and their disagreements are recorded on each
+  const scheduleMembers = reconcileScheduleRows(texts.filter(t => !boqPages.has(t.page) && (!requested || requested.includes(t.page))).flatMap(t => scheduleMembersFromPage(t, fileName)));
   const textPages = new Set(texts.filter(t => t.items.map(i => i.str).join('').trim().length >= 40).map(t => t.page));
   const materialText = texts.filter(t => !boqPages.has(t.page)).flatMap(t => t.items.map(i => i.str)).join(' ');
 
-  let ocrPages: PageOcr[] = opts.cachedOcr || [];
+  let ocrPages: PageOcr[] = (opts.cachedOcr || []).filter(o => inSel(o.page));
   const sheetIds: Record<number, string> = {};
+  const strokeLettered = new Set<number>();
+  let ocrWallMs = 0, ocrLanes = 1;
   if (!ocrPages.length) {
-    const requested = parsePageSpec(opts.pages, doc.numPages);
     const textWords = async (p: number) => { const vp = (await doc.getPage(p)).getViewport({ scale: 1 }); return pageTextToOcr(texts[p - 1], vp.width, vp.height).words; };
-    const strokeLettered = new Set<number>();
     for (const p of textPages) {
-      if (boqPages.has(p) || (!requested && !sheetId(await textWords(p))?.startsWith('S'))) continue;
+      if (boqPages.has(p) || (requested ? !requested.includes(p) : !sheetId(await textWords(p))?.startsWith('S'))) continue;
       const pg = await doc.getPage(p);
+      processLog.push({ page: p, step: 'stroke-scan' });
       const ops = await pg.getOperatorList();
       if (extractSmallStrokes(ops.fnArray, ops.argsArray, pdfjs.OPS as any, pg.getViewport({ scale: 1 }).transform).small.length >= 200) strokeLettered.add(p);
     }
-    const candidates = requested || Array.from({ length: doc.numPages }, (_, i) => i + 1).filter(p => (!textPages.has(p) || strokeLettered.has(p)) && !boqPages.has(p));
+    const { ocrCandidates: candidates } = partitionDrawingPages(doc.numPages, textPages, strokeLettered, boqPages, requested);
+    // pages of these exact bytes already read by this exact reading code come from the cache, not OCR again
+    const hits = new Map<number, CachedOcr>();
+    for (const p of candidates) { const h = await cachedRead(store(), pageCacheKey(opts.fileSha, p, OCR_ID)); if (h) hits.set(p, h); }
     if (candidates.length) {
-      onProgress('เตรียม OCR ในเบราว์เซอร์ (โหลดข้อมูลภาษาครั้งแรก)…', 0.18);
+      const needOcr = candidates.some(p => !hits.has(p));
+      onProgress(needOcr ? 'เตรียม OCR ในเบราว์เซอร์ (โหลดข้อมูลภาษาครั้งแรก)…' : 'ใช้ผล OCR เดิมของไฟล์นี้', 0.18);
       const tw = performance.now();
-      const [worker, thai, turned] = await Promise.all([ocrWorker(), drawingThaiWorker(), turnedWorkers()]);
-      phase['load OCR engines'] = performance.now() - tw;
-      let steps: Record<string, number> = {};
-      const env = {
-        worker, extraWorkers: [thai], turnedWorkers: turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
-        toImage: (d: Uint8Array, w: number, h: number) => grayToCanvas(d, w, h),
-        renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => renderForOcr(pg, 300 / 72, rot, prepared),
-        readScan,
-        onTime: (step: string, ms: number) => { steps[step] = (steps[step] || 0) + ms; },
-      };
       const pages = candidates;
       const structuralOnly = !requested;
-      let i = 0;
-      for (const p of pages) {
-        i++;
+      // pages are read in lanes: one full set of OCR workers per lane, as many lanes as the machine can feed
+      const toRead = pages.filter(p => !hits.has(p)).length;
+      const laneN = needOcr ? Math.min(laneCount(navigator.hardwareConcurrency, (navigator as any).deviceMemory), toRead) : 0;
+      // lane 0 is loaded now; the others only when a vector page lands on them (a scan page needs no tesseract workers)
+      const lane0 = needOcr ? await raceAbort(ocrLane(0), opts.abortSignal) : undefined;
+      const lanesUsed = new Set<number>([0]);
+      phase['load OCR engines'] = performance.now() - tw;
+      const alone = serialize(); // a scan page's render and GPU read never overlap another page's
+      let started = 0;
+      const readPage = async (p: number, laneIdx: number) => {
+        checkAbort();
         const page = await doc.getPage(p);
-        onProgress(`อ่านหน้า ${p} (${i}/${pages.length})…`, 0.28 + (0.62 * i) / pages.length);
+        onProgress(`อ่านหน้า ${p} (${++started}/${pages.length})…`, 0.28 + (0.62 * started) / pages.length);
         // Yield to browser event loop so spinner and progress bar animate smoothly
         await new Promise(r => setTimeout(r, 16));
 
-        // When structuralOnly is active, quickly classify sheet before expensive full-page OCR
         const tp = performance.now();
-        steps = {};
-        const note = (how: string) => perPage.push({ page: p, how, ms: Math.round(performance.now() - tp), steps: Object.entries(steps).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', ') });
-        if (structuralOnly) {
-          const cls = await fastClassifySheet(page, env.worker, p, pages.length, texts[p - 1]);
+        const steps: Record<string, number> = {};
+        const log: ProcessLog = [];
+        const rec = (how: string, extra = '') => ({ page: p, how, ms: Math.round(performance.now() - tp), steps: Object.entries(steps).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', ') + extra });
+        const cached = hits.get(p);
+        // When structuralOnly is active, quickly classify sheet before expensive full-page OCR
+        if (structuralOnly && !cached) {
+          const cls = await fastClassifySheet(page, lane0!.worker, p, pages.length, texts[p - 1]);
+          log.push({ page: p, step: 'classify' });
           steps.classify = performance.now() - tp;
           if (cls.sheetId) sheetIds[p] = cls.sheetId;
-          if (cls.skip) {
-            note(`skipped (${cls.reason || cls.sheetId || 'not structural'})`);
-            // Non-structural page (e.g. A-01..A-14, SN-01..03, EE-01..03, Cover/Index) skipped in ~50-150ms
-            continue;
-          }
+          // Non-structural page (e.g. A-01..A-14, SN-01..03, EE-01..03, Cover/Index) skipped in ~50-150ms
+          if (cls.skip) return { log, rec: rec(`skipped (${cls.reason || cls.sheetId || 'not structural'})`), out: null };
         }
 
         const paddleDetail: string[] = [];
         const sec = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
-        paddleStatsSink = (k, st) => paddleDetail.push(`w${k}: init ${sec(st.initMs)}${st.loads > 1 ? ` (models loaded ${st.loads}x)` : ''}, det ${sec(st.detMs)} (${st.detTiles} tiles), rec ${sec(st.recMs)} (${st.recCalls} crops / ${st.boxes} boxes), post ${sec(st.postMs)}, turned pass ${sec(st.turnedMs)}, words ${st.wordsKept}, total ${sec(st.totalMs)}`);
-        const r = await ocrPdfPage(page as any, p, env as any);
-        paddleStatsSink = null;
-        note(`OCR ${r.kind}`);
-        if (paddleDetail.length) perPage[perPage.length - 1].steps += ` || paddle ${paddleDetail.join(' ; ')}`;
+        const onStats = (k: number, st: any) => paddleDetail.push(`w${k}: init ${sec(st.initMs)}${st.loads > 1 ? ` (models loaded ${st.loads}x)` : ''}, det ${sec(st.detMs)} (${st.detTiles} tiles), rec ${sec(st.recMs)} (${st.recCalls} crops / ${st.boxes} boxes), post ${sec(st.postMs)}, turned pass ${sec(st.turnedMs)}, words ${st.wordsKept}, total ${sec(st.totalMs)}`);
+        let r: CachedOcr;
+        let how: string;
+        if (cached) {
+          r = cached;
+          log.push({ page: p, step: 'ocr-cache' });
+          how = `cache ${r.kind}`;
+        } else {
+          const lane = laneIdx > 0 && await isVectorTextPage(page as any, pdfjs.OPS as any) ? await ocrLane(laneIdx) : lane0!;
+          lanesUsed.add(lane === lane0 ? 0 : laneIdx);
+          const env = {
+            worker: lane.worker, extraWorkers: [lane.thai], turnedWorkers: lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
+            toImage: (d: Uint8Array, w: number, h: number) => grayToCanvas(d, w, h),
+            renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => alone(() => renderForOcr(pg, 300 / 72, rot, prepared)),
+            readScan: (rs: Raster) => alone(() => readScan(rs, onStats, opts.abortSignal)),
+            onTime: (step: string, ms: number) => { steps[step] = (steps[step] || 0) + ms; },
+          };
+          r = await ocrPdfPage(page as any, p, env as any);
+          log.push({ page: p, step: 'ocr' });
+          how = `OCR ${r.kind}`;
+          // stored as OCR gave it, before the text-layer words are added below
+          await cacheWrite(store(), pageCacheKey(opts.fileSha, p, OCR_ID), r);
+        }
+        heap();
+        const note = rec(how, paddleDetail.length ? ` || paddle ${paddleDetail.join(' ; ')}` : '');
         if (textPages.has(p)) r.words.push(...await textWords(p));
         const id = sheetId(r.words);
         if (id) sheetIds[p] = id;
-        if (structuralOnly && id && /^(A|EE|E|SN|ID|L)-/i.test(id)) continue;
-        ocrPages.push(r);
+        if (structuralOnly && id && /^(A|EE|E|SN|ID|L)-/i.test(id)) return { log, rec: note, out: null };
+        return { log, rec: note, out: r };
+      };
+      const tOcr = performance.now();
+      const done = await raceAbort(mapLanes(pages, Math.max(1, laneN), (p, _k, lane) => readPage(p, lane)), opts.abortSignal);
+      // whatever finished first, the log and the pages go on in page order: the reading is the same as one page at a time
+      for (const d of done) {
+        processLog.push(...d.log);
+        perPage.push(d.rec);
+        if (d.out) ocrPages.push(d.out);
       }
-      if (!ocrPages.length) warnings.push('ไม่พบแผ่นแบบโครงสร้างที่อ่านได้ — ระบุช่วงหน้าแบบโครงสร้างแล้วลองใหม่');
+      ocrWallMs = performance.now() - tOcr;
+      ocrLanes = lanesUsed.size;
     }
   }
 
-  phase['OCR pages'] = perPage.reduce((a, x) => a + x.ms, 0);
+  phase['OCR pages'] = ocrWallMs;
   onProgress('ประกอบผังกับแบบขยาย…', 0.95);
   const tReader = performance.now();
+  const { textSheetPages } = partitionDrawingPages(doc.numPages, textPages, strokeLettered, boqPages, requested);
+  const textSheetSet = new Set(textSheetPages);
   const textSheets: PageOcr[] = [];
   for (const t of texts) {
-    if (!textPages.has(t.page) || boqPages.has(t.page) || ocrPages.some(o => o.page === t.page)) continue;
+    if (!textSheetSet.has(t.page) || ocrPages.some(o => o.page === t.page)) continue;
     const pg = await doc.getPage(t.page);
+    processLog.push({ page: t.page, step: 'text-sheet' });
     const vp = pg.getViewport({ scale: 1 });
     textSheets.push({ ...pageTextToOcr(t, vp.width, vp.height), ...await textSheetGeometry(pg) });
+  }
+  if (!ocrPages.length && !textSheets.length && !scheduleMembers.length && requested?.length !== 0) {
+    warnings.push('ไม่พบแผ่นแบบโครงสร้างที่อ่านได้ — ระบุช่วงหน้าแบบโครงสร้างแล้วลองใหม่');
   }
   const { readings, notes } = readSheets([...ocrPages, ...textSheets]);
   const merged = mergeSheetReadings(readings, fileName, { ...DEFAULT_MERGE_ASSUMPTIONS, footingVariant: opts.footingVariant ?? 'แผ่' });
   phase['reader + merge'] = performance.now() - tReader;
   phase.total = performance.now() - tStart;
-  console.groupCollapsed(`[StructBOQ timing] ${fileName}: ${(phase.total / 1000).toFixed(1)} s, ${perPage.filter(x => x.how.startsWith('OCR')).length} pages OCR'd, ${perPage.filter(x => x.how.startsWith('skipped')).length} skipped${opts.cachedOcr?.length ? ' (cached OCR)' : ''}`);
+  console.groupCollapsed(`[StructBOQ timing] ${fileName}: ${(phase.total / 1000).toFixed(1)} s, ${perPage.filter(x => x.how.startsWith('OCR')).length} pages OCR'd in ${ocrLanes} lane(s), ${perPage.filter(x => x.how.startsWith('skipped')).length} skipped${opts.cachedOcr?.length ? ' (cached OCR)' : ''}`);
   console.table(Object.fromEntries(Object.entries(phase).map(([k, v]) => [k, `${(v / 1000).toFixed(1)} s`])));
   console.table(perPage.map(x => ({ page: x.page, how: x.how, seconds: +(x.ms / 1000).toFixed(1), steps: x.steps })));
   console.log(perPage.map(x => `p${x.page} ${(x.ms / 1000).toFixed(1)}s ${x.how} | ${x.steps}`).join('\n'));
@@ -541,16 +854,22 @@ export async function extractInBrowser(
   const materialSpecs = applyGeneralNotesToSpecs(DEFAULT_MATERIAL_SPECS, extractedNotes);
   const notesFromGeneral = extractedNotes.evidenceSnippets.map(snip => `[รายการประกอบแบบ] ${snip}`);
 
-  return {
-    fileName, pageCount: doc.numPages,
-    members: [...scheduleMembers, ...merged.members],
-    completeness: merged.completeness,
-    mergeNotes: [...notes, ...merged.notes, ...notesFromGeneral],
-    warnings: [...warnings, ...boqDoc.warnings],
-    boq, ocrPages, sheetIds, materialText,
-    readings: readings.map(r => ({ ...r, sheet_id: r.sheet_id || sheetIds[r.page] })),
-    skipped: merged.skipped,
-    extractedNotes,
-    materialSpecs,
-  };
+    return {
+      fileName, pageCount: doc.numPages,
+      members: [...scheduleMembers, ...merged.members],
+      completeness: merged.completeness,
+      mergeNotes: [...notes, ...merged.notes, ...notesFromGeneral],
+      warnings: [...warnings, ...boqDoc.warnings],
+      boq, ocrPages, sheetIds, materialText,
+      readings: readings.map(r => ({ ...r, sheet_id: r.sheet_id || sheetIds[r.page] })),
+      skipped: merged.skipped,
+      extractedNotes,
+      materialSpecs,
+      processLog,
+      requestedPages: requested,
+      timing: timingSummary(phase, perPage, peakHeap || null),
+    };
+  } finally {
+    opts.abortSignal?.removeEventListener('abort', onAbort);
+  }
 }

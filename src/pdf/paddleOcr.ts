@@ -7,17 +7,69 @@ import type { OcrWord } from './types';
 import { unrotate, type Raster } from './ocr';
 
 type Ort = typeof import('onnxruntime-web');
-export interface Paddle { ort: Ort; det: any; rec: any; dict: string[] }
+export interface Paddle { ort: Ort; det: any; rec: any; dict: string[]; dispose?: () => Promise<void> }
 /** timing only (ms) and counts of one paddleWords call; filled in place, never read back */
 export interface PaddleStats { detMs: number; recMs: number; postMs: number; turnedMs: number; detTiles: number; boxes: number; recCalls: number; wordsKept: number }
 export const newPaddleStats = (): PaddleStats => ({ detMs: 0, recMs: 0, postMs: 0, turnedMs: 0, detTiles: 0, boxes: 0, recCalls: 0, wordsKept: 0 });
 
-export async function loadPaddle(ort: Ort, det: Uint8Array | string, rec: Uint8Array | string, dictText: string): Promise<Paddle> {
+export function wrapSessionWithDispose(session: any): any {
+  if (!session || session._wrappedWithDispose) return session;
+  const origRun = session.run.bind(session);
+  const wrapped = async (feeds: Record<string, any>) => {
+    let out: Record<string, any> | undefined;
+    try {
+      out = await origRun(feeds);
+      const copied: Record<string, { dims: readonly number[]; data: Float32Array }> = {};
+      for (const k of Object.keys(out!)) {
+        const t = out![k];
+        const raw = t.data instanceof Float32Array ? t.data : await (typeof t.getData === 'function' ? t.getData() : t.data);
+        copied[k] = { dims: t.dims, data: new Float32Array(raw) };
+      }
+      return copied;
+    } finally {
+      for (const k of Object.keys(feeds)) {
+        try {
+          if (typeof feeds[k]?.dispose === 'function') feeds[k].dispose();
+        } catch {}
+      }
+      if (out) {
+        for (const k of Object.keys(out)) {
+          try {
+            if (typeof out[k]?.dispose === 'function') out[k].dispose();
+          } catch {}
+        }
+      }
+    }
+  };
+  session.run = wrapped;
+  session._wrappedWithDispose = true;
+  return session;
+}
+
+export async function disposePaddle(p?: Paddle | null): Promise<void> {
+  if (!p) return;
+  try { await p.det?.release?.(); } catch {}
+  try { await p.rec?.release?.(); } catch {}
+  try { p.det?.dispose?.(); } catch {}
+  try { p.rec?.dispose?.(); } catch {}
+}
+
+export async function loadPaddle(
+  ort: Ort,
+  det: Uint8Array | string,
+  rec: Uint8Array | string,
+  dictText: string,
+  options?: { executionProviders?: ('webgpu' | 'wasm' | 'cpu')[] }
+): Promise<Paddle> {
+  const sessionOpts = options?.executionProviders ? { executionProviders: options.executionProviders } : undefined;
+  const detSession = await ort.InferenceSession.create(det as any, sessionOpts);
+  const recSession = await ort.InferenceSession.create(rec as any, sessionOpts);
   return {
     ort,
-    det: await ort.InferenceSession.create(det as any),
-    rec: await ort.InferenceSession.create(rec as any),
+    det: wrapSessionWithDispose(detSession),
+    rec: wrapSessionWithDispose(recSession),
     dict: ['', ...dictText.split(/\r?\n/).filter((_, i, a) => i < a.length - 1 || a[i]), ' '],
+    dispose: async () => disposePaddle({ ort, det: detSession, rec: recSession, dict: [] }),
   };
 }
 
@@ -158,8 +210,19 @@ function turnClockwise(r: Raster): Raster {
 }
 
 /** Words of a raster, boxes normalized to the raster (0..1); vertical text (second pass on the turned raster) comes back vertical. */
-export async function paddleWords(p: Paddle, raster: Raster, st?: PaddleStats): Promise<OcrWord[]> {
+export async function paddleWords(p: Paddle, raster: Raster, st?: PaddleStats, pass: 'flat' | 'turned' | 'both' = 'both'): Promise<OcrWord[]> {
   const r = smooth(raster);
+  if (pass === 'flat') {
+    const flat = await readRaster(p, r, st);
+    if (st) st.wordsKept += flat.length;
+    return flat;
+  }
+  if (pass === 'turned') {
+    const t = performance.now();
+    const turned = (await readRaster(p, turnClockwise(r), st, true)).filter(w => !w.vertical);
+    if (st) { st.turnedMs += performance.now() - t; st.wordsKept += turned.length; }
+    return unrotate(turned);
+  }
   const flat = await readRaster(p, r, st);
   const t = performance.now();
   // the turned pass also adds its det/rec time to detMs/recMs; turnedMs is the pass as a whole

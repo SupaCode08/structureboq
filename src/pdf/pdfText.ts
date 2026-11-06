@@ -94,3 +94,47 @@ export function pageTextToOcr(pt: PageText, width: number, height: number): Page
   }
   return { page: pt.page, width, height, words };
 }
+
+/** Which page each reading step actually opened (original 1-based page numbers): the record that a selection was honoured. */
+export type ProcessLog = { page: number; step: 'text' | 'stroke-scan' | 'classify' | 'ocr' | 'ocr-cache' | 'text-sheet' }[];
+interface TextDoc { numPages: number; getPage(n: number): Promise<{ getViewport(o: { scale: number }): ViewportLike; getTextContent(): Promise<unknown> }> }
+
+/** Text layers by original page number; with a selection, pages outside it are never opened and stay empty. */
+export async function readTextLayers(doc: TextDoc, requested: number[] | undefined, log: ProcessLog, onPage?: (page: number, of: number) => void): Promise<PageText[]> {
+  const want = requested && new Set(requested);
+  const texts: PageText[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    if (want && !want.has(i)) { texts.push({ page: i, width: 0, height: 0, items: [], legacyFont: false }); continue; }
+    onPage?.(i, doc.numPages);
+    const page = await doc.getPage(i);
+    texts.push(toPageText(i, page.getViewport({ scale: 1 }), (await page.getTextContent()) as PdfJsTextContent));
+    log.push({ page: i, step: 'text' });
+  }
+  return texts;
+}
+
+/** Where reading a file spent its time; heap only where the browser reports it (Chrome), never estimated. */
+export interface PageTiming {
+  totalMs: number;
+  phases: Record<string, number>;
+  perPage: { page: number; how: string; ms: number }[];
+  ocrPages: number;
+  cachedPages: number;
+  medianOcrMs: number | null;
+  p90OcrMs: number | null;
+  peakHeapMB: number | null;
+}
+export function timingSummary(phases: Record<string, number>, perPage: { page: number; how: string; ms: number }[], peakHeapBytes: number | null): PageTiming {
+  const ocr = perPage.filter(x => x.how.startsWith('OCR')).map(x => x.ms).sort((a, b) => a - b);
+  const q = (f: number) => (ocr.length ? ocr[Math.min(ocr.length - 1, Math.ceil(f * ocr.length) - 1)] : null);
+  return {
+    totalMs: Math.round(phases.total ?? 0),
+    phases: Object.fromEntries(Object.entries(phases).map(([k, v]) => [k, Math.round(v)])),
+    perPage: perPage.map(({ page, how, ms }) => ({ page, how, ms })),
+    ocrPages: ocr.length,
+    cachedPages: perPage.filter(x => x.how.startsWith('cache')).length,
+    medianOcrMs: q(0.5),
+    p90OcrMs: q(0.9),
+    peakHeapMB: peakHeapBytes ? Math.round(peakHeapBytes / 1048576) : null,
+  };
+}

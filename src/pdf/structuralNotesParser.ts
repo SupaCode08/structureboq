@@ -262,6 +262,15 @@ export function applyGeneralNotesToSpecs(
   if (notes.concreteCoveringCm) {
     updated.concreteCoveringCm = notes.concreteCoveringCm;
   }
+  if (notes.coveringByMember) {
+    // remember these came from the drawing, so a value equal to the code default is not reported as assumed
+    const from = { ...updated.coverSources };
+    if (notes.coveringByMember.slabCm) { updated.slabCoveringCm = notes.coveringByMember.slabCm; from.slab = 'drawing_notes'; }
+    if (notes.coveringByMember.beamCm) { updated.beamCoveringCm = notes.coveringByMember.beamCm; from.beam = 'drawing_notes'; }
+    if (notes.coveringByMember.columnCm) { updated.columnCoveringCm = notes.coveringByMember.columnCm; from.column = 'drawing_notes'; }
+    if (notes.coveringByMember.footingCm) { updated.footingCoveringCm = notes.coveringByMember.footingCm; from.footing = 'drawing_notes'; }
+    updated.coverSources = from;
+  }
   if (notes.lapSpliceDb && notes.lapSpliceDb >= 45) {
     updated.rebarWastagePct = Math.max(updated.rebarWastagePct, 9.0);
   }
