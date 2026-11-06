@@ -6,7 +6,8 @@
  * the two, records the evidence on both sheets, and raises conflicts for the reviewer
  * instead of silently picking a value.
  */
-import type { ExtractedMember, MemberType, EvidenceRef, FieldSource } from './qsEngine';
+import type { ConflictField, ExtractedMember, MemberType, EvidenceRef, FieldSource } from './qsEngine';
+import { reconcile, recordReconciled, type Reconciled } from './sourceConflicts.ts';
 
 export interface GridAxisMark { label: string; offset_m: number }
 
@@ -199,7 +200,7 @@ export function mergeSheetReadings(
     const best = bestSection(list.map(l => l.def));
     const page = list.find(l => l.def === best)!.page;
     const dims = new Set(list.map(l => `${l.def.width_m ?? ''}x${l.def.depth_m ?? ''}x${l.def.thickness_m ?? ''}`));
-    return { def: best, page, conflicting: dims.size > 1 ? list : undefined };
+    return { def: best, page, conflicting: dims.size > 1 ? list : undefined, all: list };
   };
 
   const splitPlans = (sh: SheetReading): SheetReading[] => {
@@ -280,7 +281,19 @@ export function mergeSheetReadings(
     memberType,
   });
 
-  const pushMember = (m: ExtractedMember) => members.push(m);
+  // what reconciling the current member's sources found; recorded on the member it pushes
+  let recon: Reconciled[] = [];
+  const pushMember = (m: ExtractedMember) => members.push(recon.length && m.provenance ? { ...m, provenance: recordReconciled(m.provenance, recon) } : m);
+  /** every detail/schedule source of a member, field by field: the value in use stays provisional where they disagree */
+  const reconcileSections = (all: { def: SectionDef; page: number }[], mType: MemberType): Reconciled[] => {
+    const pick: [ConflictField, (d: SectionDef) => string | number | null | undefined][] =
+      mType === 'FOOTING' ? [['width', d => d.plan_w_m], ['depth', d => d.plan_l_m], ['length', d => d.thickness_m || d.depth_m], ['bottomRebar', d => d.bottom_rebar && barSpec(d.bottom_rebar)]]
+      : mType === 'BEAM' ? [['width', d => d.width_m], ['depth', d => d.depth_m], ['topRebar', d => d.top_rebar && barSpec(d.top_rebar)], ['bottomRebar', d => d.bottom_rebar && barSpec(d.bottom_rebar)], ['stirrupRebar', d => d.stirrup]]
+      : mType === 'COLUMN' ? [['width', d => d.width_m], ['depth', d => d.depth_m], ['topRebar', d => d.main_rebar && barSpec(d.main_rebar)], ['stirrupRebar', d => d.stirrup]]
+      : mType === 'SLAB' ? [['length', d => d.thickness_m], ['topRebar', d => d.top_rebar && barSpec(d.top_rebar)], ['bottomRebar', d => d.bottom_rebar && barSpec(d.bottom_rebar)]]
+      : [['width', d => d.width_m], ['depth', d => d.depth_m]];
+    return pick.map(([f, get]) => reconcile(f, all.map(a => ({ value: get(a.def), page: a.page, ref: 'แบบขยาย / ตาราง', method: 'vision' as const }))));
+  };
 
   const framingLevels = [...new Set(sheets.filter(s => s.sheet_type === 'framing_plan')
     .flatMap(s => (s.instances || []).map(i => i.level || s.level || '')))]
@@ -325,9 +338,8 @@ export function mergeSheetReadings(
           skipped.push({ tag: piece.tag, page: sh.page, reason: 'โครงเหล็กรูปพรรณ (ไม่ใช่ ค.ส.ล.) — แยกถอดเป็นน้ำหนักเหล็ก' });
           continue;
         }
-        if (sec?.conflicting) {
-          conflicts.push(`แบบขยายของ ${piece.tag} ไม่ตรงกันระหว่างแผ่น: ` + sec.conflicting.map(c => `p${c.page} ${c.def.width_m}x${c.def.depth_m}`).join(' vs '));
-        }
+        // several detail sheets for one tag: each field compared, disagreements kept with their pages (no value chosen)
+        recon = sec && sec.all.length > 1 ? reconcileSections(sec.all, mType) : [];
 
         const gridLoc = inst.to_grid ? `${inst.from_grid}–${inst.to_grid}` : (inst.from_grid || '-');
         const base: Partial<ExtractedMember> = {
@@ -373,9 +385,10 @@ export function mergeSheetReadings(
           fs.width = d?.plan_w_m ? 'drawing' : nm ? 'inferred' : 'missing';
           fs.depth = d?.plan_l_m ? 'drawing' : nm ? 'inferred' : 'missing';
           fs.length = thick ? (d?.inferred_fields?.includes('thickness') ? 'inferred' : 'drawing') : 'missing';
-          if (nm?.[3] && thick && Math.abs(Number(nm[3]) - thick) > 0.005) {
-            conflicts.push(`ชื่อฐานราก ${piece.tag} มีค่า ${nm[3]} ม. ไม่ตรงกับความหนาที่อ่านได้ ${thick} ม. — ตรวจแบบขยาย`);
-            conf = Math.min(conf, 0.5);
+          if (nm?.[3] && thick) {
+            // the footing's name on the plan against the thickness its detail gives
+            const named = reconcile('length', [{ value: Number(nm[3]), page: sh.page, ref: `ชื่อฐานรากในผัง (${piece.tag})`, method: 'vision' }, { value: thick, page: sec?.page ?? null, ref: 'แบบขยาย / ตาราง', method: 'vision' }]);
+            if (named.kind === 'CONFLICT') { recon = [...recon, named]; conf = Math.min(conf, 0.5); }
           }
           fs.rebar = d?.bottom_rebar ? 'drawing' : 'missing';
           const exc = d?.height_m && d.height_m > thick ? d.height_m : 1.0;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { logEntryFor, undoEntry, canUndo, addEntry } from './reviewLog.ts';
+import { logEntryFor, undoEntry, canUndo, addEntry, readingSignature } from './reviewLog.ts';
 
 const m = (tag: string, extra: any = {}) => ({ tag, memberType: 'FOOTING', gridLocation: 'A/1', count: 1, width: 0.9, depth: 0.9, length: 0, ...extra }) as any;
 
@@ -26,4 +26,21 @@ test('Review log: records before/after, undoes only the latest change on a membe
   const add = addEntry([m('F9')], 3, 'เพิ่มจากข้อเสนอ', new Date('2026-10-19T10:10:00Z'));
   assert.equal(canUndo(add, 4, [...log, add]), true);
   assert.equal(undoEntry([...v2, m('F9')], add).length, 3);
+});
+
+test('Saved review is restored only onto the identical reading (new revision, same file name)', () => {
+  const r1 = [m('F1'), m('F2')];
+  assert.equal(readingSignature(r1), readingSignature([m('F1'), m('F2')]));
+  // same tags and grids, one dimension changed in the new revision
+  assert.notEqual(readingSignature(r1), readingSignature([m('F1', { width: 1.0 }), m('F2')]));
+  assert.notEqual(readingSignature(r1), readingSignature([m('F1', { bottomRebar: 'DB16@0.15' }), m('F2')]));
+  // values outside the review form count too (hook shape, cover, paired ties, clear span)
+  assert.notEqual(readingSignature(r1), readingSignature([m('F1', { footingHookShape: 'STRAIGHT' }), m('F2')]));
+});
+
+test('Round 20: re-approving a lapsed approval is logged as a decision', () => {
+  const a = [m('F1', { review: { status: 'approved', at: 't1', fingerprint: 'aaa' } })];
+  const b = [{ ...a[0], review: { status: 'approved', at: 't2', fingerprint: 'bbb' } }];
+  assert.equal(logEntryFor(a, b, [0])!.decision, 'approved');
+  assert.equal(logEntryFor(a, [{ ...a[0], review: { ...a[0].review, note: 'x' } }], [0]), null); // same inputs: no new decision
 });

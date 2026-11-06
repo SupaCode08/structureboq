@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeProject, calculateMember, parseBarGroups, parseSpacedBar } from './qsEngine.ts';
+import { computeProject, calculateMember, parseBarGroups, parseSpacedBar, approvalFor } from './qsEngine.ts';
 import type { ExtractedMember } from './qsEngine.ts';
 import { mergeSheetReadings, combineReadings, type SheetReading } from './sheetMerge.ts';
 import { compareTakeoffWithBoq } from './boqCompare.ts';
@@ -75,7 +75,9 @@ test('Merge: footing variant is chosen and combined "F,C" tags create the column
 test('Merge: footing named F0.90X0.90X0.30 but detail reads 0.20 thick is flagged', () => {
   const r = mergeSheetReadings(sheets, 'set.pdf', { columnStubHeightM: 1, storeyHeightM: 3, stairWidthM: 0.9, footingVariant: 'แผ่' });
   const f = r.members.find(m => m.tag === 'F0.90X0.90X0.30')!;
-  assert.ok(f.provenance!.conflicts!.some(c => c.includes('0.30')));
+  // Round 22: a structured conflict with both sources and their pages (plan p6 name vs detail p8), no value chosen
+  const c = f.provenance!.fieldConflicts!.find(x => x.field === 'length')!;
+  assert.deepEqual(c.sources.map(s => [s.value, s.page]), [[0.3, 5], [0.2, 8]]);
   const res = calculateMember(f, 1);
   assert.equal(res.status, 'NEEDS_REVIEW');
 });
@@ -105,8 +107,12 @@ test('Engine: member with a dimension missing from the drawing stays in review w
   assert.equal(r.status, 'NEEDS_REVIEW');
   assert.equal(r.volumeNetM3, 0);
   assert.ok(r.flags!.some(f => f.code === 'FIELD_MISSING'));
-  // reviewer fills in and approves -> counted
-  const fixed = calculateMember({ ...m, width: 0.2, depth: 0.2, review: { status: 'approved', at: 'now' } }, 1);
+  // filled in but the fields not settled one by one -> approval alone does not release (Round 18c)
+  const typedOnly = { ...m, width: 0.2, depth: 0.2 };
+  assert.equal(calculateMember({ ...typedOnly, review: approvalFor(typedOnly) }, 1).status, 'NEEDS_REVIEW');
+  // reviewer types width/depth and the bars, confirms the assumed height (as the review screen records it), then approves -> counted
+  const filled = { ...typedOnly, topRebar: '4-DB12', stirrupRebar: 'RB6@0.15', provenance: { ...m.provenance!, fieldSources: { width: 'reviewer', depth: 'reviewer', length: 'reviewer', rebar: 'reviewer', stirrup: 'reviewer' } as const } };
+  const fixed = calculateMember({ ...filled, review: approvalFor(filled) }, 1);
   assert.equal(fixed.status, 'AUTO_RELEASE');
   assert.equal(fixed.volumeNetM3, 0.04);
 });
