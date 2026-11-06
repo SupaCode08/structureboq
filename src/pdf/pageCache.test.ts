@@ -7,7 +7,7 @@ import path from 'node:path';
 import { cachedRead, cacheWrite, memoryStore, pageCacheKey, type CachedOcr, type PageCacheStore } from './pageCache.ts';
 import { timingSummary } from './pdfText.ts';
 import { OCR_ID } from './ocrIdentity.ts';
-import { currentOcrIdentity } from '../../scripts/gen_engine_identity.ts';
+import { currentOcrIdentity, ocrSources } from '../../scripts/gen_engine_identity.ts';
 
 const A = 'a'.repeat(64), B = 'b'.repeat(64), ID = 'c'.repeat(64);
 const page = (n: number): CachedOcr => ({ page: n, width: 842, height: 595, words: [{ text: 'F2', x0: 1, y0: 2, x1: 3, y1: 4, vertical: false, conf: 90 }], kind: 'vector_text', smallStrokes: 260 } as CachedOcr);
@@ -37,23 +37,41 @@ test('a stored page comes back as stored, unaffected by later edits; a broken st
   assert.equal(s.map.size, 1);
 });
 
-test('the OCR identity covers the reading sources and the OCR/PDF package versions', () => {
+test('the OCR identity covers what decides a page OCR (and the OCR/PDF package versions), not the reader or the UI', () => {
   assert.match(OCR_ID, /^[0-9a-f]{64}$/);
   assert.equal(OCR_ID, currentOcrIdentity());
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'structboq-ocrid-'));
   after(() => fs.rmSync(root, { recursive: true, force: true }));
   const put = (f: string, t: string) => { fs.mkdirSync(path.dirname(path.join(root, f)), { recursive: true }); fs.writeFileSync(path.join(root, f), t); };
-  put('src/pdf/reader.ts', 'export const x = 1;');
-  put('src/pdf/reader.test.ts', 'test');
+  // the OCR entries, one file they import, the setup file, and files the OCR never imports
+  put('src/pdf/pdfOcrPipeline.ts', "import { v } from './vectorText'; export const p = v;");
+  put('src/pdf/vectorText.ts', 'export const v = 1;');
+  put('src/pdf/scanPrep.ts', 'export const s = 1;');
+  put('src/pdf/paddleOcr.ts', 'export const o = 1;');
+  put('src/pdf/paddleWorker.ts', "import { o } from './paddleOcr'; export const w = o;");
+  put('src/pdf/browserPipeline.ts', 'export const b = 1;');
+  put('src/pdf/sheetReader.ts', 'export const r = 1;');
+  put('src/pdf/lanes.ts', 'export const l = 1;');
+  put('src/pdf/vectorText.test.ts', 'test');
   for (const p of ['tesseract.js', '@gutenye/ocr-models', 'onnxruntime-web', 'pdfjs-dist']) put(`node_modules/${p}/package.json`, '{"version":"1.0.0"}');
   const base = currentOcrIdentity(root);
-  put('src/pdf/reader.test.ts', 'other test');
-  assert.equal(currentOcrIdentity(root), base, 'tests do not change it');
-  put('src/pdf/reader.ts', 'export const x = 2;');
-  const code = currentOcrIdentity(root);
-  assert.notEqual(code, base);
+  assert.deepEqual(ocrSources(root), ['src/pdf/browserPipeline.ts', 'src/pdf/paddleOcr.ts', 'src/pdf/paddleWorker.ts', 'src/pdf/pdfOcrPipeline.ts', 'src/pdf/scanPrep.ts', 'src/pdf/vectorText.ts']);
+  const same = (why: string) => assert.equal(currentOcrIdentity(root), base, why);
+  put('src/pdf/vectorText.test.ts', 'other test'); same('a test does not change it');
+  put('src/pdf/sheetReader.ts', 'export const r = 2;'); same('a reader edit does not change it');
+  put('src/pdf/lanes.ts', 'export const l = 2;'); same('a scheduling edit does not change it');
+  const differs = (file: string, text: string) => { put(file, text); const id = currentOcrIdentity(root); assert.notEqual(id, base, `${file} changes it`); put(file, fs.readFileSync(path.join(root, file), 'utf8')); return id; };
+  const ids = new Set([
+    differs('src/pdf/vectorText.ts', 'export const v = 2;'),   // imported by the page OCR
+    differs('src/pdf/scanPrep.ts', 'export const s = 2;'),
+    differs('src/pdf/paddleOcr.ts', 'export const o = 2;'),   // imported by the Paddle worker
+    differs('src/pdf/browserPipeline.ts', 'export const b = 2;'), // OCR engines and their settings
+  ]);
+  assert.equal(ids.size, 4, 'each file counts for itself');
+  put('src/pdf/vectorText.ts', 'export const v = 1;'); put('src/pdf/scanPrep.ts', 'export const s = 1;'); put('src/pdf/paddleOcr.ts', 'export const o = 1;'); put('src/pdf/browserPipeline.ts', 'export const b = 1;');
+  same('back to the first text, back to the first id');
   put('node_modules/tesseract.js/package.json', '{"version":"1.0.1"}');
-  assert.notEqual(currentOcrIdentity(root), code);
+  assert.notEqual(currentOcrIdentity(root), base, 'a package version changes it');
 });
 
 test('timing summary: OCR median and p90, cached pages, heap only when reported', () => {

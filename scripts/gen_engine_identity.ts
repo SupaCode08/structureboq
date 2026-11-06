@@ -80,12 +80,26 @@ export function verifyBuildIdentity(dir: string, root = ROOT): { ok: boolean; re
 
 export const OCR_IDENTITY_MODULE = 'src/pdf/ocrIdentity.ts';
 const OCR_PACKAGES = ['tesseract.js', '@gutenye/ocr-models', 'onnxruntime-web', 'pdfjs-dist'];
-/** What a cached page OCR depends on: every reading source in src/pdf (raw text: any edit invalidates, the safe side) and the PDF/OCR package versions. */
+/** Entry files of the page-reading path: page OCR, scan preparation and the Paddle reader and its worker. */
+export const OCR_ENTRIES = ['src/pdf/pdfOcrPipeline.ts', 'src/pdf/scanPrep.ts', 'src/pdf/paddleOcr.ts', 'src/pdf/paddleWorker.ts'];
+/** Where the OCR engines, their settings and the page rendering are set up (taken as a whole file: the rest of it is the reader's wiring). */
+export const OCR_SETUP = 'src/pdf/browserPipeline.ts';
+/** Files whose edit can change a cached page OCR (relative to root, sorted): the entries and everything they import, plus the setup file. A reader, merge, selection, cache or UI edit is not among them. */
+export function ocrSources(root = ROOT): string[] {
+  const files = new Set<string>([OCR_SETUP]);
+  for (const entry of OCR_ENTRIES) {
+    const r = buildSync({
+      entryPoints: [entry], absWorkingDir: root, bundle: true, write: false, metafile: true, platform: 'neutral', format: 'esm', logLevel: 'silent',
+      packages: 'external', external: ['*ocrIdentity.ts'],
+    });
+    for (const f of Object.keys(r.metafile!.inputs)) files.add(path.relative(root, path.resolve(root, f)).replace(/\\/g, '/'));
+  }
+  return [...files].filter(f => path.basename(f) !== path.basename(OCR_IDENTITY_MODULE)).sort();
+}
+/** What a cached page OCR depends on: the text of the files above (raw: any edit invalidates, the safe side) and the PDF/OCR package versions. */
 export function currentOcrIdentity(root = ROOT): string {
-  const dir = path.join(root, 'src/pdf');
-  const files = fs.readdirSync(dir).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== path.basename(OCR_IDENTITY_MODULE)).sort();
   const h = createHash('sha256');
-  for (const f of files) h.update(f + '\0' + fs.readFileSync(path.join(dir, f), 'utf8') + '\0');
+  for (const f of ocrSources(root)) h.update(f + '\0' + fs.readFileSync(path.join(root, f), 'utf8') + '\0');
   for (const p of OCR_PACKAGES) h.update(p + '@' + JSON.parse(fs.readFileSync(path.join(root, 'node_modules', p, 'package.json'), 'utf8')).version + '\0');
   return h.digest('hex');
 }
