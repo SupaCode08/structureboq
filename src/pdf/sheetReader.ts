@@ -939,6 +939,10 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
     // Standard low-index structural tags (B1..B19, C1..C19, F1..F19, RB1..RB19, S1..S9, GS) are kept even if seen once
     const isStandardTag = /^(GB|B|RB|TB|TG|WB|SB|BST|CB|C|F)([1-9]|1[0-9])[A-Z]?$/i.test(t) || /^(S[1-9]|GS|CS|PS)[A-Z]?$/i.test(t) || /^ST[1-9]$/i.test(t);
     if (isStandardTag && n >= 1) return true;
+    // an OCR slip seen twice ("B83" for "B3": the letter read again as its look-alike digit) is not a tag of the set:
+    // in the vocabulary it would block the repair back to the tag it came from
+    const slipOf = t.match(/^([A-Z]*([A-Z]))(\d)(\d[A-Z]?)$/);
+    if (slipOf && AS_LETTER[slipOf[3]] === slipOf[2] && (counts.get(slipOf[1] + slipOf[4]) ?? 0) >= n) return false;
     return n >= 2 && (/\d/.test(t) || /^(SP|GS)$/.test(t) || (bare.get(t) ?? 0) >= 2) && (t.length >= 2 || (bare.get(t) ?? 0) >= 2);
   }).map(([t]) => t));
   for (const p of pages) {

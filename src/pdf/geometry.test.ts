@@ -170,3 +170,15 @@ test('letters read by shape: copies of a stroke letter read like the copies OCR 
   const got = glyphWords(small, W, H, words).map(w => w.text);
   assert.equal(got.filter(t => t === '2ø12').length, 2);
 });
+
+test('tag vocabulary: an OCR slip seen twice (B83 for B3) is not a tag of the set, so it cannot block the repair; a tag with no clean original stays', () => {
+  const w = (text: string, x: number, y: number): OcrWord => ({ text, x0: x, x1: x + 0.02, y0: y, y1: y + 0.012, vertical: false, conf: 80 });
+  const page = (words: OcrWord[]): PageOcr => ({ page: 1, width: 1190, height: 842, words, rects: [], hsegs: [], vsegs: [], circles: [] });
+  const withB3 = readSheets([page([w('B3', 0.1, 0.1), w('B3', 0.3, 0.1), w('B3', 0.5, 0.1), w('B83', 0.1, 0.5), w('B83', 0.5, 0.5)])]);
+  assert.ok(withB3.vocab.includes('B3'));
+  assert.ok(!withB3.vocab.includes('B83'), 'the slip is not in the vocabulary');
+  // no clean B3 anywhere: B83 is all the drawing says, so it stays a tag
+  const alone = readSheets([page([w('B83', 0.1, 0.5), w('B83', 0.5, 0.5), w('TB12', 0.1, 0.2), w('TB12', 0.5, 0.2)])]);
+  assert.ok(alone.vocab.includes('B83'));
+  assert.ok(alone.vocab.includes('TB12'), 'an ordinary tag seen twice is kept');
+});
