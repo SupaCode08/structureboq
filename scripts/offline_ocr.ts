@@ -25,7 +25,9 @@ const [pdf, spec, out] = process.argv.slice(2);
 if (!pdf || !spec || !out) { console.error('usage: tsx scripts/offline_ocr.ts <pdf> <pages> <out.json>'); process.exit(1); }
 const doc = await getDocument({ data: new Uint8Array(fs.readFileSync(pdf)), disableFontFace: true }).promise;
 const worker = await Tesseract.createWorker('eng');
-await worker.setParameters({ tessedit_pageseg_mode: '11' as any });
+// psm 6 like ocrWorker in browserPipeline.ts: the words come out identical to the app's (checked page by page, 2026-11-06).
+// OCR_ENG_PSM=11 is what this script used before that date.
+await worker.setParameters({ tessedit_pageseg_mode: (process.env.OCR_ENG_PSM ?? '6') as any });
 const labelWorkers = [];
 if (process.env.LABELS === '1') for (const lang of ['eng', 'tha+eng']) {
   const w = await Tesseract.createWorker(lang);

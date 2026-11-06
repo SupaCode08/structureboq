@@ -1,11 +1,11 @@
 {
-  "ocrId": "9e2d286369261eea5c734b384a1eae66ef1487dc1ae9ca75928f1ab2fad919ec",
-  "generatedAt": "2026-11-06T07:02:25.980Z",
+  "ocrId": "343f41a741e397b328194f91b34fac1db0af61dda0c058d7951e3d02ef74ad91",
+  "generatedAt": "2026-11-06T09:35:25.523Z",
   "sets": {
     "house_ready_1": {
-      "right": 37,
-      "wrong": 5,
-      "missing": 10,
+      "right": 34,
+      "wrong": 4,
+      "missing": 8,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -13,31 +13,31 @@
           "missing": 0
         },
         "tag": {
-          "right": 9,
+          "right": 8,
           "wrong": 0,
-          "missing": 0
+          "missing": 1
         },
         "count": {
-          "right": 5,
-          "wrong": 1,
+          "right": 2,
+          "wrong": 3,
           "missing": 0
         },
         "dimension": {
-          "right": 13,
-          "wrong": 3,
-          "missing": 2
+          "right": 15,
+          "wrong": 1,
+          "missing": 0
         },
         "rebar": {
-          "right": 8,
-          "wrong": 1,
-          "missing": 8
+          "right": 7,
+          "wrong": 0,
+          "missing": 7
         }
       }
     },
     "house_ready_2": {
-      "right": 48,
+      "right": 47,
       "wrong": 3,
-      "missing": 6,
+      "missing": 7,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -50,26 +50,26 @@
           "missing": 0
         },
         "count": {
-          "right": 7,
-          "wrong": 1,
-          "missing": 0
-        },
-        "dimension": {
-          "right": 20,
+          "right": 6,
           "wrong": 2,
           "missing": 0
         },
-        "rebar": {
-          "right": 10,
+        "dimension": {
+          "right": 22,
           "wrong": 0,
-          "missing": 6
+          "missing": 0
+        },
+        "rebar": {
+          "right": 8,
+          "wrong": 1,
+          "missing": 7
         }
       }
     },
     "house_ready_4": {
-      "right": 48,
-      "wrong": 3,
-      "missing": 18,
+      "right": 57,
+      "wrong": 4,
+      "missing": 8,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -87,14 +87,14 @@
           "missing": 0
         },
         "dimension": {
-          "right": 20,
+          "right": 24,
           "wrong": 0,
-          "missing": 5
+          "missing": 1
         },
         "rebar": {
-          "right": 6,
-          "wrong": 0,
-          "missing": 12
+          "right": 11,
+          "wrong": 1,
+          "missing": 6
         }
       }
     }
