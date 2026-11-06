@@ -46,7 +46,8 @@ function ocrSet(set: string): Promise<{ file: string; pages: number; ms: number 
   return new Promise((resolve, reject) => {
     const t0 = Date.now();
     const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['tsx', 'scripts/offline_ocr.ts', pdf, manifest.structuralPages, file], {
-      env: { ...process.env, FULL_BOQ: '1', PADDLE: '0' }, shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'pipe'],
+      // Paddle stays on as in the app: without it a raster page falls back to tesseract and scores far below what the app reads
+      env: { ...process.env, FULL_BOQ: '1' }, shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'pipe'],
     });
     let pages = 0, err = '';
     child.stdout.on('data', d => { pages += (String(d).match(/^p\d+ /gm) || []).length; });
