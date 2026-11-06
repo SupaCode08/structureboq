@@ -36,7 +36,7 @@ test('footing details titled only in the title block: each section takes the mes
   const other = page(1, [word('F(0.95x0.95)', 0.3, 0.5, 0.05), word('F(1.05x1.05)', 0.6, 0.5, 0.05)]);
   const { readings } = readSheets([other, page(2, words, [...section(0.1, 0.95, 0.2, 0.3, true), ...section(0.55, 1.05, 0.25)])]);
   const secs = readings.flatMap(r => r.sections).filter(s => s.member_type === 'FOOTING');
-  const f95 = secs.find(s => s.tag.startsWith('F(0.95'))!, f105 = secs.find(s => s.tag.startsWith('F(1.05'))!;
+  const f95 = secs.find(s => s.tag.startsWith('F0.95'))!, f105 = secs.find(s => s.tag.startsWith('F1.05'))!;
   assert.equal(f95.thickness_m, 0.2);
   assert.equal(f95.bottom_rebar, '7+8-DB12');
   assert.equal(f105.thickness_m, 0.25);

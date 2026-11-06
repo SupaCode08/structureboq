@@ -184,7 +184,8 @@ function lookAlikes(t: string): string[] {
 /** "F3,C1" / "F3.C1" / "B3,B3A.B3B" -> parts that look like tags */
 function splitTags(raw: string, vocab: Set<string>) {
   const t = clean(raw).replace(/([0-9A-Z])\.(?=[A-Z])/g, '$1,').replace(/=/g, ',');
-  return t.split(/,/).map(p => repairTag(p, vocab, !/[a-z]/.test(raw)) ?? completeTag(p, vocab)).filter(Boolean) as { tag: string; repaired: boolean }[];
+  // "F(0.90X0.90X0.30)" and "F0.90X0.90X0.30" name one footing: the brackets are how it is written, not part of the name
+  return t.split(/,/).map(p => p.replace(/^F\((\d[\d.X]*)\)?$/, 'F$1')).map(p => repairTag(p, vocab, !/[a-z]/.test(raw)) ?? completeTag(p, vocab)).filter(Boolean) as { tag: string; repaired: boolean }[];
 }
 
 /** A footing name cut short by OCR ("F(0.90X0.90X0" or "95X0.95") is the one footing name of the set it begins. */
@@ -1211,7 +1212,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
             if (instances.some(o => o.member_type === 'COLUMN' && o.from_grid === at && o.level === level)) continue;
             instances.push({
               tag: 'C?', member_type: 'COLUMN', from_grid: at, plan_title: title, level, confidence: 0.8,
-              box_2d: [c.r[1], c.r[0], c.r[3], c.r[2]].map(v => Math.round(v * 1000)),
+              box_2d: [c.r[1], c.r[0], c.r[3], c.r[2]].map(v => Math.round(v * 1000)), box_src: 'shape',
             });
           }
         }
@@ -1238,7 +1239,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
             const at = `${yLab[j]}/${xLab[i]}`;
             if (!colAt(pl.xs[i], pl.ys[j]) || instances.some(o => o.from_grid === at && (o.plan_title === title || !title) && o.tag.split(',').some(t => /^C/.test(t)))) continue;
             const sq = [...(p.rects || []), ...lineBoxes].find(r => Math.abs((r[0] + r[2]) / 2 - pl.xs[i]) < 0.15 * kx && Math.abs((r[1] + r[3]) / 2 - pl.ys[j]) < 0.15 * ky)!;
-            instances.push({ tag: 'C?', member_type: 'COLUMN', from_grid: at, plan_title: title, level, confidence: 0.6, box_2d: [sq[1], sq[0], sq[3], sq[2]].map(v => Math.round(v * 1000)) });
+            instances.push({ tag: 'C?', member_type: 'COLUMN', from_grid: at, plan_title: title, level, confidence: 0.6, box_2d: [sq[1], sq[0], sq[3], sq[2]].map(v => Math.round(v * 1000)), box_src: 'shape' });
           }
           const fden = planDen(p, pl.region, den);
           const boxes = (fden ? [...(p.rects || []), ...lineBoxes] : []).map(r => ({ r, g: measured(r, p, fden!) }))
@@ -1278,7 +1279,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
             const stub = boxes.find(({ r, g }) => r[0] > ox0 && r[1] > oy0 && r[2] < ox1 && r[3] < oy1
               && Math.abs((r[0] + r[2]) / 2 - c.x) < 0.15 * kx && Math.abs((r[1] + r[3]) / 2 - c.y) < 0.15 * ky
               && Math.min(g.w, g.h) >= 0.15 && Math.max(g.w, g.h) <= 1.2);
-            if (stub) instances.push({ tag: 'C?', member_type: 'COLUMN', from_grid: c.at, plan_title: title, level, confidence: 0.6, box_2d: [stub.r[1], stub.r[0], stub.r[3], stub.r[2]].map(v => Math.round(v * 1000)) });
+            if (stub) instances.push({ tag: 'C?', member_type: 'COLUMN', from_grid: c.at, plan_title: title, level, confidence: 0.6, box_2d: [stub.r[1], stub.r[0], stub.r[3], stub.r[2]].map(v => Math.round(v * 1000)), box_src: 'shape' });
           }
         }
       });
@@ -1538,7 +1539,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
               member_type: 'BEAM',
               width_m: w_m,
               depth_m: d_m,
-              box_2d: [b2.box_2d![0], Math.round(expectedX * 1000), b2.box_2d![2], Math.round((expectedX + (b2.box_2d![3] - b2.box_2d![1]) / 1000) * 1000)],
+              box_2d: [b2.box_2d![0], Math.round(expectedX * 1000), b2.box_2d![2], Math.round((expectedX + (b2.box_2d![3] - b2.box_2d![1]) / 1000) * 1000)], box_src: 'guess',
               evidence: `แถวรูปตัดคาน: ตำแหน่งถัดจาก ${b2.tag} ตรงกับ ${expectedPrefix} (${w_m}×${d_m} ม.)`,
               confidence: 0.85,
             });
@@ -1645,7 +1646,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
     po.instances.push({
       tag: kinds.size === 1 ? [...kinds][0] : 'F?', member_type: 'FOOTING', from_grid: po.at, plan_title: po.title, level: po.level,
       confidence: kinds.size === 1 ? 0.7 : 0.3,
-      box_2d: [po.outline.r[1], po.outline.r[0], po.outline.r[3], po.outline.r[2]].map(v => Math.round(v * 1000)),
+      box_2d: [po.outline.r[1], po.outline.r[0], po.outline.r[3], po.outline.r[2]].map(v => Math.round(v * 1000)), box_src: 'shape',
     });
   }
 
@@ -1675,11 +1676,12 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
       let r = readings.find(x => x.page === c.page && x.sheet_type === 'section_detail');
       if (!r) { r = { page: c.page, sheet_type: 'section_detail', instances: [], sections: [] }; readings.push(r); }
       let sec = readings.flatMap(x => x.sections).find(x => x.tag === ft.tag && x.member_type === 'FOOTING');
-      if (!sec) { sec = { tag: ft.tag, member_type: 'FOOTING', plan_w_m: ft.w, plan_l_m: ft.l, box_2d: c.box, evidence: ft.tag, confidence: 0.85 }; r.sections.push(sec); }
+      if (!sec) { sec = { tag: ft.tag, member_type: 'FOOTING', plan_w_m: ft.w, plan_l_m: ft.l, box_2d: c.box, box_src: 'shape', evidence: ft.tag, confidence: 0.85 }; r.sections.push(sec); }
       if (sec.thickness_m == null) {
         sec.thickness_m = ts[0];
         sec.measured_fields = [...new Set([...(sec.measured_fields || []), 'thickness'])];
         sec.box_2d = c.box;
+        sec.box_src = 'shape';
         sec.evidence = `${sec.evidence} (วัดความหนาจากรูปตัดฐานราก น.${c.page}: กว้าง ${c.wM} หนา ${ts[0]} ม.)`;
         sec.confidence = Math.max(sec.confidence ?? 0, 0.85);
       } else if (Math.abs(sec.thickness_m - ts[0]) > 0.02) {

@@ -18,6 +18,8 @@ export interface PlanInstance {
   to_grid?: string | null;
   length_m?: number | null;
   box_2d?: number[];
+  /** where box_2d comes from: absent = the label word; 'shape' = a drawn outline/square; 'guess' = placed by spacing, not seen */
+  box_src?: 'shape' | 'guess';
   plan_title?: string | null;
   level?: string | null;
   confidence?: number;
@@ -54,6 +56,8 @@ export interface SectionDef {
   /** disagreements between written dimensions and the drawn outline */
   section_conflicts?: string[];
   box_2d?: number[];
+  /** where box_2d comes from: absent = the label word; 'shape' = a drawn outline/square; 'guess' = placed by spacing, not seen */
+  box_src?: 'shape' | 'guess';
   evidence?: string;
   confidence?: number;
 }

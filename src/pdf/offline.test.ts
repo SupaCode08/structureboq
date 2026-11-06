@@ -234,7 +234,7 @@ test('DPT House 1 Page 25: all spread footings detected including B/1 (95x0.95 r
   assert.equal(spreadFootings.length, 6, 'Must find all 6 spread footings on the plan');
   const b1 = spreadFootings.find(i => i.from_grid === 'B/1');
   assert.ok(b1, 'Must detect footing at grid B/1');
-  assert.ok(b1.tag.startsWith('F(0.95X0.95'));
+  assert.ok(b1.tag.startsWith('F0.95X0.95'));
 });
 
 test('DPT House 1 Page 26: column stubs resolved to C1 instead of C?', async () => {
