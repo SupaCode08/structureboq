@@ -22,6 +22,9 @@ export const METHOD_LABEL: Record<EvidenceRef['method'], string> = {
   manual: 'ป้อนเอง',
 };
 
+/** The label on a box: the member name the evidence starts with ("B2", "F1 @ A/2"), not the whole line read around it */
+export const boxLabel = (text?: string) => (text && !/^\S+ @ \S+$/.test(text) ? text.split(/\s/)[0] : text);
+
 /**
  * The drawing page an extracted value came from, opened at the read region,
  * so the reviewer compares against the source instead of re-measuring.
@@ -46,13 +49,13 @@ export const SourceViewer: React.FC<SourceViewerProps> = ({ pageUrl: pageUrlProp
     ...context.filter(c => c.page === ev.page && c.bboxNorm).map(c => ({
       box: c.bboxNorm!,
       kind: 'context' as const,
-      label: c.text,
+      label: boxLabel(c.text),
       memberType: c.memberType
     })),
     ...(ev.bboxNorm ? [{
       box: ev.bboxNorm,
       kind: 'focus' as const,
-      label: ev.text,
+      label: boxLabel(ev.text),
       memberType: ev.memberType
     }] : []),
   ];
