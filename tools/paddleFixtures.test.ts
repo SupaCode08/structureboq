@@ -25,12 +25,19 @@ for (const name of PAGES) {
     const data = new Uint8Array(zlib.gunzipSync(fs.readFileSync(DIR + name + '.gray.gz')));
     assert.equal(data.length, width * height, 'raster size');
     const p = await paddle, n = 2, step = Math.ceil(height / n), over = 200, words: Word[] = [];
+    let band0Both: any[] = [];
     for (let k = 0; k < n; k++) {
       const y0 = Math.max(0, k * step - over), y1 = Math.min(height, (k + 1) * step + over);
       const ws = await paddleWords(p, { data: data.slice(y0 * width, y1 * width), width, height: y1 - y0 });
+      if (k === 0) band0Both = ws;
       words.push(...ws.map(w => [k, w.text, w.conf, r6(w.x0), r6(w.y0), r6(w.x1), r6(w.y1), w.vertical ? 1 : 0] as Word));
     }
     const d = compareWords(fx.words, words);
     assert.ok(d.identical, `${name}: ${summarize(d)}`);
+    if (name === 'cdc_1_p18') {
+      const y1 = Math.min(height, step + over), r0 = { data: data.slice(0, y1 * width), width, height: y1 };
+      const [flat, turned] = await Promise.all([paddleWords(p, r0, undefined, 'flat'), paddleWords(p, r0, undefined, 'turned')]);
+      assert.deepEqual([...flat, ...turned], band0Both, 'split flat+turned matches both');
+    }
   });
 }

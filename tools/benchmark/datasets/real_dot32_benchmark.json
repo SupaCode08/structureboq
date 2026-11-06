@@ -1,0 +1,98 @@
+{
+  "datasetId": "real-dot32-pavilion-benchmark-v1",
+  "datasetVersion": "1.0.0",
+  "split": "dev",
+  "projectId": "dot32-pavilion",
+  "projectName": "ศาลาพักคอย กรมการท่องเที่ยว (DOT.32/2563)",
+  "drawingFile": "real_drawings/dot32_pavilion/drawings.pdf",
+  "drawingRevision": "DOT.32/2563",
+  "engineVersionTarget": "8.0.0",
+  "createdAt": "2026-11-03T10:55:00Z",
+  "description": "Standard Department of Tourism roadside pavilion. Open-air RC foundation and stub columns with structural steel superstructure.",
+  "benchmarkEntries": [
+    {
+      "memberId": "DOT32-F01",
+      "tag": "F",
+      "memberType": "FOOTING",
+      "drawingPage": 21,
+      "dimensions": { "width": 1.20, "depth": 1.20, "length": 0.25, "count": 6, "unit": "m" },
+      "reinforcement": { "bottomRebar": "7+7-DB12" },
+      "materials": { "concreteGrade": "fc 240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 2.160,
+        "formworkAreaM2": 7.20,
+        "rebarWeightKg": 104.43,
+        "breakdown": { "mainBarsKg": 104.43, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from ST-06 detail (6 units x 1.20x1.20x0.25, 14-DB12 x 1.40m x 0.888 kg/m x 6)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Spread footing F for roadside pavilion"
+    },
+    {
+      "memberId": "DOT32-C01",
+      "tag": "C",
+      "memberType": "COLUMN",
+      "drawingPage": 20,
+      "dimensions": { "width": 0.25, "depth": 0.25, "length": 1.50, "count": 6, "unit": "m" },
+      "reinforcement": { "topRebar": "4-DB12", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "fc 240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.563,
+        "formworkAreaM2": 9.00,
+        "rebarWeightKg": 53.66,
+        "breakdown": { "mainBarsKg": 42.20, "stirrupsKg": 11.46 }
+      },
+      "referenceSource": "Manual takeoff from ST-05 stub column detail C (6 units x 0.25x0.25x1.50 assumed height, 4-DB12 with splice, 10 ties)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Stub column supporting structural steel post; 1.50m height assumed (not in answer_key.json)"
+    },
+    {
+      "memberId": "DOT32-GB01",
+      "tag": "GB1",
+      "memberType": "BEAM",
+      "drawingPage": 20,
+      "dimensions": { "width": 0.20, "depth": 0.35, "length": 2.50, "count": 4, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "fc 240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.700,
+        "formworkAreaM2": 9.00,
+        "rebarWeightKg": 54.10,
+        "breakdown": { "mainBarsKg": 39.61, "stirrupsKg": 14.49 }
+      },
+      "referenceSource": "Independent manual takeoff from ST-05 schedule (4 units x 0.20x0.35x2.50, 4-DB12 + 17 stirrups RB6@0.15m)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Longitudinal perimeter ground beam GB1"
+    },
+    {
+      "memberId": "DOT32-GB02",
+      "tag": "GB1'",
+      "memberType": "BEAM",
+      "drawingPage": 20,
+      "dimensions": { "width": 0.20, "depth": 0.35, "length": 2.00, "count": 2, "unit": "m" },
+      "reinforcement": { "topRebar": "3-DB12", "bottomRebar": "2-DB12", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "fc 240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.280,
+        "formworkAreaM2": 3.60,
+        "rebarWeightKg": 26.29,
+        "breakdown": { "mainBarsKg": 20.32, "stirrupsKg": 5.97 }
+      },
+      "referenceSource": "Independent manual takeoff from ST-05 schedule (2 units x 0.20x0.35x2.00, 5-DB12 + 14 stirrups RB6@0.15m)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Transverse ground beam GB1'"
+    }
+  ]
+}

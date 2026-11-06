@@ -1,0 +1,161 @@
+{
+  "datasetId": "real-cdc1-benchmark-v1",
+  "datasetVersion": "1.0.0",
+  "split": "heldout",
+  "projectId": "cdc-1",
+  "projectName": "ศูนย์พัฒนาเด็กเล็ก ศพด.1 (กรมส่งเสริมการปกครองท้องถิ่น)",
+  "drawingFile": "real_drawings/cdc_1/drawings.pdf",
+  "drawingRevision": "แบบมาตรฐาน ศพด.63",
+  "engineVersionTarget": "8.0.0",
+  "createdAt": "2026-11-03T10:55:00Z",
+  "description": "HOLDOUT BENCHMARK SET. Scanned Thai local government child development center. Wide 8m clear span beams and different callout conventions.",
+  "benchmarkEntries": [
+    {
+      "memberId": "CDC1-F01",
+      "tag": "F1",
+      "memberType": "FOOTING",
+      "drawingPage": 22,
+      "dimensions": { "width": 1.20, "depth": 1.20, "length": 0.25, "count": 13, "unit": "m" },
+      "reinforcement": { "bottomRebar": "RB12@0.15m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 4.680,
+        "formworkAreaM2": 15.60,
+        "rebarWeightKg": 258.59,
+        "breakdown": { "mainBarsKg": 258.59, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from Page 22 detail (13 units x 1.20x1.20x0.25, 16-RB12 x 1.40m x 0.888 kg/m x 13)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-19",
+      "notes": "Spread footing F1 on Page 22 detail"
+    },
+    {
+      "memberId": "CDC1-F02",
+      "tag": "F2",
+      "memberType": "FOOTING",
+      "drawingPage": 22,
+      "dimensions": { "width": 1.00, "depth": 1.00, "length": 0.25, "count": 9, "unit": "m" },
+      "reinforcement": { "bottomRebar": "RB12@0.15m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 2.250,
+        "formworkAreaM2": 9.00,
+        "rebarWeightKg": 134.27,
+        "breakdown": { "mainBarsKg": 134.27, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from Page 22 detail (9 units x 1.00x1.00x0.25, 14-RB12 x 1.20m x 0.888 kg/m x 9)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-19",
+      "notes": "Spread footing F2 on Page 22 detail"
+    },
+    {
+      "memberId": "CDC1-C01",
+      "tag": "C1",
+      "memberType": "COLUMN",
+      "drawingPage": 22,
+      "dimensions": { "width": 0.20, "depth": 0.20, "length": 3.80, "count": 22, "unit": "m" },
+      "reinforcement": { "topRebar": "4-RB12", "stirrupRebar": "RB6@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 3.344,
+        "formworkAreaM2": 66.88,
+        "rebarWeightKg": 398.93,
+        "breakdown": { "mainBarsKg": 334.46, "stirrupsKg": 64.47 }
+      },
+      "referenceSource": "Manual takeoff from Page 22 schedule (22 columns C1=C2 assumed count, H=3.80m assumed height, 4-RB12 with splice, 20 ties)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-19",
+      "notes": "Full-height columns C1=C2; count=22 and H=3.80m are estimated (not in answer_key.json)"
+    },
+    {
+      "memberId": "CDC1-GB01",
+      "tag": "GB1",
+      "memberType": "BEAM",
+      "drawingPage": 22,
+      "dimensions": { "width": 0.15, "depth": 0.40, "length": 4.00, "count": 16, "unit": "m" },
+      "reinforcement": { "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrupRebar": "RB6@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 3.840,
+        "formworkAreaM2": 60.80,
+        "rebarWeightKg": 315.31,
+        "breakdown": { "mainBarsKg": 243.70, "stirrupsKg": 71.61 }
+      },
+      "referenceSource": "Manual takeoff from Page 22 schedule (16 units x 0.15x0.40x4.00 uniform span assumption, 4-RB12 + 21 stirrups RB6@0.20m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-19",
+      "notes": "Ground beam GB1; uniform 4.0m span assumed across 16 instances"
+    },
+    {
+      "memberId": "CDC1-GB02",
+      "tag": "GB2",
+      "memberType": "BEAM",
+      "drawingPage": 22,
+      "dimensions": { "width": 0.15, "depth": 0.40, "length": 4.00, "count": 9, "unit": "m" },
+      "reinforcement": { "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrupRebar": "RB6@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 2.160,
+        "formworkAreaM2": 34.20,
+        "rebarWeightKg": 245.90,
+        "breakdown": { "mainBarsKg": 205.62, "stirrupsKg": 40.28 }
+      },
+      "referenceSource": "Manual takeoff from Page 22 schedule (9 units x 0.15x0.40x4.00 uniform span assumption, 6-RB12 + 21 stirrups RB6@0.20m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-19",
+      "notes": "Ground beam GB2 supporting interior partitions; uniform 4.0m span assumed across 9 instances"
+    },
+    {
+      "memberId": "CDC1-GB03",
+      "tag": "GB3",
+      "memberType": "BEAM",
+      "drawingPage": 22,
+      "dimensions": { "width": 0.15, "depth": 0.40, "length": 8.00, "count": 4, "unit": "m" },
+      "reinforcement": { "topRebar": "3-RB12", "bottomRebar": "3-RB12", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 1.920,
+        "formworkAreaM2": 30.40,
+        "rebarWeightKg": 222.66,
+        "breakdown": { "mainBarsKg": 176.63, "stirrupsKg": 46.03 }
+      },
+      "referenceSource": "Truncated takeoff from Page 22 schedule (omitted +2-DB16 top/bottom bars from drawing callout 3-RB12+2-DB16)",
+      "groundTruthStatus": "INVALID",
+      "reviewer": "StructBOQ Forensic Audit (Round 11)",
+      "verificationDate": "2026-11-03",
+      "notes": "FORENSIC INVALIDATION: Drawing S-02 answer_key.json specifies topRebar '3-RB12+2-DB16' and bottomRebar '2-DB16+3-RB12', but Round 10 dataset dropped '+2-DB16' and computed 222.66 kg from truncated spec (true multi-bar weight is 432.69 kg)."
+    },
+    {
+      "memberId": "CDC1-RB01",
+      "tag": "RB1",
+      "memberType": "BEAM",
+      "drawingPage": 22,
+      "dimensions": { "width": 0.15, "depth": 0.35, "length": 4.00, "count": 16, "unit": "m" },
+      "reinforcement": { "topRebar": "2-RB12", "bottomRebar": "2-RB12", "stirrupRebar": "RB6@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 3.360,
+        "formworkAreaM2": 54.40,
+        "rebarWeightKg": 307.85,
+        "breakdown": { "mainBarsKg": 243.70, "stirrupsKg": 64.15 }
+      },
+      "referenceSource": "Manual takeoff from Page 22 schedule (16 units x 0.15x0.35x4.00 uniform span assumption, 4-RB12 + 21 stirrups RB6@0.20m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-19",
+      "notes": "Roof beam RB1 supporting roof trusses; uniform 4.0m span assumed across 16 instances"
+    }
+  ]
+}

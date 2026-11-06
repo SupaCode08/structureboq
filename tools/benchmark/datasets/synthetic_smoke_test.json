@@ -1,0 +1,134 @@
+{
+  "datasetId": "synthetic-smoke-test-v1",
+  "datasetVersion": "1.0.0",
+  "split": "synthetic",
+  "projectId": "SYNTHETIC-PROJECT-001",
+  "projectName": "[SYNTHETIC SMOKE TEST] Structural Member Framework Verification",
+  "drawingFile": "mock_drawings/synthetic_test_sheet_s01.pdf",
+  "drawingRevision": "REV-0-SYNTHETIC",
+  "engineVersionTarget": "8.0.0",
+  "createdAt": "2026-11-03T09:20:00Z",
+  "description": "SYNTHETIC SMOKE TEST ONLY. Used strictly for verifying benchmark harness, error taxonomy, metric math, and false release detection. NEVER include in real-world accuracy claims.",
+  "benchmarkEntries": [
+    {
+      "memberId": "SYNTH-F01",
+      "tag": "F1_SYNTH",
+      "memberType": "FOOTING",
+      "drawingPage": 1,
+      "dimensions": { "width": 1.20, "depth": 1.20, "length": 0.35, "count": 1, "unit": "m" },
+      "reinforcement": { "bottomRebar": "DB12@0.15m" },
+      "materials": { "concreteGrade": "240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "STANDARD_HOOK" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.504,
+        "formworkAreaM2": 1.68,
+        "rebarWeightKg": 19.72,
+        "breakdown": { "mainBarsKg": 19.72, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Synthetic analytical calculation (1.2x1.2x0.35, 16 bars x 1.388m x 0.888 kg/m)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Synthetic isolated footing matching standard hook formula exactly"
+    },
+    {
+      "memberId": "SYNTH-C01",
+      "tag": "C1_SYNTH",
+      "memberType": "COLUMN",
+      "drawingPage": 1,
+      "dimensions": { "width": 0.20, "depth": 0.20, "length": 3.5, "count": 1, "unit": "m" },
+      "reinforcement": { "topRebar": "4-DB16", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.140,
+        "formworkAreaM2": 2.80,
+        "rebarWeightKg": 29.65,
+        "breakdown": { "mainBarsKg": 26.16, "stirrupsKg": 3.49 }
+      },
+      "referenceSource": "Synthetic analytical calculation (0.2x0.2x3.5, 4-DB16 with 40d splice + 24 ties)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Synthetic square column matching production formulas"
+    },
+    {
+      "memberId": "SYNTH-B01",
+      "tag": "B1_SYNTH",
+      "memberType": "BEAM",
+      "drawingPage": 2,
+      "dimensions": { "width": 0.20, "depth": 0.40, "length": 4.0, "count": 1, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.320,
+        "formworkAreaM2": 4.00,
+        "rebarWeightKg": 34.03,
+        "breakdown": { "mainBarsKg": 27.69, "stirrupsKg": 6.34 }
+      },
+      "referenceSource": "Synthetic analytical calculation (0.2x0.4x4.0, 4-DB16 + 27 stirrups)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Synthetic rectangular beam; triggers NEEDS_REVIEW due to span without support widths"
+    },
+    {
+      "memberId": "SYNTH-S01",
+      "tag": "S1_SYNTH",
+      "memberType": "SLAB",
+      "drawingPage": 2,
+      "dimensions": { "width": 4.0, "depth": 3.0, "length": 0.10, "count": 1, "unit": "m" },
+      "reinforcement": { "bottomRebar": "DB10@0.20m" },
+      "materials": { "concreteGrade": "240 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 2.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 1.200,
+        "formworkAreaM2": 13.40,
+        "rebarWeightKg": 78.36
+      },
+      "referenceSource": "Synthetic analytical calculation (4.0x3.0x0.10, two-way bottom mesh)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Synthetic solid two-way slab"
+    },
+    {
+      "memberId": "SYNTH-ERR01",
+      "tag": "C_DISCREPANT",
+      "memberType": "COLUMN",
+      "drawingPage": 3,
+      "dimensions": { "width": 0.20, "depth": 0.20, "length": 3.0, "count": 1, "unit": "m" },
+      "reinforcement": { "topRebar": "4-DB12", "stirrupRebar": "RB6@0.20m" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.120,
+        "formworkAreaM2": 2.40,
+        "rebarWeightKg": 50.00
+      },
+      "referenceSource": "Synthetic deliberate mismatch to test False Release / Discrepancy detector",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Synthetic deliberate rebar mismatch: reference 50 kg vs system ~15 kg"
+    },
+    {
+      "memberId": "SYNTH-ZERO01",
+      "tag": "F_BLOCKED",
+      "memberType": "FOOTING",
+      "drawingPage": 3,
+      "dimensions": { "width": 0.10, "depth": 0.10, "length": 0.20, "count": 1, "unit": "m" },
+      "reinforcement": { "bottomRebar": "DB12@0" },
+      "engineeringAssumptions": { "coverCm": 6.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.002,
+        "formworkAreaM2": 0.08,
+        "rebarWeightKg": 0
+      },
+      "referenceSource": "Synthetic edge case testing zero rebar reference and blocked calculation",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Synthetic QA Engineer",
+      "verificationDate": "2026-11-03",
+      "notes": "Cover 6cm exceeds width 10cm, spacing=0 -> tests double block and zero reference handling"
+    }
+  ]
+}

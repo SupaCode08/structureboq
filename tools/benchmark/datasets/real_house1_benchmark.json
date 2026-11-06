@@ -1,0 +1,118 @@
+{
+  "datasetId": "real-dpt-house1-benchmark-v1",
+  "datasetVersion": "1.0.0",
+  "split": "dev",
+  "projectId": "dpt-house-ready-1",
+  "projectName": "บ้านสำเร็จรูป 1 (ระบบประสานพิกัด) — กรมโยธาธิการและผังเมือง",
+  "drawingFile": "real_drawings/house_ready_1/Bann_Sumrejroop01.pdf",
+  "drawingRevision": "แบบมาตรฐานสานฝัน",
+  "engineVersionTarget": "8.0.0",
+  "createdAt": "2026-11-03T09:22:00Z",
+  "description": "Real Thai Department of Public Works (ยผ.) standard residential plan. Contains verified member-level schedules from drawing sheets S-02, S-03, S-06, S-07 and government BOQ references from ปร.4.",
+  "benchmarkEntries": [
+    {
+      "memberId": "DPT-H1-F01",
+      "tag": "F0.95X0.95",
+      "memberType": "FOOTING",
+      "drawingPage": 29,
+      "dimensions": { "width": 0.95, "depth": 0.95, "length": 0.20, "count": 2, "unit": "m" },
+      "reinforcement": { "bottomRebar": "5+5-DB12" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.361,
+        "formworkAreaM2": 1.52,
+        "rebarWeightKg": 18.65,
+        "breakdown": { "mainBarsKg": 18.65, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Verified manual takeoff from drawing sheet S-06 detail (2 units x 0.95x0.95x0.20, 10-DB12 x 1.05m x 0.888 kg/m x 2)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer (Audited 2026-10-20)",
+      "verificationDate": "2026-10-20",
+      "notes": "Spread footing variant detailed on S-06 with 5ø12mm # bottom mesh"
+    },
+    {
+      "memberId": "DPT-H1-C01",
+      "tag": "C1",
+      "memberType": "COLUMN",
+      "drawingPage": 26,
+      "dimensions": { "width": 0.20, "depth": 0.20, "length": 2.85, "count": 6, "unit": "m" },
+      "reinforcement": { "topRebar": "4-DB12", "stirrupRebar": "RB6@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.684,
+        "formworkAreaM2": 13.68,
+        "rebarWeightKg": 82.38,
+        "breakdown": { "mainBarsKg": 70.92, "stirrupsKg": 11.46 }
+      },
+      "referenceSource": "Manual takeoff from drawing sheet S-03 (6 ground floor columns, H=2.85m assumed, 4-DB12 with 40d splice, 15 ties)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Audited 2026-10-20; Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Standard ground floor columns C1 between Grid 1-2 / A-C; count=6 and H=2.85m estimated (not in answer_key.json)"
+    },
+    {
+      "memberId": "DPT-H1-B01",
+      "tag": "B1",
+      "memberType": "BEAM",
+      "drawingPage": 30,
+      "dimensions": { "width": 0.20, "depth": 0.30, "length": 3.60, "count": 1, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB12", "bottomRebar": "3-DB12", "stirrupRebar": "RB6@0.15m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.216,
+        "formworkAreaM2": 2.88,
+        "rebarWeightKg": 24.16,
+        "breakdown": { "mainBarsKg": 17.26, "stirrupsKg": 6.90 }
+      },
+      "referenceSource": "Verified manual takeoff from drawing sheet S-07 detail B1 (span 3.6m, 5-DB12 + 25 stirrups)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer (Audited 2026-10-20)",
+      "verificationDate": "2026-10-20",
+      "notes": "Tie beam B1 on Grid 1 between A-B"
+    },
+    {
+      "memberId": "DPT-H1-B02",
+      "tag": "B2",
+      "memberType": "BEAM",
+      "drawingPage": 30,
+      "dimensions": { "width": 0.20, "depth": 0.40, "length": 3.60, "count": 4, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB20", "bottomRebar": "2-DB20", "stirrupRebar": "RB9@0.20m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 1.152,
+        "formworkAreaM2": 11.52,
+        "rebarWeightKg": 182.24,
+        "breakdown": { "mainBarsKg": 150.32, "stirrupsKg": 31.92 }
+      },
+      "referenceSource": "Verified manual takeoff from drawing sheet S-07 detail B2 (4 ground floor spans x 3.6m, 4-DB20 + 19 stirrups RB9)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer (Audited 2026-10-20)",
+      "verificationDate": "2026-10-20",
+      "notes": "Main ground floor beams B2 supporting first floor masonry"
+    },
+    {
+      "memberId": "DPT-H1-S01",
+      "tag": "S1",
+      "memberType": "SLAB",
+      "drawingPage": 30,
+      "dimensions": { "width": 3.60, "depth": 2.70, "length": 0.10, "count": 1, "unit": "m" },
+      "reinforcement": { "bottomRebar": "RB9@0.25m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SR24" },
+      "engineeringAssumptions": { "coverCm": 2.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.972,
+        "formworkAreaM2": 10.98,
+        "rebarWeightKg": 44.80
+      },
+      "referenceSource": "Manual takeoff / BOQ convention from drawing sheet S-07 slab detail S1 (bay 3.6x2.7m, bottom two-way RB9@0.25m with gross-span bar count and hook allowance)",
+      "groundTruthStatus": "BOQ_REFERENCE",
+      "reviewer": "Civil QS Reviewer (Audited 2026-10-20; Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Cast-in-place balcony / wet area slab S1; rebar 44.80 kg uses gross-span bar count + hook/wastage allowance vs engine net-span 42.25 kg"
+    }
+  ]
+}

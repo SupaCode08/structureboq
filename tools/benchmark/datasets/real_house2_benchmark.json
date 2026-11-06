@@ -1,0 +1,140 @@
+{
+  "datasetId": "real-dpt-house2-benchmark-v1",
+  "datasetVersion": "1.0.0",
+  "split": "dev",
+  "projectId": "dpt-house-ready-2",
+  "projectName": "บ้านสำเร็จรูป 2 — กรมโยธาธิการและผังเมือง",
+  "drawingFile": "real_drawings/house_ready_2/Bann_Sumrejroop02.pdf",
+  "drawingRevision": "แบบมาตรฐานสานฝัน",
+  "engineVersionTarget": "8.0.0",
+  "createdAt": "2026-11-03T10:54:00Z",
+  "description": "Real Thai Department of Public Works (ยผ.) standard residential plan 2. Contains verified member-level schedules from drawing sheets S-03, S-04, S-05, S-35, S-38, S-39.",
+  "benchmarkEntries": [
+    {
+      "memberId": "DPT-H2-F01",
+      "tag": "F1.05X1.05",
+      "memberType": "FOOTING",
+      "drawingPage": 35,
+      "dimensions": { "width": 1.05, "depth": 1.05, "length": 0.25, "count": 2, "unit": "m" },
+      "reinforcement": { "bottomRebar": "5+5-DB12" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.551,
+        "formworkAreaM2": 2.10,
+        "rebarWeightKg": 22.20,
+        "breakdown": { "mainBarsKg": 22.20, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from S-35 detail (2 units x 1.05x1.05x0.25, 10-DB12 x 1.25m x 0.888 kg/m x 2)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Spread footing F1.05x1.05 on S-35"
+    },
+    {
+      "memberId": "DPT-H2-F02",
+      "tag": "F0.95X0.95",
+      "memberType": "FOOTING",
+      "drawingPage": 35,
+      "dimensions": { "width": 0.95, "depth": 0.95, "length": 0.20, "count": 2, "unit": "m" },
+      "reinforcement": { "bottomRebar": "5+5-DB12" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.361,
+        "formworkAreaM2": 1.52,
+        "rebarWeightKg": 18.65,
+        "breakdown": { "mainBarsKg": 18.65, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from S-35 detail (2 units x 0.95x0.95x0.20, 10-DB12 x 1.05m x 0.888 kg/m x 2)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Spread footing F0.95x0.95 on S-35"
+    },
+    {
+      "memberId": "DPT-H2-F03",
+      "tag": "F1.45X0.95",
+      "memberType": "FOOTING",
+      "drawingPage": 35,
+      "dimensions": { "width": 1.45, "depth": 0.95, "length": 0.25, "count": 1, "unit": "m" },
+      "reinforcement": { "bottomRebar": "7+8-DB12" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 5.0, "footingHookShape": "FULL_UPTURN" },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.344,
+        "formworkAreaM2": 1.20,
+        "rebarWeightKg": 18.43,
+        "breakdown": { "mainBarsKg": 18.43, "stirrupsKg": 0 }
+      },
+      "referenceSource": "Independent manual takeoff from S-35 combined footing (1.45x0.95x0.25, 7x1.65m + 8x1.15m = 20.75m x 0.888 kg/m)",
+      "groundTruthStatus": "VERIFIED",
+      "reviewer": "Civil QS Reviewer",
+      "verificationDate": "2026-10-20",
+      "notes": "Combined footing F1.45x0.95 on Grid 1/A"
+    },
+    {
+      "memberId": "DPT-H2-B01",
+      "tag": "B1",
+      "memberType": "BEAM",
+      "drawingPage": 38,
+      "dimensions": { "width": 0.20, "depth": 0.35, "length": 2.70, "count": 2, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrupRebar": "RB6@0.175m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.378,
+        "formworkAreaM2": 4.86,
+        "rebarWeightKg": 28.05,
+        "breakdown": { "mainBarsKg": 21.23, "stirrupsKg": 6.82 }
+      },
+      "referenceSource": "Manual takeoff from S-38 schedule (2 units x 0.20x0.35x2.70 assumed span, 4-DB12 + 16 stirrups RB6@0.175m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Ground tie beam B1; cross-section and rebar in answer_key.json, 2.7m span assumed using engine formula parity"
+    },
+    {
+      "memberId": "DPT-H2-B02",
+      "tag": "B2",
+      "memberType": "BEAM",
+      "drawingPage": 39,
+      "dimensions": { "width": 0.20, "depth": 0.35, "length": 2.70, "count": 14, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB12", "bottomRebar": "3-DB12", "stirrupRebar": "RB6@0.175m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 2.646,
+        "formworkAreaM2": 34.02,
+        "rebarWeightKg": 224.28,
+        "breakdown": { "mainBarsKg": 176.54, "stirrupsKg": 47.74 }
+      },
+      "referenceSource": "Manual takeoff from S-39 detail 2-2 (14 units x 0.20x0.35x2.70 uniform span assumption, 5-DB12 + 16 stirrups RB6@0.175m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Main building beams B2 (6 ground floor + 8 first floor); uniform 2.70m span assumed across all 14 instances"
+    },
+    {
+      "memberId": "DPT-H2-B03",
+      "tag": "B3",
+      "memberType": "BEAM",
+      "drawingPage": 39,
+      "dimensions": { "width": 0.20, "depth": 0.35, "length": 2.70, "count": 4, "unit": "m" },
+      "reinforcement": { "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrupRebar": "RB6@0.175m" },
+      "materials": { "concreteGrade": "fc 210 ksc cylinder", "steelGrade": "SD40" },
+      "engineeringAssumptions": { "coverCm": 3.0 },
+      "referenceQuantity": {
+        "concreteVolumeM3": 0.756,
+        "formworkAreaM2": 9.72,
+        "rebarWeightKg": 82.52,
+        "breakdown": { "mainBarsKg": 68.88, "stirrupsKg": 13.64 }
+      },
+      "referenceSource": "Manual takeoff from S-39 (4 units x 0.20x0.35x2.70 uniform span assumption, 4-DB16 + 16 stirrups RB6@0.175m)",
+      "groundTruthStatus": "ESTIMATED",
+      "reviewer": "Civil QS Reviewer (Reclassified Round 11)",
+      "verificationDate": "2026-10-20",
+      "notes": "Heavy load transfer beams B3; uniform 2.70m span assumed across 4 instances"
+    }
+  ]
+}

@@ -1,0 +1,493 @@
+{
+  "metadata": {
+    "datasetId": "synthetic-smoke-test-v1",
+    "datasetVersion": "1.0.0",
+    "split": "synthetic",
+    "projectId": "SYNTHETIC-PROJECT-001",
+    "projectName": "[SYNTHETIC SMOKE TEST] Structural Member Framework Verification",
+    "drawingFile": "mock_drawings/synthetic_test_sheet_s01.pdf",
+    "runTimestamp": "2026-11-03T02:22:51.370Z",
+    "engineVersion": "8.0.0-round8",
+    "engineCommit": "master"
+  },
+  "metrics": {
+    "totalMembers": 6,
+    "evaluatedMembers": 6,
+    "verifiedMembers": 5,
+    "needsReviewCount": 2,
+    "needsReviewRatePct": 33.33,
+    "autoReleaseCount": 4,
+    "falseReleaseCount": 1,
+    "falseReleaseRatePct": 25,
+    "processingTimeMs": 3.93,
+    "avgProcessingTimePerMemberMs": 0.66,
+    "byComponent": {
+      "concrete": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      },
+      "formwork": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      },
+      "rebar": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": -5.9067,
+        "medianSignedError": 0,
+        "meanAbsError": 5.9067,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 35.44,
+        "maxAbsPercentageError": 70.88
+      }
+    },
+    "byMemberType": {
+      "FOOTING": {
+        "memberCount": 2,
+        "concrete": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 1
+      },
+      "COLUMN": {
+        "memberCount": 2,
+        "concrete": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": -17.72,
+          "medianSignedError": -17.72,
+          "meanAbsError": 17.72,
+          "medianAbsPercentageError": 35.44,
+          "p90AbsPercentageError": 63.79,
+          "maxAbsPercentageError": 70.88
+        },
+        "falseReleaseCount": 1,
+        "needsReviewCount": 0
+      },
+      "BEAM": {
+        "memberCount": 1,
+        "concrete": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 1
+      },
+      "SLAB": {
+        "memberCount": 1,
+        "concrete": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      }
+    }
+  },
+  "errorSummary": {
+    "OCR_ERROR": 0,
+    "DRAWING_INTERPRETATION_ERROR": 0,
+    "DIMENSION_ERROR": 0,
+    "REINFORCEMENT_COUNT_ERROR": 1,
+    "COVER_ERROR": 0,
+    "HOOK_ASSUMPTION_ERROR": 0,
+    "LAP_ASSUMPTION_ERROR": 0,
+    "UNIT_CONVERSION_ERROR": 0,
+    "FORMULA_ERROR": 0,
+    "REFERENCE_DATA_ERROR": 0,
+    "UNKNOWN": 0
+  },
+  "diagnostics": [
+    {
+      "memberId": "SYNTH-ERR01",
+      "tag": "C_DISCREPANT",
+      "diagnostics": [
+        {
+          "errorType": "REINFORCEMENT_COUNT_ERROR",
+          "severity": "MAJOR",
+          "component": "rebar",
+          "description": "Reinforcement steel weight differs by 70.9%",
+          "evidence": "System: 14.56 kg, Ref: 50 kg (diff: -35.44 kg)"
+        }
+      ]
+    }
+  ],
+  "memberEvaluations": [
+    {
+      "memberId": "SYNTH-F01",
+      "tag": "F1_SYNTH",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.504,
+          "refVal": 0.504,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 1.68,
+          "refVal": 1.68,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 19.72,
+          "refVal": 19.72,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "SYNTH-C01",
+      "tag": "C1_SYNTH",
+      "memberType": "COLUMN",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.14,
+          "refVal": 0.14,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 2.8,
+          "refVal": 2.8,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 29.65,
+          "refVal": 29.65,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "SYNTH-B01",
+      "tag": "B1_SYNTH",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.32,
+          "refVal": 0.32,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 4,
+          "refVal": 4,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 34.03,
+          "refVal": 34.03,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "SYNTH-S01",
+      "tag": "S1_SYNTH",
+      "memberType": "SLAB",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 1.2,
+          "refVal": 1.2,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 13.4,
+          "refVal": 13.4,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 78.36,
+          "refVal": 78.36,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "SYNTH-ERR01",
+      "tag": "C_DISCREPANT",
+      "memberType": "COLUMN",
+      "groundTruthStatus": "ESTIMATED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [
+        {
+          "code": "COVER_ASSUMED",
+          "severity": "info",
+          "message": "ระยะหุ้มคอนกรีตใช้ค่ามาตรฐานวิศวกรรม 3.5 ซม."
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.12,
+          "refVal": 0.12,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 2.4,
+          "refVal": 2.4,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 14.56,
+          "refVal": 50,
+          "absError": 35.44,
+          "signedError": -35.44,
+          "relErrorPct": 70.88,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": true,
+      "errorLabels": [
+        "REINFORCEMENT_COUNT_ERROR"
+      ]
+    },
+    {
+      "memberId": "SYNTH-ZERO01",
+      "tag": "F_BLOCKED",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "ระยะหุ้มคอนกรีต 2 ด้าน (12.0 ซม.) มากกว่าหรือเท่ากับขนาดหน้าตัดองค์อาคาร (10.0 ซม.) — ไม่สามารถใส่เหล็กเสริมได้"
+      ],
+      "flags": [
+        {
+          "code": "COVER_EXCEEDS_DIMENSION",
+          "severity": "block",
+          "message": "ระยะหุ้มคอนกรีต 2 ด้าน (12.0 ซม.) มากกว่าหรือเท่ากับขนาดหน้าตัดองค์อาคาร (10.0 ซม.) — ไม่สามารถใส่เหล็กเสริมได้"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.002,
+          "refVal": 0.002,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 0.08,
+          "refVal": 0.08,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 0,
+          "refVal": 0,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    }
+  ]
+}

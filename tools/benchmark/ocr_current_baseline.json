@@ -1,0 +1,102 @@
+{
+  "ocrId": "9e2d286369261eea5c734b384a1eae66ef1487dc1ae9ca75928f1ab2fad919ec",
+  "generatedAt": "2026-11-06T07:02:25.980Z",
+  "sets": {
+    "house_ready_1": {
+      "right": 37,
+      "wrong": 5,
+      "missing": 10,
+      "byCategory": {
+        "grid": {
+          "right": 2,
+          "wrong": 0,
+          "missing": 0
+        },
+        "tag": {
+          "right": 9,
+          "wrong": 0,
+          "missing": 0
+        },
+        "count": {
+          "right": 5,
+          "wrong": 1,
+          "missing": 0
+        },
+        "dimension": {
+          "right": 13,
+          "wrong": 3,
+          "missing": 2
+        },
+        "rebar": {
+          "right": 8,
+          "wrong": 1,
+          "missing": 8
+        }
+      }
+    },
+    "house_ready_2": {
+      "right": 48,
+      "wrong": 3,
+      "missing": 6,
+      "byCategory": {
+        "grid": {
+          "right": 2,
+          "wrong": 0,
+          "missing": 0
+        },
+        "tag": {
+          "right": 9,
+          "wrong": 0,
+          "missing": 0
+        },
+        "count": {
+          "right": 7,
+          "wrong": 1,
+          "missing": 0
+        },
+        "dimension": {
+          "right": 20,
+          "wrong": 2,
+          "missing": 0
+        },
+        "rebar": {
+          "right": 10,
+          "wrong": 0,
+          "missing": 6
+        }
+      }
+    },
+    "house_ready_4": {
+      "right": 48,
+      "wrong": 3,
+      "missing": 18,
+      "byCategory": {
+        "grid": {
+          "right": 2,
+          "wrong": 0,
+          "missing": 0
+        },
+        "tag": {
+          "right": 11,
+          "wrong": 0,
+          "missing": 1
+        },
+        "count": {
+          "right": 9,
+          "wrong": 3,
+          "missing": 0
+        },
+        "dimension": {
+          "right": 20,
+          "wrong": 0,
+          "missing": 5
+        },
+        "rebar": {
+          "right": 6,
+          "wrong": 0,
+          "missing": 12
+        }
+      }
+    }
+  }
+}

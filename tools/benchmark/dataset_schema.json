@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StructBOQBenchmarkDataset",
+  "description": "Standard schema for StructBOQ independent benchmark datasets comparing system takeoff outputs against verified structural reference quantities.",
+  "type": "object",
+  "required": [
+    "datasetId",
+    "datasetVersion",
+    "split",
+    "projectId",
+    "projectName",
+    "drawingFile",
+    "benchmarkEntries"
+  ],
+  "properties": {
+    "datasetId": {
+      "type": "string",
+      "description": "Unique identifier for this benchmark dataset"
+    },
+    "datasetVersion": {
+      "type": "string",
+      "description": "Semver version of this benchmark dataset (e.g. 1.0.0)"
+    },
+    "split": {
+      "type": "string",
+      "enum": ["dev", "heldout", "synthetic"],
+      "description": "Split category: dev (used during development), heldout (blind evaluation), synthetic (smoke test only)"
+    },
+    "projectId": {
+      "type": "string",
+      "description": "Unique project identifier (e.g. dpt-house-ready-1)"
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Descriptive human-readable project name"
+    },
+    "drawingFile": {
+      "type": "string",
+      "description": "File path or filename of the source construction drawing"
+    },
+    "drawingRevision": {
+      "type": "string",
+      "description": "Drawing revision code or date"
+    },
+    "engineVersionTarget": {
+      "type": "string",
+      "description": "Expected minimum StructBOQ engine version"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string"
+    },
+    "benchmarkEntries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BenchmarkEntry"
+      }
+    }
+  },
+  "definitions": {
+    "BenchmarkEntry": {
+      "type": "object",
+      "required": [
+        "memberId",
+        "tag",
+        "memberType",
+        "drawingPage",
+        "dimensions",
+        "referenceQuantity",
+        "referenceSource",
+        "groundTruthStatus",
+        "verificationDate"
+      ],
+      "properties": {
+        "memberId": {
+          "type": "string",
+          "description": "Unique member identifier within this dataset"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Structural tag on drawings (e.g. F1, C1, B2, S1)"
+        },
+        "memberType": {
+          "type": "string",
+          "enum": ["FOOTING", "COLUMN", "BEAM", "SLAB"]
+        },
+        "drawingPage": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Drawing page number where schedule or instance is detailed"
+        },
+        "dimensions": {
+          "type": "object",
+          "required": ["width", "depth", "length"],
+          "properties": {
+            "width": { "type": "number", "minimum": 0 },
+            "depth": { "type": "number", "minimum": 0 },
+            "length": { "type": "number", "minimum": 0 },
+            "count": { "type": "number", "minimum": 1, "default": 1 },
+            "unit": { "type": "string", "enum": ["m", "cm", "mm"], "default": "m" }
+          }
+        },
+        "reinforcement": {
+          "type": "object",
+          "properties": {
+            "topRebar": { "type": "string" },
+            "bottomRebar": { "type": "string" },
+            "stirrupRebar": { "type": "string" },
+            "stirrupSets": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "materials": {
+          "type": "object",
+          "properties": {
+            "concreteGrade": { "type": "string", "description": "e.g. 150 ksc cube, 240 ksc cylinder" },
+            "steelGrade": { "type": "string", "enum": ["SR24", "SD30", "SD40", "SD50"] }
+          }
+        },
+        "engineeringAssumptions": {
+          "type": "object",
+          "properties": {
+            "coverCm": { "type": "number", "minimum": 0 },
+            "footingHookShape": {
+              "type": "string",
+              "enum": ["FULL_UPTURN", "STANDARD_HOOK", "STRAIGHT", "UNSPECIFIED"]
+            },
+            "stockBarLengthM": {
+              "type": "number",
+              "enum": [6.0, 10.0, 12.0]
+            },
+            "lapSpliceRule": { "type": "string" }
+          }
+        },
+        "referenceQuantity": {
+          "type": "object",
+          "required": ["concreteVolumeM3", "formworkAreaM2", "rebarWeightKg"],
+          "properties": {
+            "concreteVolumeM3": { "type": "number", "minimum": 0 },
+            "formworkAreaM2": { "type": "number", "minimum": 0 },
+            "rebarWeightKg": { "type": "number", "minimum": 0 },
+            "breakdown": {
+              "type": "object",
+              "properties": {
+                "mainBarsKg": { "type": "number" },
+                "stirrupsKg": { "type": "number" },
+                "wiremeshM2": { "type": "number" },
+                "bindingWireKg": { "type": "number" }
+              }
+            }
+          }
+        },
+        "referenceSource": {
+          "type": "string",
+          "description": "Source citation: e.g. 'Manual calculation from Page 29 detail', 'Official BOQ Item 2.1'"
+        },
+        "groundTruthStatus": {
+          "type": "string",
+          "enum": ["VERIFIED", "BOQ_REFERENCE", "ESTIMATED", "INVALID"],
+          "description": "Status of the reference quantity. Only VERIFIED may be used for official accuracy claims."
+        },
+        "reviewer": {
+          "type": "string",
+          "description": "Name or title of engineer/reviewer who verified the data"
+        },
+        "verificationDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

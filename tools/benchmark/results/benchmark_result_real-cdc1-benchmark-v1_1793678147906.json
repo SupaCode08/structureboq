@@ -1,0 +1,527 @@
+{
+  "metadata": {
+    "datasetId": "real-cdc1-benchmark-v1",
+    "datasetVersion": "1.0.0",
+    "split": "heldout",
+    "projectId": "cdc-1",
+    "projectName": "ศูนย์พัฒนาเด็กเล็ก ศพด.1 (กรมส่งเสริมการปกครองท้องถิ่น)",
+    "drawingFile": "real_drawings/cdc_1/drawings.pdf",
+    "runTimestamp": "2026-11-03T03:55:47.905Z",
+    "engineVersion": "8.0.0-round8",
+    "engineCommit": "master"
+  },
+  "metrics": {
+    "totalMembers": 7,
+    "evaluatedMembers": 7,
+    "verifiedMembers": 7,
+    "needsReviewCount": 4,
+    "needsReviewRatePct": 57.14,
+    "autoReleaseCount": 3,
+    "falseReleaseCount": 0,
+    "falseReleaseRatePct": 0,
+    "processingTimeMs": 3.81,
+    "avgProcessingTimePerMemberMs": 0.54,
+    "byComponent": {
+      "concrete": {
+        "count": 7,
+        "validPercentageCount": 7,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      },
+      "formwork": {
+        "count": 7,
+        "validPercentageCount": 7,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      },
+      "rebar": {
+        "count": 7,
+        "validPercentageCount": 7,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0.0029,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      }
+    },
+    "byMemberType": {
+      "FOOTING": {
+        "memberCount": 2,
+        "concrete": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 2,
+          "validPercentageCount": 2,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      },
+      "COLUMN": {
+        "memberCount": 1,
+        "concrete": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 1,
+          "validPercentageCount": 1,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      },
+      "BEAM": {
+        "memberCount": 4,
+        "concrete": {
+          "count": 4,
+          "validPercentageCount": 4,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 4,
+          "validPercentageCount": 4,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 4,
+          "validPercentageCount": 4,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0.005,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 4
+      },
+      "SLAB": {
+        "memberCount": 0,
+        "concrete": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      }
+    }
+  },
+  "errorSummary": {
+    "OCR_ERROR": 0,
+    "DRAWING_INTERPRETATION_ERROR": 0,
+    "DIMENSION_ERROR": 0,
+    "REINFORCEMENT_COUNT_ERROR": 0,
+    "COVER_ERROR": 0,
+    "HOOK_ASSUMPTION_ERROR": 0,
+    "LAP_ASSUMPTION_ERROR": 0,
+    "UNIT_CONVERSION_ERROR": 0,
+    "FORMULA_ERROR": 0,
+    "REFERENCE_DATA_ERROR": 0,
+    "UNKNOWN": 0
+  },
+  "diagnostics": [],
+  "memberEvaluations": [
+    {
+      "memberId": "CDC1-F01",
+      "tag": "F1",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 4.68,
+          "refVal": 4.68,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 15.6,
+          "refVal": 15.6,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 258.59,
+          "refVal": 258.59,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-F02",
+      "tag": "F2",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 2.25,
+          "refVal": 2.25,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 9,
+          "refVal": 9,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 134.27,
+          "refVal": 134.27,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-C01",
+      "tag": "C1",
+      "memberType": "COLUMN",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 3.344,
+          "refVal": 3.344,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 66.88,
+          "refVal": 66.88,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 398.93,
+          "refVal": 398.93,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-GB01",
+      "tag": "GB1",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 3.84,
+          "refVal": 3.84,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 60.8,
+          "refVal": 60.8,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 315.3,
+          "refVal": 315.31,
+          "absError": 0.01,
+          "signedError": -0.01,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-GB02",
+      "tag": "GB2",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 2.16,
+          "refVal": 2.16,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 34.2,
+          "refVal": 34.2,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 245.9,
+          "refVal": 245.9,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-GB03",
+      "tag": "GB3",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 1.92,
+          "refVal": 1.92,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 30.4,
+          "refVal": 30.4,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 222.67,
+          "refVal": 222.66,
+          "absError": 0.01,
+          "signedError": 0.01,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "CDC1-RB01",
+      "tag": "RB1",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 3.36,
+          "refVal": 3.36,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 54.4,
+          "refVal": 54.4,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 307.85,
+          "refVal": 307.85,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    }
+  ]
+}

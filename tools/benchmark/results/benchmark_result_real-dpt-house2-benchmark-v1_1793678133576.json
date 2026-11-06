@@ -1,0 +1,510 @@
+{
+  "metadata": {
+    "datasetId": "real-dpt-house2-benchmark-v1",
+    "datasetVersion": "1.0.0",
+    "split": "dev",
+    "projectId": "dpt-house-ready-2",
+    "projectName": "บ้านสำเร็จรูป 2 — กรมโยธาธิการและผังเมือง",
+    "drawingFile": "real_drawings/house_ready_2/Bann_Sumrejroop02.pdf",
+    "runTimestamp": "2026-11-03T03:55:33.575Z",
+    "engineVersion": "8.0.0-round8",
+    "engineCommit": "master"
+  },
+  "metrics": {
+    "totalMembers": 6,
+    "evaluatedMembers": 6,
+    "verifiedMembers": 6,
+    "needsReviewCount": 3,
+    "needsReviewRatePct": 50,
+    "autoReleaseCount": 3,
+    "falseReleaseCount": 0,
+    "falseReleaseRatePct": 0,
+    "processingTimeMs": 3.66,
+    "avgProcessingTimePerMemberMs": 0.61,
+    "byComponent": {
+      "concrete": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": 0.0001,
+        "medianSignedError": 0,
+        "meanAbsError": 0.0001,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0.08,
+        "maxAbsPercentageError": 0.12
+      },
+      "formwork": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": 0,
+        "medianSignedError": 0,
+        "meanAbsError": 0,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 0,
+        "maxAbsPercentageError": 0
+      },
+      "rebar": {
+        "count": 6,
+        "validPercentageCount": 6,
+        "meanSignedError": 3.0283,
+        "medianSignedError": 0,
+        "meanAbsError": 3.0283,
+        "medianAbsPercentageError": 0,
+        "p90AbsPercentageError": 7.49,
+        "maxAbsPercentageError": 10.88
+      }
+    },
+    "byMemberType": {
+      "FOOTING": {
+        "memberCount": 3,
+        "concrete": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 0.0002,
+          "medianSignedError": 0,
+          "meanAbsError": 0.0002,
+          "medianAbsPercentageError": 0.05,
+          "p90AbsPercentageError": 0.11,
+          "maxAbsPercentageError": 0.12
+        },
+        "formwork": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      },
+      "COLUMN": {
+        "memberCount": 0,
+        "concrete": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      },
+      "BEAM": {
+        "memberCount": 3,
+        "concrete": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 3,
+          "validPercentageCount": 3,
+          "meanSignedError": 6.0567,
+          "medianSignedError": 8.98,
+          "meanAbsError": 6.0567,
+          "medianAbsPercentageError": 4.1,
+          "p90AbsPercentageError": 9.52,
+          "maxAbsPercentageError": 10.88
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 3
+      },
+      "SLAB": {
+        "memberCount": 0,
+        "concrete": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "formwork": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "rebar": {
+          "count": 0,
+          "validPercentageCount": 0,
+          "meanSignedError": 0,
+          "medianSignedError": 0,
+          "meanAbsError": 0,
+          "medianAbsPercentageError": 0,
+          "p90AbsPercentageError": 0,
+          "maxAbsPercentageError": 0
+        },
+        "falseReleaseCount": 0,
+        "needsReviewCount": 0
+      }
+    }
+  },
+  "errorSummary": {
+    "OCR_ERROR": 0,
+    "DRAWING_INTERPRETATION_ERROR": 0,
+    "DIMENSION_ERROR": 0,
+    "REINFORCEMENT_COUNT_ERROR": 2,
+    "COVER_ERROR": 0,
+    "HOOK_ASSUMPTION_ERROR": 0,
+    "LAP_ASSUMPTION_ERROR": 0,
+    "UNIT_CONVERSION_ERROR": 0,
+    "FORMULA_ERROR": 0,
+    "REFERENCE_DATA_ERROR": 0,
+    "UNKNOWN": 0
+  },
+  "diagnostics": [
+    {
+      "memberId": "DPT-H2-B02",
+      "tag": "B2",
+      "diagnostics": [
+        {
+          "errorType": "REINFORCEMENT_COUNT_ERROR",
+          "severity": "MAJOR",
+          "component": "rebar",
+          "description": "Reinforcement steel weight differs by 4.1%",
+          "evidence": "System: 233.47 kg, Ref: 224.28 kg (diff: 9.19 kg)"
+        }
+      ]
+    },
+    {
+      "memberId": "DPT-H2-B03",
+      "tag": "B3",
+      "diagnostics": [
+        {
+          "errorType": "REINFORCEMENT_COUNT_ERROR",
+          "severity": "MAJOR",
+          "component": "rebar",
+          "description": "Reinforcement steel weight differs by 10.9%",
+          "evidence": "System: 91.5 kg, Ref: 82.52 kg (diff: 8.98 kg)"
+        }
+      ]
+    }
+  ],
+  "memberEvaluations": [
+    {
+      "memberId": "DPT-H2-F01",
+      "tag": "F1.05X1.05",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.5513,
+          "refVal": 0.551,
+          "absError": 0.0003,
+          "signedError": 0.0003,
+          "relErrorPct": 0.05,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 2.1,
+          "refVal": 2.1,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 22.2,
+          "refVal": 22.2,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "DPT-H2-F02",
+      "tag": "F0.95X0.95",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.361,
+          "refVal": 0.361,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 1.52,
+          "refVal": 1.52,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 18.65,
+          "refVal": 18.65,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "DPT-H2-F03",
+      "tag": "F1.45X0.95",
+      "memberType": "FOOTING",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "AUTO_RELEASE",
+      "reviewWarnings": [],
+      "flags": [],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.3444,
+          "refVal": 0.344,
+          "absError": 0.0004,
+          "signedError": 0.0004,
+          "relErrorPct": 0.12,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 1.2,
+          "refVal": 1.2,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 18.43,
+          "refVal": 18.43,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "DPT-H2-B01",
+      "tag": "B1",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.378,
+          "refVal": 0.378,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 4.86,
+          "refVal": 4.86,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 28.05,
+          "refVal": 28.05,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": []
+    },
+    {
+      "memberId": "DPT-H2-B02",
+      "tag": "B2",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 2.646,
+          "refVal": 2.646,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 34.02,
+          "refVal": 34.02,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 233.47,
+          "refVal": 224.28,
+          "absError": 9.19,
+          "signedError": 9.19,
+          "relErrorPct": 4.1,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": [
+        "REINFORCEMENT_COUNT_ERROR"
+      ]
+    },
+    {
+      "memberId": "DPT-H2-B03",
+      "tag": "B3",
+      "memberType": "BEAM",
+      "groundTruthStatus": "VERIFIED",
+      "systemStatus": "NEEDS_REVIEW",
+      "reviewWarnings": [
+        "Center-to-center span detected without exact column support widths; verify net clear span"
+      ],
+      "flags": [
+        {
+          "code": "ENGINEERING",
+          "severity": "warn",
+          "message": "Center-to-center span detected without exact column support widths; verify net clear span"
+        }
+      ],
+      "components": {
+        "concrete": {
+          "key": "concreteVolumeM3",
+          "systemVal": 0.756,
+          "refVal": 0.756,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "formwork": {
+          "key": "formworkAreaM2",
+          "systemVal": 9.72,
+          "refVal": 9.72,
+          "absError": 0,
+          "signedError": 0,
+          "relErrorPct": 0,
+          "isZeroDiv": false
+        },
+        "rebar": {
+          "key": "rebarWeightKg",
+          "systemVal": 91.5,
+          "refVal": 82.52,
+          "absError": 8.98,
+          "signedError": 8.98,
+          "relErrorPct": 10.88,
+          "isZeroDiv": false
+        }
+      },
+      "isFalseRelease": false,
+      "errorLabels": [
+        "REINFORCEMENT_COUNT_ERROR"
+      ]
+    }
+  ]
+}
