@@ -13,7 +13,7 @@ import type { PdfDoc } from './pdf/browserPipeline';
 import { ReviewWorkspace } from './components/ReviewWorkspace';
 import { ReadingLog, type ReadingLogData } from './components/ReadingLog';
 import { PlanView } from './components/PlanView';
-import { logEntryFor, addEntry, undoEntry, type ReviewLogEntry } from './engine/reviewLog';
+import { logEntryFor, addEntry, undoEntry, readingSignature, type ReviewLogEntry } from './engine/reviewLog';
 import { BoqComparison, type BoqState, type DatasetInfo } from './components/BoqComparison';
 import { UploadSection } from './components/UploadSection';
 import { SummaryCards } from './components/SummaryCards';
@@ -26,6 +26,10 @@ import { OfficialReportModal } from './components/OfficialReportModal';
 import { SAMPLE_PROJECTS, SampleProject } from './data/sampleProjects';
 import {
   computeProject,
+  approvalFor,
+  calcSnapshot,
+  fingerprintOf,
+  type DrawingRef,
   BOQProjectResult,
   CalculatedQuantity,
   ExtractedMember,
@@ -38,6 +42,10 @@ import {
 import type { Language } from './utils/translations';
 import { swapDoc as swapSlot, destroyOnError } from './pdf/docLifecycle';
 import { CheckCircle2, XCircle, Info, X, ClipboardCheck } from 'lucide-react';
+
+import { fileIdentity as fileDrawing, fileKey } from './pdf/fileIdentity';
+import type { PageSelection } from './pdf/pageSelection';
+const revisionOf = (d: DrawingRef) => `${d.file} · ${d.sha256 ? d.sha256.slice(0, 16) : '(ไม่มี hash: เบราว์เซอร์ไม่อนุญาต)'}`;
 
 export default function App() {
   const lang: Language = 'th';
@@ -63,6 +71,20 @@ export default function App() {
   const [currentProject, setCurrentProject] = useState<BOQProjectResult>(() => computeProject([], '', DEFAULT_MATERIAL_SPECS, DEFAULT_FACTOR_F_PARAMS));
   const [readingLog, setReadingLog] = useState<ReadingLogData | null>(null);
   const [reviewLog, setReviewLog] = useState<ReviewLogEntry[]>([]);
+  /** typed reviewer name (kept in this browser) and the opened drawing file as name · SHA-256 prefix */
+  const [reviewer, setReviewer] = useState(() => { try { return localStorage.getItem('structboq_reviewer') || ''; } catch { return ''; } });
+  const [revision, setRevision] = useState<string>();
+  /** the opened drawing file every approval is bound to (null for samples and datasets) */
+  const drawingRef = useRef<DrawingRef | null>(null);
+  /** stops the read in progress (a file read in this browser can take minutes) */
+  const readAbort = useRef<AbortController | null>(null);
+  const compute = (members: ExtractedMember[], name: string, specs: MaterialSpecs, factorF: FactorFParams) =>
+    computeProject(members, name, specs, factorF, drawingRef.current);
+  const changeReviewer = (name: string) => {
+    setReviewer(name);
+    try { localStorage.setItem('structboq_reviewer', name); } catch { /* blocked storage: name lasts this session */ }
+  };
+  const stamp = <T,>(x: T): T => ({ ...x, by: reviewer.trim() || undefined, revision });
   /** storage key + the reading the saved review was made on */
   const reviewStore = useRef<{ key: string; base: string } | null>(null);
 
@@ -102,9 +124,6 @@ export default function App() {
   }, []);
 
   /** What the automatic reading produced — a saved review only applies to the same reading. */
-  const readingSignature = (members: ExtractedMember[]) =>
-    `${members.length}:${members.map(m => `${m.tag}@${m.gridLocation}`).join(',')}`;
-
   /** Restores reviewer edits, decisions and their history saved for the same drawing in this browser. */
   const restoreReview = (name: string, members: ExtractedMember[]): { members: ExtractedMember[]; log: ReviewLogEntry[] } => {
     const key = `structboq_review2::${name}`;
@@ -129,8 +148,9 @@ export default function App() {
   };
 
   const applyExtraction = (data: any, label: string) => {
+    setRevision(undefined);
     const members0: ExtractedMember[] = data.members || [];
-    const restored0 = restoreReview(data.fileName || label, members0);
+    const restored0 = restoreReview(data.reviewKey || data.fileName || label, members0);
     const members = restored0.members;
     setReviewLog(restored0.log);
     let effectiveSpecs = activeMaterialSpecs;
@@ -139,7 +159,7 @@ export default function App() {
       setActiveMaterialSpecs(effectiveSpecs);
     }
     setActiveMembers(members);
-    const result = computeProject(members, data.datasetName || data.fileName || label, effectiveSpecs, activeFactorFParams);
+    const result = compute(members, data.datasetName || data.fileName || label, effectiveSpecs, activeFactorFParams);
     const a = data.audit || {};
     result.audit = {
       fileName: a.file_name || data.fileName,
@@ -168,19 +188,19 @@ export default function App() {
   };
 
   /** Runs the in-browser pipeline on a loaded PDF and shows the result. */
-  const processPdf = async (doc: PdfDoc, fileName: string, opts: { pages?: string; cachedOcr?: any[]; cachedBoqOcr?: any[]; boqVariant?: string; datasetName?: string; footingVariant?: string }) => {
+  const processPdf = async (doc: PdfDoc, fileName: string, opts: { pages?: string; cachedOcr?: any[]; cachedBoqOcr?: any[]; boqVariant?: string; datasetName?: string; footingVariant?: string; reviewKey?: string; abortSignal?: AbortSignal }) => {
     const key = `${fileName}:${Date.now()}`;
     // the shown document changes only once this file was read: a failed read leaves the previous file on screen
-    const out = await destroyOnError(doc, async () => (await pipeline()).extractInBrowser(doc, fileName, { pages: opts.pages, cachedOcr: opts.cachedOcr, cachedBoqOcr: opts.cachedBoqOcr, footingVariant: opts.footingVariant }, (message, frac) => setProgress({ message, frac })));
+    const out = await destroyOnError(doc, async () => (await pipeline()).extractInBrowser(doc, fileName, { pages: opts.pages, cachedOcr: opts.cachedOcr, cachedBoqOcr: opts.cachedBoqOcr, footingVariant: opts.footingVariant, fileSha: drawingRef.current?.sha256, abortSignal: opts.abortSignal }, (message, frac) => { if (!opts.abortSignal?.aborted) setProgress({ message, frac }); }));
     swapDoc(drawingDoc, { doc, key });
     (window as any).__lastOut = out;
     console.log('out result:', { ocrPages: out.ocrPages.length, readings: out.readings.length, members: out.members.length, warnings: out.warnings });
     if (out.boq) swapDoc(boqDoc, { doc, key });
     const readPages = new Set(out.readings.map(r => r.page));
-    setReadingLog({ readings: out.readings, skipped: out.skipped, emptyPages: out.ocrPages.map(p => p.page).filter(p => !readPages.has(p)), notes: out.mergeNotes });
+    setReadingLog({ readings: out.readings, skipped: out.skipped, emptyPages: out.ocrPages.map(p => p.page).filter(p => !readPages.has(p)), notes: out.mergeNotes, timing: out.timing });
     setDocVersion(v => v + 1);
     return applyExtraction({
-      fileName, datasetName: opts.datasetName, docId: 'local', members: out.members, completeness: out.completeness,
+      fileName, datasetName: opts.datasetName, reviewKey: opts.reviewKey, docId: 'local', members: out.members, completeness: out.completeness,
       mergeNotes: out.mergeNotes, boq: out.boq, boqVariant: opts.boqVariant,
       audit: {
         file_name: fileName, file_type: out.ocrPages.length ? 'PDF (อ่านในเบราว์เซอร์ + OCR)' : 'PDF (ข้อความดิจิทัล)',
@@ -194,6 +214,7 @@ export default function App() {
     const ds: any = datasets.find(d => d.id === id);
     if (!ds) return;
     setLoadingDatasetId(id);
+    drawingRef.current = null;
     try {
       setProgress({ message: `ดาวน์โหลดแบบ ${ds.name}…`, frac: 0.05 });
       const [pdfBuf, ocr, boqOcr] = await Promise.all([
@@ -261,19 +282,37 @@ export default function App() {
   const commitMembers = (next: ExtractedMember[], log: ReviewLogEntry[]) => {
     setActiveMembers(next);
     setReviewLog(log);
-    const recomputed = computeProject(next, currentProject.projectName, activeMaterialSpecs, activeFactorFParams);
+    const recomputed = compute(next, currentProject.projectName, activeMaterialSpecs, activeFactorFParams);
     recomputed.audit = currentProject.audit;
     setCurrentProject(recomputed);
     saveReview(next, log);
   };
 
   const handleUpdateMembers = (updates: { index: number; patch: Partial<ExtractedMember> }[]) => {
+    // a decision must say who made it (the review screens ask for the name first; this is the backstop)
+    const decided = (u: { index: number; patch: Partial<ExtractedMember> }) => !!u.patch.review && u.patch.review !== activeMembers[u.index]?.review;
+    if (updates.some(decided) && !reviewer.trim()) {
+      setNotification({ message: 'กรอกชื่อผู้ตรวจก่อนอนุมัติหรือไม่นับ', type: 'error' });
+      return;
+    }
     const next = activeMembers.map((m, i) => {
       const u = updates.filter(x => x.index === i);
-      return u.length ? u.reduce((acc, x) => ({ ...acc, ...x.patch }), m) : m;
+      return u.length ? u.reduce((acc, x) => {
+        const merged = { ...acc, ...x.patch };
+        if (!decided(x)) return merged;
+        // an approval is bound to everything its quantities were calculated from: these specs, this drawing, this engine
+        const review = stamp(x.patch.review!);
+        return { ...merged, review: review.status === 'approved' ? { ...approvalFor(merged, review.note, activeMaterialSpecs, drawingRef.current), by: review.by, revision: review.revision } : review };
+      }, m) : m;
     });
     const entry = logEntryFor(activeMembers, next, updates.map(u => u.index));
-    commitMembers(next, entry ? [...reviewLog, entry] : reviewLog);
+    const fp = (m: ExtractedMember) => fingerprintOf(calcSnapshot(m, activeMaterialSpecs, drawingRef.current));
+    commitMembers(next, entry ? [...reviewLog, stamp({
+      ...entry,
+      fingerprintBefore: entry.indices.map(i => fp(activeMembers[i])),
+      fingerprintAfter: entry.indices.map(i => fp(next[i])),
+      refs: entry.indices.map(i => ({ itemId: currentProject.items.find(it => it.memberIndex === i)?.itemId, tag: next[i].tag, grid: next[i].gridLocation, level: next[i].level })),
+    })] : reviewLog);
   };
 
   const handleUndo = (id: string) => {
@@ -294,13 +333,15 @@ export default function App() {
     setReadingLog(null);
     setReviewLog([]);
     reviewStore.current = null;
+    setRevision(undefined);
+    drawingRef.current = null;
     setDocId(undefined);
     swapDoc(drawingDoc, null);
     swapDoc(boqDoc, null);
     setBoq(null);
     setCompleteness([]);
     setActiveMembers(sample.members);
-    const computed = computeProject(sample.members, sample.name, activeMaterialSpecs, activeFactorFParams);
+    const computed = compute(sample.members, sample.name, activeMaterialSpecs, activeFactorFParams);
     computed.audit = {
       fileName: sample.fileName,
       fileType: sample.fileFormat === 'HYBRID' ? 'PDF' : sample.fileFormat,
@@ -323,10 +364,10 @@ export default function App() {
   const handleAddManualMember = (newMember: ExtractedMember) => {
     const updatedMembers = [...activeMembers, newMember];
     setActiveMembers(updatedMembers);
-    const log = [...reviewLog, addEntry([newMember], activeMembers.length, 'เพิ่มเองจากหน้าคำนวณเอง')];
+    const log = [...reviewLog, stamp(addEntry([newMember], activeMembers.length, 'เพิ่มเองจากหน้าคำนวณเอง'))];
     setReviewLog(log);
     saveReview(updatedMembers, log);
-    const updatedProject = computeProject(updatedMembers, currentProject.projectName || 'Custom Project', activeMaterialSpecs, activeFactorFParams);
+    const updatedProject = compute(updatedMembers, currentProject.projectName || 'Custom Project', activeMaterialSpecs, activeFactorFParams);
     
     if (currentProject.audit) {
       updatedProject.audit = {
@@ -346,7 +387,7 @@ export default function App() {
   // Handle saving & updating material specifications
   const handleSaveMaterialSpecs = (updatedSpecs: MaterialSpecs) => {
     setActiveMaterialSpecs(updatedSpecs);
-    const recomputed = computeProject(activeMembers, currentProject.projectName || 'Project', updatedSpecs, activeFactorFParams);
+    const recomputed = compute(activeMembers, currentProject.projectName || 'Project', updatedSpecs, activeFactorFParams);
     if (currentProject.audit) {
       recomputed.audit = {
         ...currentProject.audit,
@@ -363,7 +404,7 @@ export default function App() {
   // Handle saving Factor F parameters
   const handleSaveFactorF = (params: FactorFParams) => {
     setActiveFactorFParams(params);
-    const recomputed = computeProject(activeMembers, currentProject.projectName || 'Project', activeMaterialSpecs, params);
+    const recomputed = compute(activeMembers, currentProject.projectName || 'Project', activeMaterialSpecs, params);
     if (currentProject.audit) {
       recomputed.audit = currentProject.audit;
     }
@@ -375,10 +416,22 @@ export default function App() {
   };
 
   // Upload of PDF or DXF — read entirely in the browser
-  const handleFileUpload = async (file: File, pages?: string) => {
+  const handleFileUpload = async (file: File, pages?: string, selection?: PageSelection) => {
     setIsProcessing(true);
     setNotification(null);
+    const ac = new AbortController();
+    readAbort.current = ac;
+    // the file on screen keeps its own bytes if this read fails or is stopped: approvals are bound to them
+    const shownDrawing = drawingRef.current;
+    let finished = false;
     try {
+      const drawing = await fileDrawing(file);
+      // pages chosen on other bytes are not pages of this file
+      if (selection && selection.fileHash !== fileKey(file, drawing)) throw new Error('หน้าที่เลือกเป็นของไฟล์อื่น — เปิดไฟล์แล้วเลือกหน้าใหม่');
+      drawingRef.current = drawing;
+      // a saved review belongs to these bytes, not to whatever file later has the same name
+      const reviewKey = `${file.name}#${drawing.sha256 ?? fileKey(file, drawing)}`;
+      const rev = revisionOf(drawing);
       const ext = file.name.split('.').pop()?.toLowerCase();
       let outcome: { result: BOQProjectResult; restored: boolean };
       let foundBoq = false;
@@ -388,7 +441,7 @@ export default function App() {
         swapDoc(drawingDoc, null);
         setReadingLog(null);
         outcome = applyExtraction({
-          fileName: file.name, members: r.members, completeness: [], mergeNotes: [],
+          fileName: file.name, reviewKey, members: r.members, completeness: [], mergeNotes: [],
           audit: { file_name: file.name, file_type: 'DXF', page_or_layer_count: r.layerCount, detected_unit: r.unit, warnings: r.warnings },
         }, file.name);
         setDocId(undefined);
@@ -397,15 +450,21 @@ export default function App() {
         const { loadPdf } = await pipeline();
         const doc = await loadPdf(await file.arrayBuffer());
 
-        outcome = await processPdf(doc, file.name, { pages });
+        outcome = await processPdf(doc, file.name, { pages, reviewKey, abortSignal: ac.signal });
         foundBoq = !!boqDoc.current && boqDoc.current.doc === doc;
       }
+      finished = true;
       const { result, restored } = outcome;
+      setRevision(rev);
       setNotification({
         message: `${file.name}: ${result.totalItemsCount} รายการ · รอตรวจ ${result.needsReviewCount}${foundBoq ? ' · พบ BOQ ปร.4 ในไฟล์' : ''}${restored ? ' · กู้คืนผลตรวจทานเดิม' : ''}`,
         type: result.totalItemsCount ? 'success' : 'info',
       });
     } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        setNotification({ message: 'หยุดการอ่านแล้ว — หน้าที่อ่านเสร็จแล้วถูกเก็บไว้ ไม่ต้องอ่านซ้ำ', type: 'info' });
+        return;
+      }
       console.error('File reading failed', err);
       (window as any).__lastError = (err as any)?.stack || String(err);
       setNotification({
@@ -413,6 +472,8 @@ export default function App() {
         type: 'error',
       });
     } finally {
+      if (!finished) drawingRef.current = shownDrawing;
+      if (readAbort.current === ac) readAbort.current = null;
       setIsProcessing(false);
       setProgress(null);
     }
@@ -431,6 +492,7 @@ export default function App() {
         boqFileName: boq?.fileName,
         boqVariant,
         reviewLog,
+        revision,
       });
       XLSX.writeFile(wb, workbookFileName(currentProject.projectName));
       setNotification({
@@ -498,6 +560,7 @@ export default function App() {
               selectedSampleId={selectedSampleId}
               isProcessing={isProcessing}
               progress={progress}
+              onCancelRead={() => readAbort.current?.abort()}
               audit={currentProject.audit}
               datasets={datasets}
               onLoadDataset={handleLoadDataset}
@@ -587,7 +650,7 @@ export default function App() {
               const f = completeness[idx];
               if (!f?.suggested.length) return;
               const next = [...activeMembers, ...f.suggested];
-              commitMembers(next, [...reviewLog, addEntry(f.suggested, activeMembers.length, f.message)]);
+              commitMembers(next, [...reviewLog, stamp(addEntry(f.suggested, activeMembers.length, f.message))]);
               setCompleteness(completeness.filter((_, i) => i !== idx));
               setNotification({ message: `เพิ่ม ${f.suggested.length} ชิ้นส่วนเข้าคิวตรวจ — กรอกค่าที่ขาดแล้วอนุมัติ`, type: 'info' });
             }}
@@ -595,6 +658,9 @@ export default function App() {
             reviewLog={reviewLog}
             onUndo={handleUndo}
             onOpenItem={setSelectedItemForTrace}
+            reviewer={reviewer}
+            onReviewerChange={changeReviewer}
+            revision={revision}
           />
         ) : empty)}
 
@@ -642,6 +708,7 @@ export default function App() {
         pdfExtractedSpecs={currentProject.audit?.materialSpecs}
         onSave={handleSaveMaterialSpecs}
         lang={lang}
+        reviewer={reviewer}
       />
       <FactorFModal
         isOpen={isFactorFModalOpen}

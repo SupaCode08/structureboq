@@ -1,6 +1,6 @@
 import React from 'react';
 import { BOQProjectResult, MaterialSpecs, FactorFParams } from '../engine/qsEngine';
-import { Printer, X, Download, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Printer, X, Download, ShieldCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface OfficialReportModalProps {
   isOpen: boolean;
@@ -181,16 +181,30 @@ export const OfficialReportModal: React.FC<OfficialReportModalProps> = ({
               </table>
             </div>
 
-            {/* Quality Gates Summary */}
-            <div className="border border-emerald-200 bg-emerald-50/50 rounded-lg p-3 text-xs flex items-center justify-between">
-              <div className="flex items-center gap-2 text-emerald-900 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>ผลการตรวจสอบมิติวิศวกรรม (Quality Gates): ผ่านเกณฑ์ {result.passRatePct}% ({result.autoReleaseCount}/{result.totalItemsCount} รายการ)</span>
+            {/* Quality Gates Summary / Release Gate Verification Banner */}
+            {result.needsReviewCount > 0 ? (
+              <div className="border border-amber-300 bg-amber-50/80 rounded-lg p-3 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-amber-900 font-medium">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <span>
+                    ⚠️ มีรายการรอการตรวจสอบโดยวิศวกร/QS (NEEDS_REVIEW): {result.needsReviewCount} จาก {result.totalItemsCount} รายการ — ยอดรวม ปร.4/ปร.5 เป็นยอดประมาณการเบื้องต้น (Provisional Quantity) ต้องผ่านการรับรองก่อนลงนามเป็นราคากลาง
+                  </span>
+                </div>
+                <div className="text-amber-800 font-mono text-[11px] whitespace-nowrap">
+                  อนุมัติแล้ว: {result.autoReleaseCount} | คอนกรีต: {result.totalConcreteVolumeM3.toFixed(3)} m³
+                </div>
               </div>
-              <div className="text-slate-500 font-mono text-[11px]">
-                คอนกรีตสุทธิ: {result.totalConcreteVolumeM3.toFixed(3)} m³ | ไม้แบบ: {result.totalFormworkM2.toFixed(2)} m²
+            ) : (
+              <div className="border border-emerald-200 bg-emerald-50/50 rounded-lg p-3 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-900 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>ผลการตรวจสอบมิติวิศวกรรม (Quality Gates): ผ่านเกณฑ์ครบถ้วน 100% ({result.autoReleaseCount}/{result.totalItemsCount} รายการ) ปลอดภัยต่อการออกราคากลาง</span>
+                </div>
+                <div className="text-slate-500 font-mono text-[11px]">
+                  คอนกรีตสุทธิ: {result.totalConcreteVolumeM3.toFixed(3)} m³ | ไม้แบบ: {result.totalFormworkM2.toFixed(2)} m²
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Signature Block */}
             <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs text-slate-600">

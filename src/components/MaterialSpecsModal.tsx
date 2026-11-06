@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sliders, CheckCircle2, FileText, Sparkles, RotateCcw, AlertCircle, DollarSign, Shield } from 'lucide-react';
-import { MaterialSpecs, DEFAULT_MATERIAL_SPECS } from '../engine/qsEngine';
+import { MaterialSpecs, DEFAULT_MATERIAL_SPECS, REQUIRED_SPECS, type SpecValueSource } from '../engine/qsEngine';
 import { Language } from '../utils/translations';
 
 interface MaterialSpecsModalProps {
@@ -10,7 +10,12 @@ interface MaterialSpecsModalProps {
   pdfExtractedSpecs?: MaterialSpecs;
   onSave: (updated: MaterialSpecs) => void;
   lang: Language;
+  /** typed reviewer name: a documented assumption is stamped with it */
+  reviewer?: string;
 }
+
+const SRC_TH: [SpecValueSource['source'] | '', string][] = [['', 'ไม่มีที่มา (ค่าเริ่มต้น)'], ['user', 'ผู้ใช้กรอก'], ['drawing_notes', 'จากหมายเหตุในแบบ'], ['assumption', 'สมมติฐาน (ต้องมีเหตุผล)']];
+const HOOK_TH: [string, string][] = [['FULL_UPTURN', 'งอตั้งขึ้นเต็ม'], ['STANDARD_HOOK', 'งอขอฉาก'], ['STRAIGHT', 'ตรง'], ['UNSPECIFIED', 'ไม่ระบุ']];
 
 const PRESETS: Record<string, Partial<MaterialSpecs>> = {
   porRor4Standard: {
@@ -76,8 +81,10 @@ export const MaterialSpecsModal: React.FC<MaterialSpecsModalProps> = ({
   pdfExtractedSpecs,
   onSave,
   lang,
+  reviewer,
 }) => {
   const [form, setForm] = useState<MaterialSpecs>(specs);
+  const [specError, setSpecError] = useState<string | null>(null);
 
   useEffect(() => {
     setForm(specs);
@@ -105,8 +112,23 @@ export const MaterialSpecsModal: React.FC<MaterialSpecsModalProps> = ({
     }
   };
 
+  // a value typed here is the user's; an assumption names its reason and who documented it
+  const setSource = (key: keyof MaterialSpecs, patch: Partial<SpecValueSource> | null, value?: unknown) => setForm(f => {
+    const vs = { ...(f.valueSources || {}) };
+    const cur = vs[key];
+    if (patch === null) delete vs[key];
+    else vs[key] = { source: 'user', ...cur, ...patch, by: reviewer?.trim() || undefined, at: new Date().toISOString() };
+    return { ...f, ...(value !== undefined ? { [key]: value } : {}), valueSources: vs };
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const bad = REQUIRED_SPECS.filter(r => form.valueSources?.[r.key]?.source === 'assumption' && (!form.valueSources[r.key]!.note?.trim() || !form.valueSources[r.key]!.by));
+    if (bad.length) {
+      setSpecError(`สมมติฐานต้องมีเหตุผลและชื่อผู้ตรวจ (กรอกชื่อในหน้าตรวจทาน): ${bad.map(r => r.label).join(', ')}`);
+      return;
+    }
+    setSpecError(null);
     onSave(form);
     onClose();
   };
@@ -430,6 +452,45 @@ export const MaterialSpecsModal: React.FC<MaterialSpecsModalProps> = ({
                   />
                 </div>
               </div>
+            </div>
+            {/* 4. Quantity-relevant site/footing values: each needs a source or a documented assumption */}
+            <div data-required-specs className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
+              <div className="pb-2 border-b border-slate-800">
+                <span className="font-bold text-rose-300">งานดิน / ฐานราก / ค่าที่กระทบปริมาณ</span>
+                <p className="text-[11px] text-slate-400">ค่าที่ "ไม่มีที่มา" ยังคิดยอดชั่วคราวด้วยค่าเริ่มต้น แต่รายการที่ใช้ค่านั้นอนุมัติปล่อยยอดไม่ได้ จนกว่าจะกรอกค่าหรือบันทึกเป็นสมมติฐานพร้อมเหตุผล</p>
+              </div>
+              {REQUIRED_SPECS.map(r => {
+                const vs = form.valueSources?.[r.key];
+                const v = (form as any)[r.key];
+                const cls = 'w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-xs';
+                return (
+                  <div key={r.key} data-spec-key={r.key} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1.2fr] gap-2 items-start">
+                    <label className="text-[11px] text-slate-300 pt-1.5">{r.label}{r.unit && ` (${r.unit})`}<span className="block text-slate-500">กระทบ {r.affects}</span></label>
+                    {r.key === 'footingHookShape' ? (
+                      <select value={v ?? ''} onChange={e => setSource(r.key, vs ? {} : { source: 'user' }, e.target.value)} className={cls}>
+                        {HOOK_TH.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                      </select>
+                    ) : r.key === 'groundBeamSoffitFormwork' ? (
+                      <select value={v ? 'yes' : 'no'} onChange={e => setSource(r.key, vs ? {} : { source: 'user' }, e.target.value === 'yes')} className={cls}>
+                        <option value="no">ไม่คิดไม้แบบท้องคาน GB</option><option value="yes">คิดไม้แบบท้องคาน GB</option>
+                      </select>
+                    ) : (
+                      <input type="number" step="0.01" value={v ?? ''} aria-label={r.label}
+                        onChange={e => setSource(r.key, vs ? {} : { source: 'user' }, e.target.value === '' ? undefined : parseFloat(e.target.value))} className={cls} />
+                    )}
+                    <div className="space-y-1">
+                      <select value={vs?.source ?? ''} aria-label={`ที่มา ${r.label}`} onChange={e => setSource(r.key, e.target.value ? { source: e.target.value as SpecValueSource['source'] } : null)} className={cls}>
+                        {SRC_TH.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                      </select>
+                      {vs?.source === 'assumption' && (
+                        <input type="text" placeholder="เหตุผลของสมมติฐาน" aria-label={`เหตุผล ${r.label}`} value={vs.note ?? ''} onChange={e => setSource(r.key, { note: e.target.value })} className={cls} />
+                      )}
+                      {vs?.by && <span className="block text-[10px] text-slate-500">โดย {vs.by}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+              {specError && <div className="text-xs text-rose-400">{specError}</div>}
             </div>
           </form>
         </div>

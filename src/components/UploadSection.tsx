@@ -3,10 +3,16 @@ import { UploadCloud, Loader2, FileText } from 'lucide-react';
 import type { ExtractionAudit } from '../engine/qsEngine';
 import { SAMPLE_PROJECTS, SampleProject } from '../data/sampleProjects';
 import type { DatasetInfo } from './BoqComparison';
+import { PageSelector } from './PageSelector';
+import { toPageSpec, type PageSelection } from '../pdf/pageSelection';
+import { fileIdentity, fileKey } from '../pdf/fileIdentity';
 
 interface UploadSectionProps {
-  onFileUpload: (file: File, pages?: string) => void;
+  /** pages: original page numbers to read (absent = whole file); selection: what they were chosen on, checked against the file */
+  onFileUpload: (file: File, pages?: string, selection?: PageSelection) => void;
   progress?: { message: string; frac: number } | null;
+  /** stops the file read in progress */
+  onCancelRead?: () => void;
   onSelectSample: (sample: SampleProject) => void;
   selectedSampleId: string;
   isProcessing: boolean;
@@ -23,20 +29,23 @@ const splitName = (n: string) => {
 };
 
 export const UploadSection: React.FC<UploadSectionProps> = ({
-  onFileUpload, onSelectSample, selectedSampleId, isProcessing, audit, progress, datasets, onLoadDataset, loadingDatasetId,
+  onFileUpload, onSelectSample, selectedSampleId, isProcessing, audit, progress, onCancelRead, datasets, onLoadDataset, loadingDatasetId,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [pages, setPages] = useState('');
   const [error, setError] = useState('');
+  /** a PDF waiting for its pages to be chosen, keyed by its bytes */
+  const [pending, setPending] = useState<{ file: File; key: string } | null>(null);
   const busy = isProcessing || !!loadingDatasetId;
 
-  const take = (file?: File) => {
+  const take = async (file?: File) => {
     if (!file || busy) return;
     const ext = file.name.split('.').pop()?.toLowerCase();
     if (ext !== 'pdf' && ext !== 'dxf') { setError('รองรับเฉพาะไฟล์ .pdf และ .dxf'); return; }
     setError('');
-    onFileUpload(file, pages.trim() || undefined);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (ext === 'dxf') { setPending(null); onFileUpload(file); return; }
+    setPending({ file, key: fileKey(file, await fileIdentity(file)) });
   };
 
   const card = 'rounded-xl border border-slate-200 bg-white p-5';
@@ -45,34 +54,36 @@ export const UploadSection: React.FC<UploadSectionProps> = ({
     <div className="grid lg:grid-cols-[1.4fr_1fr] gap-4">
       <section className={card}>
         <h2 className="text-base font-semibold text-slate-900 mb-3">เปิดไฟล์แบบ</h2>
-        <div
-          onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
-          onDragOver={e => { e.preventDefault(); setDragActive(true); }}
-          onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
-          onDrop={e => { e.preventDefault(); setDragActive(false); take(e.dataTransfer.files?.[0]); }}
-          onClick={() => !busy && fileInputRef.current?.click()}
-          className={`rounded-lg border-2 border-dashed p-8 text-center cursor-pointer transition-colors ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 bg-slate-50'}`}
-        >
-          <input ref={fileInputRef} type="file" accept=".pdf,.dxf" className="hidden" onChange={e => take(e.target.files?.[0])} />
-          {busy ? <Loader2 className="w-7 h-7 mx-auto text-blue-600 animate-spin" /> : <UploadCloud className="w-7 h-7 mx-auto text-blue-600" />}
-          <p className="mt-2 font-medium text-slate-800">{busy ? 'กำลังอ่านแบบ…' : 'ลากไฟล์ PDF หรือ DXF มาวาง หรือคลิกเพื่อเลือก'}</p>
-          <p className="text-sm text-slate-500">อ่านในเบราว์เซอร์นี้ ไฟล์ไม่ถูกส่งออกไปที่ใด</p>
-        </div>
-
-        <label className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-          หน้าแบบโครงสร้าง
-          <input
-            value={pages}
-            onChange={e => setPages(e.target.value)}
-            placeholder="เว้นว่าง = หาให้เอง · เช่น 16,24-36"
-            className="flex-1 min-w-[14rem] h-9 rounded-md border border-slate-300 bg-white px-2.5 font-mono text-sm"
+        {pending ? (
+          <PageSelector
+            key={pending.key}
+            file={pending.file}
+            fileHash={pending.key}
+            busy={busy}
+            onProcess={sel => { onFileUpload(pending.file, toPageSpec(sel), sel); setPending(null); }}
+            onReadAll={() => { onFileUpload(pending.file); setPending(null); }}
+            onCancel={() => setPending(null)}
           />
-        </label>
+        ) : (
+          <div
+            onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
+            onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+            onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+            onDrop={e => { e.preventDefault(); setDragActive(false); void take(e.dataTransfer.files?.[0]); }}
+            onClick={() => !busy && fileInputRef.current?.click()}
+            className={`rounded-lg border-2 border-dashed p-8 text-center cursor-pointer transition-colors ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 bg-slate-50'}`}
+          >
+            {busy ? <Loader2 className="w-7 h-7 mx-auto text-blue-600 animate-spin" /> : <UploadCloud className="w-7 h-7 mx-auto text-blue-600" />}
+            <p className="mt-2 font-medium text-slate-800">{busy ? 'กำลังอ่านแบบ…' : 'ลากไฟล์ PDF หรือ DXF มาวาง หรือคลิกเพื่อเลือก'}</p>
+            <p className="text-sm text-slate-500">PDF: เลือกหน้าที่จะอ่านจากภาพตัวอย่างก่อน · อ่านในเบราว์เซอร์นี้ ไฟล์ไม่ถูกส่งออกไปที่ใด</p>
+          </div>
+        )}
+        <input ref={fileInputRef} type="file" accept=".pdf,.dxf" className="hidden" onChange={e => void take(e.target.files?.[0])} />
         {error && <p className="mt-2 text-sm text-rose-700">{error}</p>}
 
         {progress && (
           <div className="mt-3 text-sm">
-            <div className="flex justify-between text-slate-600 mb-1"><span>{progress.message}</span><span className="tabular-nums">{Math.round(progress.frac * 100)}%</span></div>
+            <div className="flex justify-between text-slate-600 mb-1"><span>{progress.message}</span><span className="flex items-center gap-3"><span className="tabular-nums">{Math.round(progress.frac * 100)}%</span>{isProcessing && onCancelRead && <button type="button" data-cancel-read onClick={onCancelRead} className="px-2 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-50">หยุดอ่าน</button>}</span></div>
             <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden"><div className="h-full bg-blue-600 transition-all" style={{ width: `${Math.round(progress.frac * 100)}%` }} /></div>
           </div>
         )}

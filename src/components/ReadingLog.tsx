@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import type { PageTiming } from '../pdf/pdfText';
 import type { SheetReading } from '../engine/sheetMerge';
 import { boxToNorm } from '../engine/sheetMerge';
 import { PdfViewer, type Overlay } from './PdfViewer';
@@ -9,6 +10,8 @@ export interface ReadingLogData {
   /** pages that were read but gave nothing structural */
   emptyPages: number[];
   notes: string[];
+  /** where reading the file spent its time (absent for samples and datasets read before timing existed) */
+  timing?: PageTiming;
 }
 
 const SHEET_LABEL: Record<string, string> = {
@@ -96,6 +99,12 @@ export const ReadingLog: React.FC<{ data: ReadingLogData; pageUrl?: (page: numbe
             </button>
           );
         })}
+        {data.timing && (
+          <p data-reading-timing className="col-span-full text-xs text-slate-500 px-1">
+            เวลาอ่าน {(data.timing.totalMs / 1000).toFixed(1)} วินาที · OCR {data.timing.ocrPages} หน้า{data.timing.medianOcrMs !== null ? ` (มัธยฐาน ${(data.timing.medianOcrMs / 1000).toFixed(1)} วิ/หน้า, p90 ${((data.timing.p90OcrMs ?? 0) / 1000).toFixed(1)} วิ)` : ''}
+            {data.timing.cachedPages ? ` · ใช้ผล OCR เดิม ${data.timing.cachedPages} หน้า` : ''}{data.timing.peakHeapMB !== null ? ` · หน่วยความจำ JS สูงสุด ${data.timing.peakHeapMB} MB` : ''}
+          </p>
+        )}
         {data.emptyPages.length > 0 && (
           <p className="col-span-full text-xs text-slate-500 px-1">อ่านแล้วไม่พบข้อมูลโครงสร้าง: น.{data.emptyPages.join(', ')}</p>
         )}

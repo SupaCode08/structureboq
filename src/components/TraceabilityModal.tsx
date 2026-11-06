@@ -58,7 +58,11 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({ item, memb
   const history = item.memberIndex !== undefined ? entriesFor(reviewLog, item.memberIndex) : [];
   const fields = member ? TRACKED_FIELDS.filter(f => (TYPE_FIELDS[member.memberType] || []).includes(String(f.key))) : [];
   const lastChange = (field: string) => history.find(e => !e.undoneAt && e.changes.some(c => c.field === field));
-  const flags = [...item.rejectionReasons, ...(item.reviewWarnings || [])];
+  const flags = [
+    ...item.rejectionReasons,
+    ...(item.reviewWarnings || []),
+    ...(item.flags?.filter(f => f.severity === 'info').map(f => f.message) || []),
+  ];
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-slate-900/60" onClick={onClose}>
@@ -136,7 +140,7 @@ export const TraceabilityModal: React.FC<TraceabilityModalProps> = ({ item, memb
                         <tr key={String(f.key)} className="border-t border-slate-100">
                           <td className="px-3 py-1.5 text-slate-700">{fieldLabel(item.memberType, String(f.key))}</td>
                           <td className="px-3 py-1.5 font-mono">{fmtValue(member[f.key])}</td>
-                          <td className="px-3 py-1.5">{src ? <span className={`text-xs px-1.5 rounded border ${SOURCE_BADGE[src].cls}`}>{SOURCE_BADGE[src].th}</span> : <span className="text-slate-400">—</span>}</td>
+                          <td className="px-3 py-1.5">{src ? <span className={`text-xs px-1.5 rounded border ${SOURCE_BADGE[src].cls}`}>{SOURCE_BADGE[src].th}</span> : <span className="text-xs px-1.5 rounded border border-slate-200 bg-slate-100 text-slate-500">ไม่ระบุที่มา (UNKNOWN)</span>}</td>
                           <td className="px-3 py-1.5 text-slate-600 font-mono text-xs">{c ? `${fmtValue(c.from)} → ${fmtValue(c.to)}` : ''}</td>
                         </tr>
                       );

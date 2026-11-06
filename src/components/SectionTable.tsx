@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { CalculatedQuantity, ExtractedMember, FieldSource, MemberType, EvidenceRef } from '../engine/qsEngine';
+import { approvalFor, conflictStatuses, unconfirmedRequiredFields } from '../engine/qsEngine';
 import { SourceViewer } from './SourceViewer';
 
 /**
@@ -15,6 +16,8 @@ interface SectionTableProps {
   pageUrl?: (page: number, dpi: number) => Promise<string>;
   theme?: 'light' | 'dark';
   onUpdateMembers: (updates: { index: number; patch: Partial<ExtractedMember> }[]) => void;
+  /** false until a reviewer name is given: values are still confirmed, but nothing is approved */
+  canApprove?: boolean;
 }
 
 type Field = { key: keyof ExtractedMember; label: string; source: string; text?: boolean; unit?: string; hint?: string };
@@ -77,7 +80,7 @@ export const SOURCE_BADGE: Record<FieldSource, { th: string; cls: string }> = {
 
 const blankZero = (v: any) => (v === 0 || v === undefined || v === null ? '' : v);
 
-export const SectionTable: React.FC<SectionTableProps> = ({ items, members, pageUrl, onUpdateMembers }) => {
+export const SectionTable: React.FC<SectionTableProps> = ({ items, members, pageUrl, onUpdateMembers, canApprove = true }) => {
   const [drafts, setDrafts] = useState<Record<string, Partial<ExtractedMember>>>({});
   const [openKey, setOpenKey] = useState<string | null>(null);
 
@@ -118,18 +121,21 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
         if (draft[f.key] !== undefined) fs[f.source] = 'reviewer';
         else if (fs[f.source] === 'inferred' || fs[f.source] === 'assumed') fs[f.source] = 'reviewer'; // confirmed as shown
       }
-      const merged = { ...m, ...draft };
+      const provenance = m.provenance && {
+        ...m.provenance, fieldSources: fs, confidence: Math.max(m.provenance.confidence, 0.9),
+        conflicts: (m.provenance.conflicts || []).filter(c => !c.startsWith('ไม่พบแบบขยาย')),
+      };
+      const merged = { ...m, ...draft, provenance };
       const stillMissing = !(Number(merged.width) > 0 && Number(merged.depth) > 0 && Number(merged.length) > 0);
+      // the table shows the section only: a member whose span, height or supports nobody confirmed stays in the item queue
+      // no bulk ruling on source conflicts: a member with one still open is approved only one conflict at a time in the item queue
+      const approvable = canApprove && !stillMissing && unconfirmedRequiredFields(merged).length === 0 && conflictStatuses(merged).every(c => c.state === 'resolved');
       return {
         index: i,
         patch: {
           ...draft,
-          provenance: m.provenance && {
-            ...m.provenance, fieldSources: fs, confidence: Math.max(m.provenance.confidence, 0.9),
-            conflicts: (m.provenance.conflicts || []).filter(c => !c.startsWith('ไม่พบแบบขยาย')),
-          },
-          // members still missing their own span/height stay in the item queue
-          review: stillMissing ? m.review : { status: 'approved', note: `ยืนยันหน้าตัด ${m.tag}`, at: new Date().toISOString() },
+          provenance,
+          review: approvable ? approvalFor(merged, `ยืนยันหน้าตัด ${m.tag}`) : m.review,
         },
       };
     }));
