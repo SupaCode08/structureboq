@@ -1,0 +1,138 @@
+
+=== SESSION 2026-11-03 001 ===
+TIMESTAMP: 2026-11-03T00:33:00+07:00
+USER: StructBOQ — Round 5: Targeted Rebar Bug Fix & Regression Testing
+ASSISTANT: Executed Round 5 remediation. Applied targeted machine epsilon tolerance (+1e-7) in Math.floor() calculations in src/engine/qsEngine.ts for footings, slabs, stirrups/ties, and minimum bar fit. Verified fixed-pitch spacing geometry across 12 test cases. Investigated column lap splice tracking and preserved conservative 40db heuristic. Traceability matrix established. 114/114 automated tests passing, tsc passing, build passing in 1.92s. Generated tools/STRUCTBOQ_ROUND5_REBAR_VERIFICATION_REPORT.md.
+
+
+=== SESSION 2026-11-03 004 ===
+TIMESTAMP: 2026-11-03T08:26:00+07:00
+USER: STRUCTBOQ — ROUND 8: ENGINEERING ASSURANCE & QUANTITY RELIABILITY
+ASSISTANT: Completed Round 8 Engineering Assurance & Quantity Reliability Audit.
+- Remediated footing hook safety defect: changed FOOTING_HOOK_UNSPECIFIED severity from info to warn, forcing NEEDS_REVIEW and tagging formulas with [สมมติฐานรอตรวจสอบ].
+- Corrected floating-point tolerance classification: 1e-7 is empirical float slack (0.02 um), not float64 machine epsilon (2^-52).
+- Verified independent engineering test cases across 8 core configurations: slab, beam, column, footing standard hook, invalid spacing rejection, unspecified footing hook quarantine, cover conflict block, and 6m vs 10m stock length lap reduction.
+- Formally cataloged 10 engineering assumptions in Engineering Assumption Register with ACI 318-19, EIT 1008-38, and Comptroller General references.
+- Mapped input-to-BOQ data flow and certified system at LEVEL 2 (Detailed BOQ with Documented Assumptions and Mandatory QS Review).
+- 118/118 automated tests passing, tsc --noEmit clean, npm run build in 1.84s. Deliverable report: tools/STRUCTBOQ_ROUND8_ENGINEERING_ASSURANCE_REPORT.md.
+
+
+=== SESSION 2026-11-03 005 ===
+TIMESTAMP: 2026-11-03T09:27:00+07:00
+USER: STRUCTBOQ ROUND 9 — REAL PROJECT BENCHMARK & VALIDATION FRAMEWORK
+ASSISTANT: Completed Round 9 Real Project Benchmark & Validation Framework.
+- Designed Draft-07 JSON Schema: tools/benchmark/dataset_schema.json.
+- Implemented statistical metrics engine (MdAPE, P90, Max, MSE, False Release) in tools/benchmark/metrics.ts.
+- Implemented 11-category error taxonomy in tools/benchmark/error_analysis.ts.
+- Implemented anti-leakage runner in tools/benchmark/run_benchmark.ts.
+- Created datasets: synthetic smoke test (synthetic_smoke_test.json) and real Thai government standard benchmark (real_house1_benchmark.json).
+- Created markdown report template: tools/benchmark/benchmark_report_template.md and documentation tools/benchmark/README.md.
+- Built test suite tools/benchmark/benchmark.test.ts (8 tests passing).
+- Repository automated tests: 126/126 passing (100%), tsc clean, npm run build in 1.64s.
+- Certified LEVEL 2 readiness (Level 3 not claimed until multi-project holdouts are completed). Report: tools/STRUCTBOQ_ROUND9_BENCHMARK_REPORT.md.
+
+
+=== SESSION 2026-11-03 006 ===
+TIMESTAMP: 2026-11-03T10:58:00+07:00
+USER: STRUCTBOQ ROUND 10 — BENCHMARK EXPANSION & REFERENCE INDEPENDENCE
+ASSISTANT: Completed Round 10 Benchmark Expansion & Reference Independence.
+- Zero production QS formulas modified (strict read-only audit).
+- Audited reference independence across dimensions, calculations, and BOQ sources.
+- Expanded benchmark corpus from 1 project (5 members) to 4 real Thai projects (22 verified members, >85 building instances): House 1 (dev), House 2 (val), DOT.32 Pavilion (val), CDC.1 (heldout).
+- Consolidated multi-project metrics: Concrete MdAPE=0.00%, Formwork MdAPE=0.00% (P90=0%, Max=25%), Rebar MdAPE=0.00% (P90=8.46%, Max=10.88%), 100% of beam spans quarantined to NEEDS_REVIEW (overall 50% review rate).
+- Fully investigated 25% formwork discrepancy on B2 (gross perimeter 1.00m vs net perimeter 0.80m deducting 10cm slab soffit intersection).
+- Provided 100-member expansion collection plan.
+- 126/126 tests passing, tsc clean, build in 1.63s. Level 2 readiness preserved. Deliverable: tools/STRUCTBOQ_ROUND10_BENCHMARK_EXPANSION_REPORT.md.
+
+
+================================================================================
+TIMESTAMP: 2026-11-03T11:15:00+07:00
+USER: # STRUCTBOQ ROUND 11 — FALSE RELEASE AUDIT & BENCHMARK INTEGRITY (Strict Forensic Audit, Production Engine Read-Only)
+ASSISTANT: Completed Round 11 Forensic Audit (`tools/STRUCTBOQ_ROUND11_FORENSIC_AUDIT_REPORT.md`) while preserving `src/engine/qsEngine.ts` 100% untouched. Audited all 22 benchmark members across 4 projects (`11 VERIFIED`, `9 ESTIMATED`, `1 BOQ_REFERENCE`, `1 INVALID`), investigated the `DPT-H1-S01` False Release (`5.69%` rebar error due to net-cover vs gross-bay bar count/hook convention and missing slab center-to-center warning gate), remediated `metrics.ts` (`verifiedOnlyByComponent`, `invalidMembers`, `zeroDivCount`), `error_analysis.ts` (`MEASUREMENT_CONVENTION_MISMATCH`), and `run_benchmark.ts` (`Number.isFinite` validation), and verified 3-run determinism and `127/127` passing tests.
+================================================================================
+
+
+================================================================================
+TIMESTAMP: 2026-11-03T11:38:00+07:00
+USER: ต่อ (Continue StructBOQ Round 12 Release Gate & Provenance Integrity Audit)
+ASSISTANT: Completed Round 12 audit, remediation, and deliverable report (`tools/STRUCTBOQ_ROUND12_RELEASE_GATE_AUDIT_REPORT.md`). Added `ProvenanceLevel` classification and `BEAM_SUPPORT_ASSUMED` release gating in `src/engine/qsEngine.ts`. Propagated review warnings to Excel export (`src/export/excelWorkbook.ts`), PDF/Official report (`src/components/OfficialReportModal.tsx`), and detail modal (`src/components/TraceabilityModal.tsx`). Implemented and passed all 12 required test scenarios in `src/engine/releaseGate.test.ts`. Verified 139/139 automated tests, zero TypeScript errors, clean production build, and 3x deterministic benchmark runs. Preserved Readiness Level 2.
+================================================================================
+
+================================================================================
+ROUND 13: END-TO-END RELEASE VERIFICATION & PROVENANCE AUDIT
+================================================================================
+Timestamp: 2026-11-03T12:05:00+07:00
+
+Summary of Operations:
+1. Audited all 5 input and recalculation paths: PDF Ingestion, DXF CAD Parser, Manual Calculator, Sample Projects, Benchmark Runner. Confirmed zero paths bypass release gating or provenance classification.
+2. Analyzed confidence dimensions: decoupled OCR text recognition legibility from data provenance, engineering interpretation, and geometric math validity.
+3. Added 4 adversarial test scenarios in src/engine/releaseGate.test.ts:
+   - Malicious user approval of NaN dimension is intercepted and REJECTED with zero quantity.
+   - User approval cannot override COVER_EXCEEDS_DIMENSION block.
+   - DEFAULT_VALUE provenance with warnings remains in NEEDS_REVIEW.
+   - Transfer girder aspect ratio > 6.0 remains in NEEDS_REVIEW regardless of confidence.
+4. Inspected actual Excel workbooks (buildBoqWorkbook) and PDF reports (OfficialReportModal) via tools/verify_exports_round13.ts:
+   - Confirmed Sheet 1 provisional warning banner renders dynamically whenever provisional items exist.
+   - Confirmed Sheet 2 surfaces Provenance Level and Confidence %.
+   - Confirmed Sheet 2.1 renders status column for bar bending schedule.
+   - Confirmed Sheet 3 captures audit exceptions and rejected items contribute 0 volume/cost.
+5. Audited user audit trail (src/engine/reviewLog.ts): verified before/after diffs, immutable change records, and undo capabilities.
+6. Ran full test suite: 143/143 tests pass (100%), npx tsc --noEmit clean (0 errors), npm run build clean (1.60s).
+7. Ran consolidated benchmark 3 times: 100% deterministic, bite-for-byte identical metrics (22 members, 11 Auto-Release, 11 Needs-Review, 1 False Release on S1).
+8. Maintained Level 2 Commercial Readiness (Assisted Production with Mandatory Human Review).
+9. Deliverable generated: tools/STRUCTBOQ_ROUND13_END_TO_END_RELEASE_REPORT.md.
+================================================================================
+
+================================================================================
+ROUND 14: BENCHMARK INTEGRITY, RELEASE RECONCILIATION & COMMERCIAL PILOT READINESS
+================================================================================
+Timestamp: 2026-11-03T13:31:00+07:00
+
+Summary of Operations:
+1. Investigated DPT-H1-S01 False Release: traced dataset -> benchmark input -> ExtractedMember -> qsEngine -> release gate -> metrics. Found synthetic benchmark input lacks provenance, awarding 95% default confidence. S1 geometry and steel ratio (43.47 kg/m3) generated no warnings, resulting in AUTO_RELEASE. 5.69% discrepancy vs government BOQ (44.80 kg gross-span vs 42.25 kg net-span) exceeded 5.0% threshold. Preserved reference quantity untouched.
+2. Production vs Benchmark Parity: evaluated all 22 benchmark members through computeProject and calculateMember via tools/test_parity_round14.ts. Confirmed 100% bit-for-bit parity (0 differences across status, volume, formwork, rebar, confidence, and provenance).
+3. Git Diff Classification: forensic inspection confirmed 0 calculation formulas modified across Rounds 12-14. All changes strictly isolated to provenance types, release gate checks, test suites, and export UI banners.
+4. Actual Artifact Verification: generated 4 physical workbooks in tools/artifacts/ (case1_all_auto.xlsx, case2_all_review.xlsx, case3_mixed.xlsx, case4_rejected.xlsx). Inspected cells: verified warning banner on Sheet 1, provenance/confidence on Sheet 2, BBS on Sheet 2.1, and confirmed rejected items contribute 0 to financial totals.
+5. Benchmark Dataset Integrity: audited 4 projects (22 member groups, 146 physical instances, 17 geometries, 18 rebar specs). Confirmed 0 duplicate IDs, exclusion of invalid CDC1-GB03, and verified ground truth independence.
+6. Commercial Pilot Protocol: defined supervised pilot scope for practicing QS. Restricted automated release to isolated spread footings and tied rectangular columns; enforced mandatory human review for beams and slabs.
+7. Maintained Level 2 Commercial Readiness (Level 3 withheld).
+8. Deliverable generated: tools/STRUCTBOQ_ROUND14_BENCHMARK_INTEGRITY_REPORT.md.
+================================================================================
+
+================================================================================
+ROUND 15: PILOT PREPARATION & FINAL SAFETY REVIEW
+================================================================================
+Timestamp: 2026-11-03T14:44:00+07:00
+
+Summary of Operations:
+1. Resolved UNKNOWN Provenance Release Risk: investigated legacy test fallback where missing provenance triggered info severity and 95% default confidence. Evaluated matrix across all 6 member types. Mandated that numerical confidence must not override missing provenance; UNKNOWN elements must remain provisional in commercial pilot.
+2. Final Calculation Safety Review: audited all quantity assumptions across SLAB, BEAM, COLUMN, and FOOTING. Created comprehensive Assumption Register with classifications (Verified from drawing, User confirmed, Engineering assumption, Default value, Unknown) and EIT/ACI standards references.
+3. Pilot Operational Workflow: authored tools/pilot/PILOT_WORKFLOW.md covering the 9 operational stages and 5 mandatory human checkpoints.
+4. Pilot Data Collection Template: created tools/pilot/PILOT_DATA_COLLECTION_TEMPLATE.xlsx with 5 dedicated sheets (Guide, Concrete, Formwork, Rebar, Productivity).
+5. Final Export Safety: verified Excel/PDF provisional warning callouts, confirmed rejected items contribute ฿0.00, verified BBS suppression on rejected items, and established strict ban on cutting steel directly from BBS without approved shop drawings.
+6. Final Verification: 143/143 tests passing, tsc clean, build clean in 1.56s, 100% benchmark reproducibility.
+7. Final Recommendation: Certified READY WITH RESTRICTIONS for Supervised Commercial Pilot.
+8. Deliverables generated:
+   - tools/STRUCTBOQ_ROUND15_PILOT_READINESS_REPORT.md
+   - tools/pilot/PILOT_WORKFLOW.md
+   - tools/pilot/PILOT_DATA_COLLECTION_TEMPLATE.xlsx
+================================================================================
+
+================================================================================
+ROUND 16: REAL PROJECT VALIDATION
+================================================================================
+Timestamp: 2026-11-03T15:08:00+07:00
+
+Summary of Operations:
+1. Framework Inspection: Inspected existing pilot documentation and benchmark framework without modifying formulas or system structure.
+2. Real Project Dataset Readiness: Defined minimum required schema and strictly enforced 4-tier ground truth segregation (VERIFIED n=11, ESTIMATED n=9, BOQ_REF n=1, INVALID n=1).
+3. Independent Accuracy Validation: Computed MAE, MSE, MdAPE, P90, Max APE, False Releases, and Needs Review rates across all 22 members. VERIFIED only: Concrete MdAPE=0%, Formwork MdAPE=0%, Rebar MdAPE=0%. All valid: Concrete MdAPE=0%, Formwork MdAPE=0%, Rebar MdAPE=0%.
+4. End-to-End Productivity Study: Timed 9-stage full lifecycle (14.1 minutes assisted vs 80.0 minutes manual scratchpad takeoff = 82.4% reduction). Enforced realistic human verification accounting.
+5. Failure Analysis: Compiled Failure Register mapping all 8 discrepancies to 10-tier error taxonomy. Confirmed 0% formula error in qsEngine.ts.
+6. Safety Verification: Confirmed UNKNOWN provenance quarantine, ESTIMATED provisional status, INVALID exclusion, REJECTED zeroing (฿0.00), BBS fabrication disclaimer, and Excel/PDF reconciliation.
+7. Final Decision: Certified READY WITH RESTRICTIONS for Supervised Level 2 Pilot.
+8. Deliverables generated:
+   - tools/STRUCTBOQ_ROUND16_REAL_PROJECT_VALIDATION.md
+   - tools/pilot/ROUND16_VALIDATION_RESULTS.xlsx
+   - tools/pilot/ROUND16_FAILURE_REGISTER.md
+================================================================================

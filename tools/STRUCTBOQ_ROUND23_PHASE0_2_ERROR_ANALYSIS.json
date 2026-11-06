@@ -1,0 +1,3399 @@
+{
+  "generated": "2026-11-05",
+  "inputs": {
+    "eval": "eval_reading --detail (Round 23 Phase 0 run on a scratchpad copy, FULL_BOQ)",
+    "answerKeys": "real_drawings/house_ready_1..4/answer_key.json",
+    "ocrCache": "offline_ocr.json of the same sets (text search only)"
+  },
+  "notRun": "reader / merge trace on real sets (needs FULL_BOQ) — member-level bbox and the exact merge path are Missing Evidence",
+  "summary": {
+    "count": {
+      "n": 5,
+      "byRootCause": {
+        "PLAN_COUNTING_ERROR (beam label dropped before span assignment)": 1,
+        "GROUND_TRUTH / EVALUATION DEFINITION AMBIGUITY (members are vertical segments; the key counts physical columns) — NOT duplicate counting": 1,
+        "OCR_RECOGNITION_FAILURE (\"B1\" read as \"31\") — 2 of 4 repaired by the tag vocabulary, 1 lost because of a trailing \"|\"": 1,
+        "UNKNOWN (one \"BX\" label on the plan → one instance with no grid; a second label is not in the OCR, or one label marks two stair beams)": 1,
+        "UNKNOWN (one \"S1\" label → one bay A/2–B/3; the key has 3 panels; other slab labels on the sheet are \"SP\")": 1
+      }
+    },
+    "rebarNotFound": {
+      "n": 26,
+      "byRootCause": {
+        "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)": 12,
+        "OCR_RECOGNITION_FAILURE (DB → 0 on scan)": 2,
+        "OCR_RECOGNITION_FAILURE (mesh \"+\" notation)": 1,
+        "OCR_RECOGNITION_FAILURE (second mesh label) — or MEMBER_MATCHING (one label shared)": 1,
+        "SOURCE_TEXT_MISSING_IN_OCR (detection vs recognition not separable without the image)": 1,
+        "OCR_RECOGNITION_FAILURE (second mesh label broken into fragments)": 1,
+        "SOURCE_TEXT_MISSING_IN_OCR": 2,
+        "MEMBER_MATCHING_FAILURE (section label not read, so its bars attach to no member)": 3,
+        "UNKNOWN (PARSER — three-decimal spacing — or MEMBER_MATCHING); not OCR": 1,
+        "UNKNOWN (OCR misread 12→16, or B1 bars drawn elsewhere)": 2
+      }
+    },
+    "rebarWrong": {
+      "n": 1,
+      "byRootCause": {
+        "OCR_RECOGNITION_FAILURE (DB → 0) causing a missing bar group": 1
+      }
+    }
+  },
+  "errors": [
+    {
+      "project": "house_ready_2",
+      "id": "C1",
+      "set": "house_ready_2",
+      "task": "count",
+      "memberType": "BEAM",
+      "member": "B2",
+      "expected": 14,
+      "actual": 13,
+      "countSource": "plan member instances",
+      "functions": {
+        "extraction": "sheetReader.readSheets: tagWords filtered by pl.region (L1085) → beam span rules (L1151–1198)",
+        "parsing": "mergeSheetReadings (1 member per instance)",
+        "scoring": "readingScore.scoreReading"
+      },
+      "ocrEvidence": [
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.528,
+            0.41,
+            0.537
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.286,
+            0.539,
+            0.295
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.528,
+            0.539,
+            0.537
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.286,
+            0.41,
+            0.295
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.649,
+            0.539,
+            0.657
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 27,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.649,
+            0.41,
+            0.657
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.528,
+            0.41,
+            0.537
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.286,
+            0.539,
+            0.295
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.528,
+            0.539,
+            0.537
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.754,
+            0.539,
+            0.762
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.286,
+            0.41,
+            0.295
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.403,
+            0.41,
+            0.412
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.4,
+            0.649,
+            0.41,
+            0.657
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 28,
+          "text": "B2",
+          "bbox": [
+            0.528,
+            0.649,
+            0.539,
+            0.657
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        }
+      ],
+      "observation": "OCR has exactly 14 \"B2\" labels on the two plans (p27 ×6, p28 ×8) — matches the key remark \"ชั้นล่าง 6 + ชั้นบน 8\"; one label did not become a member",
+      "rootCause": "PLAN_COUNTING_ERROR (beam label dropped before span assignment)",
+      "confidence": "MEDIUM-HIGH — 8 labels map to 7 instances (positions matched); the drop happens in the plan-region filter (sheetReader.ts ~L1085, labels outside pl.region) — probable, the region itself was not printed",
+      "validation": "no validation rejects a count; value released to review as read",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "bbox comes from OCR words (normalized to the OCR raster); PDF-point coordinates not recorded"
+      ],
+      "trace": {
+        "instancesP27": 6,
+        "instancesP28": 7,
+        "labelsP28": 8,
+        "droppedLabel": {
+          "text": "B2",
+          "page": 28,
+          "xy": [
+            0.528,
+            0.754
+          ]
+        },
+        "note": "dropped label lies beyond every other label row (max y 0.649); also the label at (0.400, 0.403) between rows became a DIAGONAL span A/1–B/2, 4.5 m (sheetReader.ts L1168) — a length error the count score does not see"
+      },
+      "traceSource": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings"
+    },
+    {
+      "project": "house_ready_4",
+      "id": "C2",
+      "set": "house_ready_4",
+      "task": "count",
+      "memberType": "COLUMN",
+      "member": "C1",
+      "expected": 9,
+      "actual": 18,
+      "countSource": "plan member instances",
+      "functions": {
+        "extraction": "sheetReader: F/C labels → COLUMN instance per grid (L1111–1131)",
+        "parsing": "sheetMerge: footing_plan column → stub, framing_plan column → storey segment; first framing level skipped only when its elevation is known (framingLevels)",
+        "scoring": "readingScore.scoreReading counts members per tag"
+      },
+      "ocrEvidence": [
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.373,
+            0.523,
+            0.381,
+            0.532
+          ],
+          "conf": 95,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.486,
+            0.362,
+            0.493,
+            0.371
+          ],
+          "conf": 94,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.486,
+            0.704,
+            0.493,
+            0.713
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.375,
+            0.695,
+            0.382,
+            0.704
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.495,
+            0.53,
+            0.502,
+            0.538
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.656,
+            0.53,
+            0.664,
+            0.538
+          ],
+          "conf": 87,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.656,
+            0.695,
+            0.664,
+            0.704
+          ],
+          "conf": 84,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.371,
+            0.363,
+            0.379,
+            0.372
+          ],
+          "conf": 83,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 24,
+          "text": "C1",
+          "bbox": [
+            0.656,
+            0.353,
+            0.664,
+            0.361
+          ],
+          "conf": 81,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 25,
+          "text": "C1",
+          "bbox": [
+            0.416,
+            0.706,
+            0.423,
+            0.714
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 25,
+          "text": "C1",
+          "bbox": [
+            0.517,
+            0.531,
+            0.525,
+            0.54
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 25,
+          "text": "C1",
+          "bbox": [
+            0.675,
+            0.534,
+            0.683,
+            0.543
+          ],
+          "conf": 89,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 25,
+          "text": "C1",
+          "bbox": [
+            0.394,
+            0.531,
+            0.401,
+            0.54
+          ],
+          "conf": 75,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 25,
+          "text": "C1",
+          "bbox": [
+            0.506,
+            0.712,
+            0.514,
+            0.721
+          ],
+          "conf": 73,
+          "pageKind": "vector_text"
+        }
+      ],
+      "observation": "two footing plans: p24 (labels F2–F6, 9 × \"C1\") and p25 (spread footing plan in the key, F(…) labels, 5 × \"C1\"); the system has twice the key count",
+      "rootCause": "GROUND_TRUTH / EVALUATION DEFINITION AMBIGUITY (members are vertical segments; the key counts physical columns) — NOT duplicate counting",
+      "confidence": "HIGH — trace: 27 C1 instances (p24 pile plan 9, p25 spread plan 9, p26 floor plan 9); the pile plan p24 is excluded by the variant filter; members = 9 stubs \"ตอม่อ (ฐานราก–คานคอดิน)\" from p25 (length 1 m, assumed) + 9 columns \"ชั้น 1\" from p26 (length 3 m, assumed) — one per grid position per level range",
+      "validation": "existing duplicate rule needs same level+grid; Round 22.1 groups would flag same-tag occurrences only if their positions coincide or are unknown",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "bbox comes from OCR words (normalized to the OCR raster); PDF-point coordinates not recorded"
+      ],
+      "trace": {
+        "instances": {
+          "p24": 9,
+          "p25": 9,
+          "p26": 9
+        },
+        "members": {
+          "stub_p25": 9,
+          "storey_p26": 9
+        },
+        "lengths": "stub 1.0 m (columnStubHeightM), storey 3.0 m (storeyHeightM) — both assumptions, flagged by the engine"
+      },
+      "note": "BOQ risk is in the ASSUMED heights, not in a double count; whether the stub and storey ranges overlap cannot be decided without the level marks (none read on this set)",
+      "traceSource": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings"
+    },
+    {
+      "project": "house_ready_4",
+      "id": "C3",
+      "set": "house_ready_4",
+      "task": "count",
+      "memberType": "BEAM",
+      "member": "B1",
+      "expected": 4,
+      "actual": 3,
+      "countSource": "plan member instances",
+      "functions": {
+        "extraction": "sheetReader.repairTag (L143–162: vocabulary repair; \"31|\" not repaired)",
+        "parsing": "mergeSheetReadings",
+        "scoring": "readingScore.scoreReading"
+      },
+      "ocrEvidence": [
+        {
+          "page": 26,
+          "text": "B1",
+          "bbox": [
+            0.49,
+            0.399,
+            0.498,
+            0.408
+          ],
+          "conf": 82,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": "B1,",
+          "bbox": [
+            0.895,
+            0.808,
+            0.906,
+            0.818
+          ],
+          "conf": 89,
+          "pageKind": "vector_text"
+        }
+      ],
+      "observation": "OCR has one \"B1\" label on the plan (p26) yet the system made 3 members — instances do not come from labels one-to-one",
+      "rootCause": "OCR_RECOGNITION_FAILURE (\"B1\" read as \"31\") — 2 of 4 repaired by the tag vocabulary, 1 lost because of a trailing \"|\"",
+      "confidence": "MEDIUM-HIGH — instance positions coincide with OCR \"31\" (0.596,0.577), \"31\" (0.596,0.399) and \"B1\" (0.490,0.399); a fourth \"31|\" at (0.34,0.60) produced no instance (page coordinates on this set are transposed: box_2d [x,y])",
+      "validation": "-",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "bbox comes from OCR words (normalized to the OCR raster); PDF-point coordinates not recorded"
+      ],
+      "trace": {
+        "instances": 3,
+        "labels": [
+          "B1",
+          "31",
+          "31",
+          "31|"
+        ],
+        "diagonal": "A/2–B/3 4.32 m — a label between rows became a diagonal span"
+      },
+      "traceSource": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings"
+    },
+    {
+      "project": "house_ready_4",
+      "id": "C4",
+      "set": "house_ready_4",
+      "task": "count",
+      "memberType": "BEAM",
+      "member": "BX",
+      "expected": 2,
+      "actual": 1,
+      "countSource": "plan member instances",
+      "functions": {
+        "extraction": "readSheets (sheetReader: plan instances on footing_plan / framing_plan)",
+        "parsing": "mergeSheetReadings (sheetMerge: one member per plan instance)",
+        "scoring": "tools/readingScore.scoreReading (count = number of merged members with the tag)"
+      },
+      "ocrEvidence": [
+        {
+          "page": 26,
+          "text": "BX",
+          "bbox": [
+            0.428,
+            0.695,
+            0.437,
+            0.705
+          ],
+          "conf": 96,
+          "pageKind": "vector_text"
+        }
+      ],
+      "observation": "one \"BX\" label on the plan p26 (others are on detail p39); key: 2 stair beams",
+      "rootCause": "UNKNOWN (one \"BX\" label on the plan → one instance with no grid; a second label is not in the OCR, or one label marks two stair beams)",
+      "confidence": "LOW — needs a look at the sheet",
+      "validation": "-",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "bbox comes from OCR words (normalized to the OCR raster); PDF-point coordinates not recorded"
+      ],
+      "trace": {
+        "instances": 1,
+        "grid": null,
+        "labelXY": [
+          0.428,
+          0.695
+        ]
+      },
+      "traceSource": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings"
+    },
+    {
+      "project": "house_ready_4",
+      "id": "C5",
+      "set": "house_ready_4",
+      "task": "count",
+      "memberType": "SLAB",
+      "member": "S1",
+      "expected": 3,
+      "actual": 1,
+      "countSource": "plan member instances",
+      "functions": {
+        "extraction": "readSheets (sheetReader: plan instances on footing_plan / framing_plan)",
+        "parsing": "mergeSheetReadings (sheetMerge: one member per plan instance)",
+        "scoring": "tools/readingScore.scoreReading (count = number of merged members with the tag)"
+      },
+      "ocrEvidence": [
+        {
+          "page": 26,
+          "text": "S1",
+          "bbox": [
+            0.545,
+            0.403,
+            0.552,
+            0.412
+          ],
+          "conf": 74,
+          "pageKind": "vector_text"
+        }
+      ],
+      "observation": "one \"S1\" label on the plan p26; key: 3 panels",
+      "rootCause": "UNKNOWN (one \"S1\" label → one bay A/2–B/3; the key has 3 panels; other slab labels on the sheet are \"SP\")",
+      "confidence": "LOW — needs a look at the sheet",
+      "validation": "-",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "bbox comes from OCR words (normalized to the OCR raster); PDF-point coordinates not recorded"
+      ],
+      "trace": {
+        "instances": 1,
+        "bay": "A/2–B/3",
+        "labelXY": [
+          0.545,
+          0.403
+        ]
+      },
+      "traceSource": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings"
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R01",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B3",
+      "field": "stirrup",
+      "expected": "RB9@0.20",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 30,
+          "text": ".@0.20",
+          "bbox": [
+            0.168,
+            0.218,
+            0.196,
+            0.226
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": ".@0.20",
+          "bbox": [
+            0.787,
+            0.174,
+            0.809,
+            0.181
+          ],
+          "conf": 88,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "@0.20",
+          "bbox": [
+            0.579,
+            0.174,
+            0.608,
+            0.181
+          ],
+          "conf": 76,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.20\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø9/RB9\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R02",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "SLAB",
+      "member": "GS",
+      "field": "topRebar",
+      "expected": "RB9@0.20",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 30,
+          "text": ".@0.20",
+          "bbox": [
+            0.168,
+            0.218,
+            0.196,
+            0.226
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": ".@0.20",
+          "bbox": [
+            0.787,
+            0.174,
+            0.809,
+            0.181
+          ],
+          "conf": 88,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "@0.20",
+          "bbox": [
+            0.579,
+            0.174,
+            0.608,
+            0.181
+          ],
+          "conf": 76,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.20\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø9/RB9\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R03",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "COLUMN",
+      "member": "C1",
+      "field": "stirrup",
+      "expected": "RB6@0.20",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 38,
+          "text": "@0.20",
+          "bbox": [
+            0.273,
+            0.641,
+            0.293,
+            0.649
+          ],
+          "conf": 89,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": ".@0.20",
+          "bbox": [
+            0.27,
+            0.477,
+            0.293,
+            0.485
+          ],
+          "conf": 87,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.20\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R04",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "COLUMN",
+      "member": "C1",
+      "field": "stirrup",
+      "expected": "RB6@0.20",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 33,
+          "text": "H%.@0.20",
+          "bbox": [
+            0.351,
+            0.548,
+            0.388,
+            0.563
+          ],
+          "conf": 86,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "HH.@0.20",
+          "bbox": [
+            0.224,
+            0.703,
+            0.252,
+            0.711
+          ],
+          "conf": 93,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.20\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R05",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "BST2",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.299,
+            0.512,
+            0.327,
+            0.521
+          ],
+          "conf": 96,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H.@0.15",
+          "bbox": [
+            0.194,
+            0.517,
+            0.216,
+            0.526
+          ],
+          "conf": 94,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H2.@0.15",
+          "bbox": [
+            0.532,
+            0.353,
+            0.559,
+            0.363
+          ],
+          "conf": 90,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.67,
+            0.516,
+            0.698,
+            0.527
+          ],
+          "conf": 89,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.303,
+            0.354,
+            0.33,
+            0.363
+          ],
+          "conf": 87,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.418,
+            0.354,
+            0.444,
+            0.363
+          ],
+          "conf": 85,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "3H.@0.15",
+          "bbox": [
+            0.467,
+            0.512,
+            0.494,
+            0.521
+          ],
+          "conf": 83,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R06",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "GB1",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.299,
+            0.512,
+            0.327,
+            0.521
+          ],
+          "conf": 96,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H.@0.15",
+          "bbox": [
+            0.194,
+            0.517,
+            0.216,
+            0.526
+          ],
+          "conf": 94,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H2.@0.15",
+          "bbox": [
+            0.532,
+            0.353,
+            0.559,
+            0.363
+          ],
+          "conf": 90,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.67,
+            0.516,
+            0.698,
+            0.527
+          ],
+          "conf": 89,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.303,
+            0.354,
+            0.33,
+            0.363
+          ],
+          "conf": 87,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.418,
+            0.354,
+            0.444,
+            0.363
+          ],
+          "conf": 85,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "3H.@0.15",
+          "bbox": [
+            0.467,
+            0.512,
+            0.494,
+            0.521
+          ],
+          "conf": 83,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R07",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "GB2",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.299,
+            0.512,
+            0.327,
+            0.521
+          ],
+          "conf": 96,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H.@0.15",
+          "bbox": [
+            0.194,
+            0.517,
+            0.216,
+            0.526
+          ],
+          "conf": 94,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "H2.@0.15",
+          "bbox": [
+            0.532,
+            0.353,
+            0.559,
+            0.363
+          ],
+          "conf": 90,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.67,
+            0.516,
+            0.698,
+            0.527
+          ],
+          "conf": 89,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "HH.@0.15",
+          "bbox": [
+            0.303,
+            0.354,
+            0.33,
+            0.363
+          ],
+          "conf": 87,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "NN.@0.15",
+          "bbox": [
+            0.418,
+            0.354,
+            0.444,
+            0.363
+          ],
+          "conf": 85,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "3H.@0.15",
+          "bbox": [
+            0.467,
+            0.512,
+            0.494,
+            0.521
+          ],
+          "conf": 83,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R08",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "SLAB",
+      "member": "S0",
+      "field": "topRebar",
+      "expected": "RB6@0.20",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 33,
+          "text": "H%.@0.20",
+          "bbox": [
+            0.351,
+            0.548,
+            0.388,
+            0.563
+          ],
+          "conf": 86,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "HH.@0.20",
+          "bbox": [
+            0.224,
+            0.703,
+            0.252,
+            0.711
+          ],
+          "conf": 93,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.20\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R09",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "COLUMN",
+      "member": "C1",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.198,
+            0.152,
+            0.22,
+            0.16
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.252,
+            0.753,
+            0.28,
+            0.762
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.565,
+            0.753,
+            0.592,
+            0.762
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.799,
+            0.761,
+            0.821,
+            0.769
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R10",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.198,
+            0.152,
+            0.22,
+            0.16
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.252,
+            0.753,
+            0.28,
+            0.762
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.565,
+            0.753,
+            0.592,
+            0.762
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.799,
+            0.761,
+            0.821,
+            0.769
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R11",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "BX",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.198,
+            0.152,
+            0.22,
+            0.16
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.252,
+            0.753,
+            0.28,
+            0.762
+          ],
+          "conf": 93,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.565,
+            0.753,
+            0.592,
+            0.762
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 37,
+          "text": ".@0.15",
+          "bbox": [
+            0.799,
+            0.761,
+            0.821,
+            0.769
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": ".@0.15",
+          "bbox": [
+            0.763,
+            0.754,
+            0.785,
+            0.766
+          ],
+          "conf": 85,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.15\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø6/RB6\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R12",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "SLAB",
+      "member": "S1",
+      "field": "topRebar",
+      "expected": "RB9@0.25",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 39,
+          "text": ".@0.25#",
+          "bbox": [
+            0.201,
+            0.228,
+            0.226,
+            0.238
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "@0.25",
+          "bbox": [
+            0.175,
+            0.126,
+            0.196,
+            0.134
+          ],
+          "conf": 51,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected (spacing text present)",
+      "parsing": "not parseable: diameter missing — must not be guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "spacing \"@0.25\" is in the OCR output but with the bar symbol/diameter replaced by noise (\".\", \"HH.\", \"H%.\"); no \"ø9/RB9\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (bar symbol + diameter prefix)",
+      "confidence": "HIGH — evidence: garbled prefix tokens next to a correct spacing",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R13",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "GB1",
+      "field": "topRebar",
+      "expected": "2-DB16",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.174,
+            0.108,
+            0.192,
+            0.117
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.301,
+            0.153,
+            0.318,
+            0.161
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.299,
+            0.176,
+            0.317,
+            0.185
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.175,
+            0.178,
+            0.193,
+            0.19
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.513,
+            0.384,
+            0.531,
+            0.394
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.399,
+            0.385,
+            0.417,
+            0.393
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.17,
+            0.391,
+            0.188,
+            0.4
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.423,
+            0.483,
+            0.44,
+            0.491
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.653,
+            0.487,
+            0.67,
+            0.496
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.17,
+            0.548,
+            0.187,
+            0.556
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "\"2-016\" not bar notation — rejected by the parser as text, not guessed",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "scanned page (raster): bar groups read as \"2-016\" / \"2-012\" — \"DB\" recognised as \"0\"; no \"2-DB16\"/\"2ø16\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (DB → 0 on scan)",
+      "confidence": "HIGH — evidence: 20+ \"2-0NN\" tokens on p34",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "R14",
+      "set": "house_ready_3",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "GB1",
+      "field": "bottomRebar",
+      "expected": "2-DB16",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.174,
+            0.108,
+            0.192,
+            0.117
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.301,
+            0.153,
+            0.318,
+            0.161
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.299,
+            0.176,
+            0.317,
+            0.185
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.175,
+            0.178,
+            0.193,
+            0.19
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.513,
+            0.384,
+            0.531,
+            0.394
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.399,
+            0.385,
+            0.417,
+            0.393
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.17,
+            0.391,
+            0.188,
+            0.4
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.423,
+            0.483,
+            0.44,
+            0.491
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.653,
+            0.487,
+            0.67,
+            0.496
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.17,
+            0.548,
+            0.187,
+            0.556
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "\"2-016\" not bar notation",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "scanned page (raster): bar groups read as \"2-016\" / \"2-012\" — \"DB\" recognised as \"0\"; no \"2-DB16\"/\"2ø16\" token on the page",
+      "rootCause": "OCR_RECOGNITION_FAILURE (DB → 0 on scan)",
+      "confidence": "HIGH — evidence: 20+ \"2-0NN\" tokens on p34",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R15",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F0.95X0.95",
+      "field": "bottomRebar",
+      "expected": "5+5-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 29,
+          "text": "4+",
+          "bbox": [
+            0.605,
+            0.66,
+            0.612,
+            0.671
+          ],
+          "conf": 61,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "4+",
+          "bbox": [
+            0.664,
+            0.451,
+            0.672,
+            0.462
+          ],
+          "conf": 55,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "+-6-+",
+          "bbox": [
+            0.35,
+            0.532,
+            0.359,
+            0.6
+          ],
+          "conf": 55,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "F(0.90x0.90),F(0.95x0.95)",
+          "bbox": [
+            0.867,
+            0.813,
+            0.95,
+            0.822
+          ],
+          "conf": 69,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "partial / absent",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "detail p29 (label \"F(0.90x0.90),F(0.95x0.95)\") has no \"n+n\" token; fragments \"4+\", \"+-6-+\" are present",
+      "rootCause": "OCR_RECOGNITION_FAILURE (mesh \"+\" notation)",
+      "confidence": "MEDIUM — fragments evidenced",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R16",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F0.95X0.95",
+      "field": "bottomRebar",
+      "expected": "5+5-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 36,
+          "text": "5+5",
+          "bbox": [
+            0.711,
+            0.255,
+            0.722,
+            0.264
+          ],
+          "conf": 87,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 36,
+          "text": "+5",
+          "bbox": [
+            0.329,
+            0.255,
+            0.349,
+            0.264
+          ],
+          "conf": 88,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 36,
+          "text": "+020",
+          "bbox": [
+            0.623,
+            0.216,
+            0.649,
+            0.232
+          ],
+          "conf": 71,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 36,
+          "text": "F(0.95x0.95),",
+          "bbox": [
+            0.846,
+            0.811,
+            0.894,
+            0.822
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 36,
+          "text": "F(1.05x1.05)",
+          "bbox": [
+            0.9,
+            0.811,
+            0.944,
+            0.822
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "partial / absent",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "p36 holds two details (F(0.95x0.95), F(1.05x1.05)) but one \"5+5\" token; F1.05 got its bars, F0.95 did not",
+      "rootCause": "OCR_RECOGNITION_FAILURE (second mesh label) — or MEMBER_MATCHING (one label shared)",
+      "confidence": "MEDIUM",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R17",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F1.45X0.95",
+      "field": "bottomRebar",
+      "expected": "7+8-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 37,
+          "text": "F(1.45x0.95)",
+          "bbox": [
+            0.871,
+            0.811,
+            0.92,
+            0.823
+          ],
+          "conf": 73,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "detail p37 (\"F(1.45x0.95)\") has no mesh token and no fragments",
+      "rootCause": "SOURCE_TEXT_MISSING_IN_OCR (detection vs recognition not separable without the image)",
+      "confidence": "MEDIUM",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R18",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F0.95X0.95",
+      "field": "bottomRebar",
+      "expected": "5+5-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 35,
+          "text": "5+5",
+          "bbox": [
+            0.711,
+            0.255,
+            0.722,
+            0.264
+          ],
+          "conf": 87,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 35,
+          "text": "+5",
+          "bbox": [
+            0.329,
+            0.255,
+            0.349,
+            0.264
+          ],
+          "conf": 89,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 35,
+          "text": "+020",
+          "bbox": [
+            0.623,
+            0.216,
+            0.649,
+            0.232
+          ],
+          "conf": 67,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 35,
+          "text": "+2",
+          "bbox": [
+            0.915,
+            0.247,
+            0.919,
+            0.259
+          ],
+          "conf": 57,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 35,
+          "text": "F(1.05x1.05)",
+          "bbox": [
+            0.9,
+            0.811,
+            0.944,
+            0.822
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 35,
+          "text": "F(0.95x0.95),",
+          "bbox": [
+            0.846,
+            0.811,
+            0.894,
+            0.822
+          ],
+          "conf": 92,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "partial / absent",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "p35 holds two details (F(1.05x1.05), F(0.95x0.95)) with one \"5+5\" token and fragments \"+5\", \"5+5\", \"+020\"",
+      "rootCause": "OCR_RECOGNITION_FAILURE (second mesh label broken into fragments)",
+      "confidence": "MEDIUM-HIGH",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R19",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F0.90X0.90X0.30",
+      "field": "bottomRebar",
+      "expected": "5+5-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "F(0.90x0.90%0.30)",
+          "bbox": [
+            0.859,
+            0.811,
+            0.931,
+            0.823
+          ],
+          "conf": 77,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "detail p34 (\"F(0.90x0.90%0.30)\") has no mesh token and no fragments",
+      "rootCause": "SOURCE_TEXT_MISSING_IN_OCR",
+      "confidence": "MEDIUM",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_4",
+      "id": "R20",
+      "set": "house_ready_4",
+      "task": "rebar-not-found",
+      "memberType": "FOOTING",
+      "member": "F1.45X0.95",
+      "field": "bottomRebar",
+      "expected": "7+8-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 36,
+          "text": "F(1.45x0.95)",
+          "bbox": [
+            0.871,
+            0.811,
+            0.92,
+            0.823
+          ],
+          "conf": 76,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "no mesh notation for this detail",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "detail p36 (\"F(1.45x0.95)\") has no mesh token; a \"78\" token exists only on p40 (not this detail)",
+      "rootCause": "SOURCE_TEXT_MISSING_IN_OCR",
+      "confidence": "MEDIUM",
+      "keyPages": [
+        25,
+        26,
+        33,
+        34,
+        35,
+        36,
+        37,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R21",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "topRebar",
+      "expected": "2-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.091,
+            0.203,
+            0.132,
+            0.211
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.636,
+            0.409,
+            0.643
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.193,
+            0.51,
+            0.221,
+            0.517
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "3ø12",
+          "bbox": [
+            0.369,
+            0.212,
+            0.397,
+            0.219
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.121,
+            0.397,
+            0.128
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "D2",
+          "bbox": [
+            0.913,
+            0.659,
+            0.918,
+            0.68
+          ],
+          "conf": 70,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "V4",
+          "bbox": [
+            0.703,
+            0.588,
+            0.722,
+            0.615
+          ],
+          "conf": 62,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3",
+          "bbox": [
+            0.939,
+            0.797,
+            0.946,
+            0.804
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3,B3X",
+          "bbox": [
+            0.689,
+            0.267,
+            0.74,
+            0.285
+          ],
+          "conf": 84,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B2,B2X",
+          "bbox": [
+            0.482,
+            0.267,
+            0.533,
+            0.285
+          ],
+          "conf": 82,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3X",
+          "bbox": [
+            0.297,
+            0.402,
+            0.31,
+            0.41
+          ],
+          "conf": 58,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "bars detected; section label not detected",
+      "parsing": "bars parseable",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "B1 width and depth are missing too (the whole section): bar text \"2ø12\"/\"3ø12\" exists on p29–p30, but no \"B1\" label on any detail page (labels read there: D2, V4, B3, B3X, B2, B2X); \"B1\" only on plan p26",
+      "rootCause": "MEMBER_MATCHING_FAILURE (section label not read, so its bars attach to no member)",
+      "confidence": "MEDIUM-HIGH",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R22",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "bottomRebar",
+      "expected": "3-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.091,
+            0.203,
+            0.132,
+            0.211
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.636,
+            0.409,
+            0.643
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.193,
+            0.51,
+            0.221,
+            0.517
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "3ø12",
+          "bbox": [
+            0.369,
+            0.212,
+            0.397,
+            0.219
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.121,
+            0.397,
+            0.128
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "D2",
+          "bbox": [
+            0.913,
+            0.659,
+            0.918,
+            0.68
+          ],
+          "conf": 70,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "V4",
+          "bbox": [
+            0.703,
+            0.588,
+            0.722,
+            0.615
+          ],
+          "conf": 62,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3",
+          "bbox": [
+            0.939,
+            0.797,
+            0.946,
+            0.804
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3,B3X",
+          "bbox": [
+            0.689,
+            0.267,
+            0.74,
+            0.285
+          ],
+          "conf": 84,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B2,B2X",
+          "bbox": [
+            0.482,
+            0.267,
+            0.533,
+            0.285
+          ],
+          "conf": 82,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3X",
+          "bbox": [
+            0.297,
+            0.402,
+            0.31,
+            0.41
+          ],
+          "conf": 58,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "bars detected; section label not detected",
+      "parsing": "bars parseable",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "B1 width and depth are missing too (the whole section): bar text \"2ø12\"/\"3ø12\" exists on p29–p30, but no \"B1\" label on any detail page (labels read there: D2, V4, B3, B3X, B2, B2X); \"B1\" only on plan p26",
+      "rootCause": "MEMBER_MATCHING_FAILURE (section label not read, so its bars attach to no member)",
+      "confidence": "MEDIUM-HIGH",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_1",
+      "id": "R23",
+      "set": "house_ready_1",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "stirrup",
+      "expected": "RB6@0.15",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.091,
+            0.203,
+            0.132,
+            0.211
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.636,
+            0.409,
+            0.643
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.193,
+            0.51,
+            0.221,
+            0.517
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "3ø12",
+          "bbox": [
+            0.369,
+            0.212,
+            0.397,
+            0.219
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "2ø12",
+          "bbox": [
+            0.369,
+            0.121,
+            0.397,
+            0.128
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "D2",
+          "bbox": [
+            0.913,
+            0.659,
+            0.918,
+            0.68
+          ],
+          "conf": 70,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 29,
+          "text": "V4",
+          "bbox": [
+            0.703,
+            0.588,
+            0.722,
+            0.615
+          ],
+          "conf": 62,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3",
+          "bbox": [
+            0.939,
+            0.797,
+            0.946,
+            0.804
+          ],
+          "conf": 91,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3,B3X",
+          "bbox": [
+            0.689,
+            0.267,
+            0.74,
+            0.285
+          ],
+          "conf": 84,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B2,B2X",
+          "bbox": [
+            0.482,
+            0.267,
+            0.533,
+            0.285
+          ],
+          "conf": 82,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 30,
+          "text": "B3X",
+          "bbox": [
+            0.297,
+            0.402,
+            0.31,
+            0.41
+          ],
+          "conf": 58,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "bars detected; section label not detected",
+      "parsing": "bars parseable",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "B1 width and depth are missing too (the whole section): bar text \"2ø12\"/\"3ø12\" exists on p29–p30, but no \"B1\" label on any detail page (labels read there: D2, V4, B3, B3X, B2, B2X); \"B1\" only on plan p26",
+      "rootCause": "MEMBER_MATCHING_FAILURE (section label not read, so its bars attach to no member)",
+      "confidence": "MEDIUM-HIGH",
+      "keyPages": [
+        25,
+        26,
+        29,
+        30
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R24",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B3",
+      "field": "stirrup",
+      "expected": "RB6@0.175",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.211,
+            0.174,
+            0.286,
+            0.188
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.459,
+            0.476,
+            0.523,
+            0.487
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.459,
+            0.777,
+            0.523,
+            0.789
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.459,
+            0.174,
+            0.523,
+            0.185
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.629,
+            0.471,
+            0.696,
+            0.481
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 39,
+          "text": "ø6@0.175",
+          "bbox": [
+            0.629,
+            0.776,
+            0.696,
+            0.787
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "UNKNOWN",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "clean \"ø6@0.175\" tokens (×5) on detail p39, B3 labels present — yet the member has no stirrup",
+      "rootCause": "UNKNOWN (PARSER — three-decimal spacing — or MEMBER_MATCHING); not OCR",
+      "confidence": "MEDIUM that OCR is not the cause",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R25",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "topRebar",
+      "expected": "2-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.335,
+            0.447,
+            0.341
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.545,
+            0.447,
+            0.551
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "1ø16",
+          "bbox": [
+            0.418,
+            0.357,
+            0.446,
+            0.374
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.416,
+            0.447,
+            0.423
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.626,
+            0.447,
+            0.633
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.841,
+            0.447,
+            0.848
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "UNKNOWN",
+      "parsing": "-",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "B1 width/depth were read (section matched); its page p38 has \"2ø16\"/\"1ø16\" tokens but no \"2ø12\"",
+      "rootCause": "UNKNOWN (OCR misread 12→16, or B1 bars drawn elsewhere)",
+      "confidence": "LOW",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_2",
+      "id": "R26",
+      "set": "house_ready_2",
+      "task": "rebar-not-found",
+      "memberType": "BEAM",
+      "member": "B1",
+      "field": "bottomRebar",
+      "expected": "2-DB12",
+      "actual": null,
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.335,
+            0.447,
+            0.341
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.545,
+            0.447,
+            0.551
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "1ø16",
+          "bbox": [
+            0.418,
+            0.357,
+            0.446,
+            0.374
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.416,
+            0.447,
+            0.423
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.626,
+            0.447,
+            0.633
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        },
+        {
+          "page": 38,
+          "text": "2ø16",
+          "bbox": [
+            0.418,
+            0.841,
+            0.447,
+            0.848
+          ],
+          "conf": 90,
+          "pageKind": "vector_text"
+        }
+      ],
+      "detection": "UNKNOWN",
+      "parsing": "-",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "B1 width/depth were read (section matched); its page p38 has \"2ø16\"/\"1ø16\" tokens but no \"2ø12\"",
+      "rootCause": "UNKNOWN (OCR misread 12→16, or B1 bars drawn elsewhere)",
+      "confidence": "LOW",
+      "keyPages": [
+        26,
+        27,
+        28,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    },
+    {
+      "project": "house_ready_3",
+      "id": "W01",
+      "set": "house_ready_3",
+      "task": "rebar-wrong",
+      "memberType": "BEAM",
+      "member": "B2",
+      "field": "bottomRebar",
+      "expected": "2-DB16+2-DB12",
+      "actual": "2-DB12",
+      "functions": {
+        "extraction": "readSheets (sheetReader: section detail bars)",
+        "parsing": "sheetMerge.barSpec → member topRebar/bottomRebar/stirrupRebar",
+        "scoring": "tools/readingScore.scoreReading + normBars"
+      },
+      "ocrEvidence": [
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.174,
+            0.108,
+            0.192,
+            0.117
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.301,
+            0.153,
+            0.318,
+            0.161
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.299,
+            0.176,
+            0.317,
+            0.185
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.175,
+            0.178,
+            0.193,
+            0.19
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.513,
+            0.384,
+            0.531,
+            0.394
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.399,
+            0.385,
+            0.417,
+            0.393
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.17,
+            0.391,
+            0.188,
+            0.4
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.423,
+            0.483,
+            0.44,
+            0.491
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-012",
+          "bbox": [
+            0.653,
+            0.487,
+            0.67,
+            0.496
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        },
+        {
+          "page": 34,
+          "text": "2-016",
+          "bbox": [
+            0.17,
+            0.548,
+            0.187,
+            0.556
+          ],
+          "conf": 100,
+          "pageKind": "raster"
+        }
+      ],
+      "detection": "detected",
+      "parsing": "\"2-016\" rejected, \"2-012\"/\"2ø12\" accepted",
+      "validationStatus": "not reached (no value) — nothing rejected it",
+      "observation": "only the DB12 group reached the member; the DB16 group appears on p34 as \"2-016\" (DB read as 0)",
+      "rootCause": "OCR_RECOGNITION_FAILURE (DB → 0) causing a missing bar group",
+      "confidence": "MEDIUM",
+      "wrongPart": "QUANTITY of bar groups (DB16 group omitted); diameter of the group that was read is right",
+      "keyPages": [
+        25,
+        27,
+        33,
+        34
+      ],
+      "evidenceGaps": [
+        "Missing Evidence: member-level bbox / source text of the merged member — needs a reader trace (FULL_BOQ), not run in this phase"
+      ]
+    }
+  ],
+  "trace": {
+    "source": "reader trace on the cached OCR (scratchpad copy, FULL_BOQ approved by the user): readSheets → mergeSheetReadings",
+    "file": "scratchpad trace_counts.json (not in the repo)",
+    "tags": {
+      "house_ready_2": {
+        "B2": {
+          "instances": 13,
+          "members": 13
+        }
+      },
+      "house_ready_4": {
+        "C1": {
+          "instances": 27,
+          "members": 18
+        },
+        "B1": {
+          "instances": 3,
+          "members": 3
+        },
+        "BX": {
+          "instances": 1,
+          "members": 1
+        },
+        "S1": {
+          "instances": 1,
+          "members": 1
+        }
+      }
+    }
+  }
+}
