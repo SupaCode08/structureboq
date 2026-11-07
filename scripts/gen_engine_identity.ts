@@ -96,10 +96,14 @@ export function ocrSources(root = ROOT): string[] {
   }
   return [...files].filter(f => path.basename(f) !== path.basename(OCR_IDENTITY_MODULE)).sort();
 }
-/** What a cached page OCR depends on: the text of the files above (raw: any edit invalidates, the safe side) and the PDF/OCR package versions. */
+/** tesseract.js worker, core and language data the app serves (public/tesseract/): other language data reads other words */
+export const OCR_DATA = 'public/tesseract';
+const filesUnder = (dir: string): string[] => (fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? filesUnder(path.join(dir, e.name)) : [path.join(dir, e.name)])) : []);
+/** What a cached page OCR depends on: the text of the files above (raw: any edit invalidates, the safe side), the bytes of the served OCR data and the PDF/OCR package versions. */
 export function currentOcrIdentity(root = ROOT): string {
   const h = createHash('sha256');
   for (const f of ocrSources(root)) h.update(f + '\0' + fs.readFileSync(path.join(root, f), 'utf8') + '\0');
+  for (const f of filesUnder(path.join(root, OCR_DATA)).sort()) h.update(path.relative(root, f).split(path.sep).join('/') + '\0').update(fs.readFileSync(f)).update('\0');
   for (const p of OCR_PACKAGES) h.update(p + '@' + JSON.parse(fs.readFileSync(path.join(root, 'node_modules', p, 'package.json'), 'utf8')).version + '\0');
   return h.digest('hex');
 }

@@ -53,6 +53,7 @@ test('the OCR identity covers what decides a page OCR (and the OCR/PDF package v
   put('src/pdf/sheetReader.ts', 'export const r = 1;');
   put('src/pdf/lanes.ts', 'export const l = 1;');
   put('src/pdf/vectorText.test.ts', 'test');
+  put('public/tesseract/lang/eng.traineddata.gz', 'eng data');
   for (const p of ['tesseract.js', '@gutenye/ocr-models', 'onnxruntime-web', 'pdfjs-dist']) put(`node_modules/${p}/package.json`, '{"version":"1.0.0"}');
   const base = currentOcrIdentity(root);
   assert.deepEqual(ocrSources(root), ['src/pdf/browserPipeline.ts', 'src/pdf/paddleOcr.ts', 'src/pdf/paddleWorker.ts', 'src/pdf/pdfOcrPipeline.ts', 'src/pdf/scanPrep.ts', 'src/pdf/vectorText.ts']);
@@ -66,9 +67,10 @@ test('the OCR identity covers what decides a page OCR (and the OCR/PDF package v
     differs('src/pdf/scanPrep.ts', 'export const s = 2;'),
     differs('src/pdf/paddleOcr.ts', 'export const o = 2;'),   // imported by the Paddle worker
     differs('src/pdf/browserPipeline.ts', 'export const b = 2;'), // OCR engines and their settings
+    differs('public/tesseract/lang/eng.traineddata.gz', 'other eng data'), // the language data served
   ]);
-  assert.equal(ids.size, 4, 'each file counts for itself');
-  put('src/pdf/vectorText.ts', 'export const v = 1;'); put('src/pdf/scanPrep.ts', 'export const s = 1;'); put('src/pdf/paddleOcr.ts', 'export const o = 1;'); put('src/pdf/browserPipeline.ts', 'export const b = 1;');
+  assert.equal(ids.size, 5, 'each file counts for itself');
+  put('src/pdf/vectorText.ts', 'export const v = 1;'); put('src/pdf/scanPrep.ts', 'export const s = 1;'); put('src/pdf/paddleOcr.ts', 'export const o = 1;'); put('src/pdf/browserPipeline.ts', 'export const b = 1;'); put('public/tesseract/lang/eng.traineddata.gz', 'eng data');
   same('back to the first text, back to the first id');
   put('node_modules/tesseract.js/package.json', '{"version":"1.0.1"}');
   assert.notEqual(currentOcrIdentity(root), base, 'a package version changes it');

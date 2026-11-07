@@ -334,13 +334,19 @@ async function textSheetGeometry(page: any) {
   return g;
 }
 
+/** tesseract.js worker, core and language data served with the app (public/tesseract/), never the CDN: reading works offline and cannot change under us */
+const tessFiles = () => {
+  const root = new URL(`${import.meta.env.BASE_URL}tesseract/`, location.href).href;
+  return { workerPath: `${root}worker.min.js`, corePath: `${root}core`, langPath: `${root}lang` };
+};
+
 let thaiWorkerPromise: Promise<any> | null = null;
 /** Thai+English OCR for ปร.4 pages whose text is drawn as outlines (language data ~0.9 MB, loaded once). */
 async function thaiWorker() {
   if (!thaiWorkerPromise) {
     thaiWorkerPromise = (async () => {
       const T = await import('tesseract.js');
-      const w = await T.createWorker('tha+eng');
+      const w = await T.createWorker('tha+eng', 1, tessFiles());
       await w.setParameters({ tessedit_pageseg_mode: '6' as any, preserve_interword_spaces: '1' as any });
       return w;
     })();
@@ -367,7 +373,7 @@ async function drawingThaiWorker() {
   if (!drawingThaiPromise) {
     drawingThaiPromise = (async () => {
       const T = await import('tesseract.js');
-      const w = await T.createWorker('tha+eng');
+      const w = await T.createWorker('tha+eng', 1, tessFiles());
       await w.setParameters({ tessedit_pageseg_mode: '11' as any });
       return w;
     })();
@@ -382,7 +388,7 @@ async function ocrLane(k: number): Promise<OcrLane> {
   if (k === 0) { const [worker, thai, turned] = await Promise.all([ocrWorker(), drawingThaiWorker(), turnedWorkers()]); return { worker, thai, turned }; }
   return (extraLanes[k] ??= (async () => {
     const T = await import('tesseract.js');
-    const make = async (lang: string, psm: string) => { const w = await T.createWorker(lang); await w.setParameters({ tessedit_pageseg_mode: psm as any }); return w; };
+    const make = async (lang: string, psm: string) => { const w = await T.createWorker(lang, 1, tessFiles()); await w.setParameters({ tessedit_pageseg_mode: psm as any }); return w; };
     const [worker, thai, ta, tb] = await Promise.all([make('eng', '6'), make('tha+eng', '11'), make('eng', '6'), make('tha+eng', '11')]);
     return { worker, thai, turned: [ta, tb] };
   })());
@@ -395,7 +401,7 @@ async function turnedWorkers() {
     turnedPromise = (async () => {
       const T = await import('tesseract.js');
       return Promise.all([['eng', '6'], ['tha+eng', '11']].map(async ([lang, psm]) => {
-        const w = await T.createWorker(lang);
+        const w = await T.createWorker(lang, 1, tessFiles());
         await w.setParameters({ tessedit_pageseg_mode: psm as any });
         return w;
       }));
@@ -619,7 +625,7 @@ export async function ocrWorker() {
   if (!workerPromise) {
     workerPromise = (async () => {
       const T = await import('tesseract.js');
-      const w = await T.createWorker('eng');
+      const w = await T.createWorker('eng', 1, tessFiles());
       await w.setParameters({ tessedit_pageseg_mode: '6' as any });
       return w;
     })();
