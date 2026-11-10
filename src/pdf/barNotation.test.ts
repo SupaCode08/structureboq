@@ -148,3 +148,33 @@ test('Thai standard construction drawing symbols (วสท. / มอก. / ก�
   assert.deepEqual(parseBarNote('2-SD30 12'), { kind: 'count', n: 2, grade: 'DB', dia: 12 });
   assert.deepEqual(parseBarNote('2-SR24-RB9'), { kind: 'count', n: 2, grade: 'RB', dia: 9 });
 });
+
+test('a Thai unit read as junk after the size is dropped, never a bare number', () => {
+  assert.deepEqual(parseBarNote('2-015981.'), { kind: 'count', n: 2, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('2-01510.'), { kind: 'count', n: 2, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('2-0151.'), { kind: 'count', n: 2, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('3-1520.'), { kind: 'count', n: 3, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('3-0152W.'), { kind: 'count', n: 3, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('2-15x01.'), { kind: 'count', n: 2, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('2-61218.'), { kind: 'count', n: 2, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('2-912s.'), { kind: 'count', n: 2, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('2-122.'), { kind: 'count', n: 2, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('3-β121.'), { kind: 'count', n: 3, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('3-1522.'), { kind: 'count', n: 3, grade: null, dia: 15 });
+  assert.deepEqual(parseBarNote('3-012.L'), { kind: 'count', n: 3, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('4-012x.'), { kind: 'count', n: 4, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5+512.'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5+512x.'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('4+412s.'), { kind: 'mesh', a: 4, b: 4, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('3+3-012N.L'), { kind: 'mesh', a: 3, b: 3, grade: null, dia: 12 });
+  assert.equal(parseBarNote('2-1500'), null);
+  assert.equal(parseBarNote('75-125'), null);
+  assert.equal(parseBarNote('24-230'), null);
+  assert.equal(parseBarNote('77-2545'), null);
+  assert.equal(parseBarNote('0.20'), null);
+  assert.equal(parseBarNote('2562'), null);
+  assert.equal(parseBarNote('62088'), null);
+  assert.equal(parseBarNote('1:20'), null);
+  assert.equal(parseBarNote('2-DB13'), null);
+  assert.equal(parseBarNote('50-401'), null);
+});

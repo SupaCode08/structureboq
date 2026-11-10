@@ -9,11 +9,12 @@
     "start": "vite preview",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "test": "node --test src/engine/qsEngine.test.ts src/engine/pipeline.test.ts src/engine/reviewLog.test.ts && tsx --test src/engine/releaseGate.test.ts src/engine/rebarSet.test.ts src/engine/approvalSnapshot.test.ts src/engine/engineIdentity.test.ts src/engine/engineIdentityHardening.test.ts src/engine/conflicts.test.ts src/engine/duplicates.test.ts src/pdf/offline.test.ts src/pdf/barNotation.test.ts src/pdf/geometry.test.ts src/pdf/sheetDetails.test.ts src/pdf/dxfParser.test.ts src/pdf/structuralNotesParser.test.ts src/pdf/docLifecycle.test.ts src/pdf/pageSelection.test.ts src/pdf/pageCache.test.ts src/pdf/lanes.test.ts tools/readingScore.test.ts tools/ocrBaseline.test.ts tools/compareWords.test.ts tools/benchmark/benchmark.test.ts",
+    "test": "node --test src/engine/qsEngine.test.ts src/engine/pipeline.test.ts src/engine/reviewLog.test.ts && tsx --test src/engine/releaseGate.test.ts src/engine/rebarSet.test.ts src/engine/approvalSnapshot.test.ts src/engine/engineIdentity.test.ts src/engine/engineIdentityHardening.test.ts src/engine/conflicts.test.ts src/engine/duplicates.test.ts src/pdf/offline.test.ts src/pdf/barNotation.test.ts src/pdf/geometry.test.ts src/pdf/sheetDetails.test.ts src/pdf/dxfParser.test.ts src/pdf/structuralNotesParser.test.ts src/pdf/docLifecycle.test.ts src/pdf/pageSelection.test.ts src/pdf/pageCache.test.ts src/pdf/lanes.test.ts tools/readingScore.test.ts tools/ocrBaseline.test.ts tools/compareWords.test.ts tools/benchmark/benchmark.test.ts src/components/sourceViewer.test.ts scripts/check_dist.test.ts src/pdf/titleBlock.test.ts src/pdf/titleInDrawing.test.ts",
     "benchmark:run": "tsx tools/benchmark/run_benchmark.ts",
     "test:paddle": "tsx --test tools/paddleFixtures.test.ts",
     "test:vector": "tsx --test tools/vectorFixtures.test.ts",
     "benchmark:offline": "tsx scripts/benchmark_offline.ts real_drawings/house_ready_1 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_2 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_3 && tsx scripts/benchmark_offline.ts real_drawings/house_ready_4 && tsx scripts/benchmark_offline.ts real_drawings/dot32_pavilion",
+    "check:dist": "tsx scripts/check_dist.ts",
     "check:full": "npm run benchmark:offline && tsx scripts/eval_reading.ts real_drawings/house_ready_1 real_drawings/house_ready_2 real_drawings/house_ready_3 real_drawings/house_ready_4",
     "datasets:sync": "tsx scripts/sync_datasets.ts",
     "lint": "tsc --noEmit"

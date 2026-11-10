@@ -5,7 +5,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import type { PdfDoc } from '../pdf/browserPipeline';
-import { canProcess, deselectAll, invert, recallSelection, rememberSelection, selectAll, selectionFor, toggle, type PageSelection } from '../pdf/pageSelection';
+import { canProcess, deselectAll, invert, recallSelection, rememberSelection, selectAll, selectOnly, selectionFor, toggle, type PageSelection } from '../pdf/pageSelection';
 
 const THUMB_W = 150;
 // localStorage can be missing or throw (private window, blocked site data): then nothing is remembered
@@ -27,7 +27,15 @@ function useRenderQueue() {
   return (job: () => Promise<void>) => { chain.current = chain.current.then(job, job); };
 }
 
-const Thumb: React.FC<{ doc: PdfDoc; page: number; checked: boolean; onToggle: () => void; enqueue: (job: () => Promise<void>) => void; alive: () => boolean }> = ({ doc, page, checked, onToggle, enqueue, alive }) => {
+const Thumb: React.FC<{
+  doc: PdfDoc;
+  page: number;
+  checked: boolean;
+  onToggle: () => void;
+  enqueue: (job: () => Promise<void>) => void;
+  alive: () => boolean;
+  tag?: { sheetId?: string; skip: boolean; reason?: string };
+}> = ({ doc, page, checked, onToggle, enqueue, alive, tag }) => {
   const box = useRef<HTMLLabelElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<'wait' | 'done' | 'error'>('wait');
@@ -72,6 +80,15 @@ const Thumb: React.FC<{ doc: PdfDoc; page: number; checked: boolean; onToggle: (
         <input type="checkbox" checked={checked} onChange={onToggle} aria-label={`หน้า ${page}`} />
         หน้า {page}
       </span>
+      {tag && (
+        <span
+          className={`text-xs truncate max-w-full ${tag.skip ? 'text-slate-400' : tag.sheetId ? 'text-emerald-600' : 'text-amber-600'}`}
+          title={tag.skip ? tag.reason : tag.sheetId ? undefined : 'อ่านมุมกระดาษไม่ออก — โหมดอัตโนมัติจะอ่านหน้านี้เต็มหน้า'}
+        >
+          {/* no sheet code read: the sort could not decide, so it is not called structural */}
+          {tag.skip ? (tag.sheetId ?? 'ข้าม') : tag.sheetId ? `โครงสร้าง ${tag.sheetId}` : 'ไม่แน่ใจ'}
+        </span>
+      )}
     </label>
   );
 };
@@ -81,6 +98,8 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
   const [error, setError] = useState('');
   const [sel, setSel] = useState<PageSelection | null>(null);
   const [restored, setRestored] = useState(false);
+  const [sorted, setSorted] = useState<Record<number, { sheetId?: string; skip: boolean; reason?: string }>>({});
+  const [sortDone, setSortDone] = useState(false);
   const live = useRef(true);
   const enqueue = useRenderQueue();
 
@@ -89,6 +108,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
     live.current = true;
     let opened: PdfDoc | null = null;
     setDoc(null); setError(''); setSel(null); setRestored(false);
+    setSorted({}); setSortDone(false);
     (async () => {
       try {
         const { loadPdf } = await import('../pdf/browserPipeline');
@@ -99,6 +119,34 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
         const before = recallSelection(browserStore(), fileHash, opened.numPages);
         setRestored(!!before);
         setSel(prev => selectionFor(prev, fileHash, opened!.numPages, before));
+
+        (async () => {
+          try {
+            const { classifyPages } = await import('../pdf/browserPipeline');
+            const { toPageText } = await import('../pdf/pdfText');
+            const { parseBoqPages } = await import('../pdf/boqParser');
+            const all = Array.from({ length: opened!.numPages }, (_, i) => i + 1);
+            const texts: ReturnType<typeof toPageText>[] = [];
+            for (const p of all) { const pg = await opened!.getPage(p); texts.push(toPageText(p, pg.getViewport({ scale: 1 }), await pg.getTextContent() as any)); }
+            // ปร.4 pages are BOQ, not drawings: the automatic mode never reads them as sheets, so they are not sorted here either
+            const boq = new Set(parseBoqPages(texts, file.name).lines.map(l => l.page));
+            if (live.current && boq.size) setSorted(prev => ({ ...prev, ...Object.fromEntries([...boq].map(p => [p, { sheetId: 'BOQ', skip: true, reason: 'หน้า BOQ ปร.4 (อ่านจากข้อความ ไม่ใช่แบบ)' }])) }));
+            await classifyPages(
+              opened!,
+              all.filter(p => !boq.has(p)),
+              opened!.numPages,
+              p => texts[p - 1],
+              (_done, _total, page, cls) => {
+                if (live.current) {
+                  setSorted(prev => ({ ...prev, [page]: { sheetId: cls.sheetId, skip: cls.skip, reason: cls.reason } }));
+                }
+              },
+            );
+            if (live.current) setSortDone(true);
+          } catch {
+            if (live.current) setSortDone(true);
+          }
+        })();
       } catch (e) {
         if (live.current) setError('เปิด PDF ไม่ได้: ' + (e as Error).message);
       }
@@ -110,6 +158,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
   if (!doc || !sel) return <div className="rounded-lg border border-slate-200 p-6 text-center text-sm text-slate-600"><Loader2 className="w-5 h-5 mx-auto mb-2 animate-spin text-blue-600" />กำลังเปิด {file.name}…</div>;
 
   const btn = 'px-2.5 py-1 rounded-md border border-slate-300 text-sm hover:bg-slate-50';
+  const structuralPages = Object.entries(sorted).filter(([, v]) => !v.skip && v.sheetId).map(([p]) => Number(p));
   return (
     <div data-page-selector={fileHash} className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -123,11 +172,23 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[60vh] overflow-y-auto pr-1">
         {Array.from({ length: sel.totalPages }, (_, i) => i + 1).map(p => (
-          <Thumb key={`${fileHash}:${p}`} doc={doc} page={p} checked={sel.selectedPages.includes(p)} onToggle={() => { setRestored(false); setSel(s => toggle(s!, p)); }} enqueue={enqueue} alive={() => live.current} />
+          <Thumb key={`${fileHash}:${p}`} doc={doc} page={p} checked={sel.selectedPages.includes(p)} onToggle={() => { setRestored(false); setSel(s => toggle(s!, p)); }} enqueue={enqueue} alive={() => live.current} tag={sorted[p]} />
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span data-selected-count className="text-slate-700">เลือกแล้ว {sel.selectedPages.length} / {sel.totalPages} หน้า</span>
+        {!sortDone ? (
+          <span className="text-xs text-slate-500">ระบบกำลังคัดหน้า… ({Object.keys(sorted).length}/{sel.totalPages})</span>
+        ) : (
+          <button
+            type="button"
+            className={`${btn} disabled:opacity-40`}
+            disabled={busy || structuralPages.length === 0}
+            onClick={() => { setRestored(false); setSel(selectOnly(sel, structuralPages)); }}
+          >
+            เลือกตามที่ระบบคัด ({structuralPages.length} หน้า)
+          </button>
+        )}
         {restored && <span data-selection-restored className="text-xs text-slate-500">(หน้าที่เลือกไว้ครั้งก่อนของไฟล์นี้ — แก้ได้)</span>}
         <span className="ml-auto flex flex-wrap gap-2">
           <button type="button" className={btn} onClick={onCancel} disabled={busy}>ยกเลิก</button>

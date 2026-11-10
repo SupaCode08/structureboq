@@ -100,6 +100,18 @@ export function getDrawingIndexTableExclusion(p: PageOcr): number[] | null {
   return null;
 }
 
+/** A label boxed in by drawn lines on opposite sides is a reference inside a drawing, not a detail title (an underline alone, or a line through the middle, does not count). */
+export function tagInsideDrawing(p: PageOcr, w: OcrWord): boolean {
+  const h = w.y1 - w.y0, cy = (w.y0 + w.y1) / 2, cx = (w.x0 + w.x1) / 2, wd = w.x1 - w.x0;
+  // only a circled label: a tag in a schedule cell is boxed in by the table lines and is still a title
+  if (!(p.circles || []).some(c => Math.hypot(c[0] - cx, c[1] - cy) <= c[2])) return false;
+  const above = (p.hsegs || []).some(s => s[0] <= w.x1 && s[2] >= w.x0 && s[1] < cy - 0.25 * h && cy - s[1] <= 1.5 * h);
+  const below = (p.hsegs || []).some(s => s[0] <= w.x1 && s[2] >= w.x0 && s[1] > cy + 0.25 * h && s[1] - cy <= 1.5 * h);
+  const left = (p.vsegs || []).some(s => s[1] <= w.y1 && s[2] >= w.y0 && s[0] < cx - 0.25 * wd && cx - s[0] <= 1.5 * wd);
+  const right = (p.vsegs || []).some(s => s[1] <= w.y1 && s[2] >= w.y0 && s[0] > cx + 0.25 * wd && s[0] - cx <= 1.5 * wd);
+  return (above && below) || (left && right);
+}
+
 const cx = (w: OcrWord) => (w.x0 + w.x1) / 2;
 const cy = (w: OcrWord) => (w.y0 + w.y1) / 2;
 const box = (w: OcrWord) => [w.y0 * 1000, w.x0 * 1000, w.y1 * 1000, w.x1 * 1000].map(v => Math.round(v));
@@ -1325,6 +1337,8 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
     const allTitles = [...tagWords, ...sectionMarkTitles(p, tagWords)].filter(t => !t.w.vertical);
     for (const { w, parts } of allTitles) {
       if (w.vertical) continue;
+      // a section-mark bubble (number between its own lines) is a real title: only tag labels are checked
+      if (tagWords.some(t => t.w === w) && tagInsideDrawing(p, w)) continue;
       if (parts.length === 1 && parts[0].repaired && allTitles.some(t => t.w !== w && t.parts.some(q => q.tag === parts[0].tag && !q.repaired))) continue;
       const sizes = parts.map(q => q.tag.match(FOOTING_SIZE)?.slice(1, 3).join('x')).filter(Boolean);
       if (parts.length > 1 && sizes.length === parts.length && new Set(sizes).size > 1) continue;

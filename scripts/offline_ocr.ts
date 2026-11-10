@@ -43,13 +43,28 @@ for (const lang of (process.env.OCR_EXTRA ?? 'tha+eng').split(',').filter(Boolea
 const M = 'node_modules/@gutenye/ocr-models/assets/';
 const paddle = process.env.PADDLE === '0' ? undefined
   : await loadPaddle(ort, fs.readFileSync(M + 'ch_PP-OCRv4_det_infer.onnx'), fs.readFileSync(M + 'ch_PP-OCRv4_rec_infer.onnx'), fs.readFileSync(M + 'ppocr_keys_v1.txt', 'utf8'));
+// like the app with WebGPU (paddleAsEng in browserPipeline.ts): Paddle reads the vector raster in place of tesseract eng; VECTOR_PADDLE=0 or PADDLE=0 reads it with tesseract eng (the app without WebGPU)
+const rasters = new WeakMap<object, { data: Uint8Array; width: number; height: number }>();
+const paddleEng = paddle && process.env.VECTOR_PADDLE !== '0' ? {
+  recognize: async (img: object, o?: { rectangle?: { left: number; top: number } }) => {
+    if (o?.rectangle?.left || o?.rectangle?.top) return { data: { words: [] } }; // the whole raster is read on the first tile
+    const r = rasters.get(img)!;
+    const ws = await paddleWords(paddle, r, undefined, 'flat');
+    return { data: { words: ws.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
+  },
+} : undefined;
+// shortcut: B1 spike (EXTRA_FLAT_ONLY=1: tha+eng skips the turned raster, told apart as the portrait one; wrong on portrait sheets), measure only
+const extraFlat = process.env.EXTRA_FLAT_ONLY === '1' ? extra.map(w => ({
+  recognize: (img: object, o?: object) => { const r = rasters.get(img); return r && r.height > r.width ? Promise.resolve({ data: { words: [] } }) : w.recognize(img as any, o as any); },
+})) : extra;
 const results = [];
 for (const p of parsePages(spec)) {
   const page = await doc.getPage(p);
   const t0 = Date.now();
   const r = await ocrPdfPage(page as any, p, {
-    worker: worker as any, extraWorkers: extra as any, labelWorkers: labelWorkers as any, tilesToo: !!process.env.TILES_TOO, OPS: OPS as any,
-    toImage: (d, w, h) => grayPng(d, w, h),
+    worker: (paddleEng ?? worker) as any, extraWorkers: extraFlat as any, labelWorkers: labelWorkers as any, tilesToo: !!process.env.TILES_TOO,
+    OPS: OPS as any,
+    toImage: (d, w, h) => { const png = grayPng(d, w, h); rasters.set(png, { data: d, width: w, height: h }); return png; },
     renderPage: (pg, _scale, rot, prepared) => embeddedImage(pg, rot, prepared),
     readScan: paddle && (r => paddleWords(paddle, r)),
   }, Number(process.env.OCR_DPI || 300) / 72);
@@ -57,6 +72,6 @@ for (const p of parsePages(spec)) {
   results.push(r);
 }
 await worker.terminate();
-for (const w of [...extra, ...labelWorkers]) await w.terminate();
+for (const w of [...extra, ...labelWorkers] as any[]) await w.terminate?.();
 fs.writeFileSync(out, JSON.stringify({ source: pdf, engine: paddle ? 'paddleocr + tesseract.js (offline)' : 'tesseract.js (offline)', extractedAt: new Date().toISOString(), pages: results }, null, 1));
 console.log('saved', out);

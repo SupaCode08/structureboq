@@ -17,6 +17,7 @@ export const selectionFor = (prev: PageSelection | null, fileHash: string, total
 
 export const selectAll = (s: PageSelection): PageSelection => ({ ...s, selectedPages: all(s.totalPages) });
 export const deselectAll = (s: PageSelection): PageSelection => ({ ...s, selectedPages: [] });
+export const selectOnly = (s: PageSelection, pages: number[]): PageSelection => ({ ...s, selectedPages: [...new Set(pages)].filter(p => p >= 1 && p <= s.totalPages).sort((a, b) => a - b) });
 export const invert = (s: PageSelection): PageSelection => ({ ...s, selectedPages: all(s.totalPages).filter(p => !s.selectedPages.includes(p)) });
 export function toggle(s: PageSelection, page: number): PageSelection {
   if (!Number.isInteger(page) || page < 1 || page > s.totalPages) return s;

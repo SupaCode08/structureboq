@@ -7,12 +7,15 @@
  *   FULL_BOQ=1 npx tsx scripts/check_ocr_current.ts [--sets house_ready_1,house_ready_2,house_ready_4]
  *                                                  [--out <dir>] [--write-baseline] [--from <dir>]
  *
+ * Passing --sets explicitly runs a partial comparison: sets omitted from the run are not compared rather than failing
+ * the gate. Each set requires non-empty structuralPages in manifest.json.
+ *
  * --from <dir> scores an OCR run already made by this script (<dir>/<set>.json) instead of reading again; it is accepted
  * only while the OCR code id is the one recorded in <dir>/ocr_id.txt, so a baseline never describes other code.
  *
  * Takes about 10 minutes (49 pages; the three sets are read in parallel). Nothing is written under real_drawings/: the new OCR goes to
  * --out (default: a temp folder) and is only merged with the old cache in memory. --write-baseline replaces the
- * baseline file; run it only when the person who owns the baseline says so.
+ * baseline file (must be from a full run, no --sets); run it only when the person who owns the baseline says so.
  */
 import fs from 'fs';
 import os from 'os';
@@ -29,6 +32,11 @@ requireFullBoq('check_ocr_current.ts');
 const BASELINE = 'tools/benchmark/ocr_current_baseline.json';
 const arg = (name: string) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const from = arg('--from');
+const explicitSets = process.argv.includes('--sets');
+if (process.argv.includes('--write-baseline') && explicitSets) {
+  console.error('a baseline must be written from a full run (no --sets)');
+  process.exit(2);
+}
 const sets = (arg('--sets') ?? 'house_ready_1,house_ready_2,house_ready_4').split(',').filter(Boolean);
 const out = path.resolve(from ?? arg('--out') ?? fs.mkdtempSync(path.join(os.tmpdir(), 'structboq-ocr-current-')));
 if (path.relative(path.resolve('real_drawings'), out) && !path.relative(path.resolve('real_drawings'), out).startsWith('..')) {
@@ -44,6 +52,10 @@ function ocrSet(set: string): Promise<{ file: string; pages: number; ms: number 
   const pdf = path.join(dir, manifest.pdf);
   const file = path.join(out, `${set}.json`);
   return new Promise((resolve, reject) => {
+    if (typeof manifest.structuralPages !== 'string' || manifest.structuralPages.trim() === '') {
+      reject(new Error(`${set}: manifest.json has no structuralPages, so this script cannot choose its pages`));
+      return;
+    }
     const t0 = Date.now();
     const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['tsx', 'scripts/offline_ocr.ts', pdf, manifest.structuralPages, file], {
       // Paddle stays on as in the app: without it a raster page falls back to tesseract and scores far below what the app reads
@@ -102,7 +114,7 @@ if (!fs.existsSync(BASELINE)) {
   console.log(`no baseline yet (${BASELINE}): nothing to compare with. Run with --write-baseline once the numbers above are accepted.`);
   process.exit(0);
 }
-const r = compareOcrBaseline(JSON.parse(fs.readFileSync(BASELINE, 'utf-8')), now, ocrId);
+const r = compareOcrBaseline(JSON.parse(fs.readFileSync(BASELINE, 'utf-8')), now, ocrId, explicitSets);
 console.log('\nagainst the baseline:');
 r.lines.forEach(l => console.log(' ', l));
 if (!r.ok) { console.error('\nFAILED:\n' + r.failures.map(f => '  - ' + f).join('\n')); process.exit(1); }

@@ -61,7 +61,7 @@ function norm(t: string) {
     .replace(/^(STIRRUPS?|STRR?|TIES?)\.?-?/i, '')
     .replace(/^(U|V|IJ|1J|J|LJ)(?=[ØøΦφ∅0OoZRD]?\d{1,2}@)/, '')
     .replace(/\.+(?=@)/g, '')
-    .replace(/[.,;:]+$/, '')
+    .replace(/[,;:]+$/, '')
     .replace(/(?<=\d)(WU|UU|JU|VU|WL|UL|JL|LJ|NL|WN|1J|UJ)\.?$/, '');
 }
 
@@ -73,9 +73,8 @@ function untruncate(raw: string, s: number) {
   return Number(s.toFixed(3));
 }
 
-/** Read one piece of text as bar notation, or null. */
-export function parseBarNote(text: string): BarNote | null {
-  const t = norm(text);
+function parseStrict(text: string): BarNote | null {
+  const t = norm(text).replace(/\.+$/, '');
   if (!t || t.length > 24) return null;
   let m: RegExpMatchArray | null;
 
@@ -89,6 +88,7 @@ export function parseBarNote(text: string): BarNote | null {
     if (sizeOk(dia) && s >= 0.05 && s <= 0.4) return { kind: 'spacing', grade: grade(m[1] || undefined), dia, s: untruncate(m[3], s), ...(legs ? { legs: Number(legs[1]) } : {}) };
   }
   m = t.match(new RegExp(`^(\\d{1,2})\\+(\\d{1,2})-?(?:${GRADE}|(${SIGN_OCR}))?(\\d{1,2})$`));
+  if (m && !sizeOk(Number(m[5]))) m = t.match(new RegExp(`^(\\d{1,2})\\+(\\d)-?(?:${GRADE}|(${SIGN_OCR}))?(\\d{2})$`));
   if (m) {
     const dia = Number(m[5]);
     if (sizeOk(dia) && Number(m[1]) >= 2 && Number(m[2]) >= 2) return { kind: 'mesh', a: Number(m[1]), b: Number(m[2]), grade: grade(m[3]), dia };
@@ -111,6 +111,26 @@ export function parseBarNote(text: string): BarNote | null {
   m = t.match(/^(\d)([^\d\s]{1,2})(1[0256]|19|20|25|28|32)$/);
   if (m && Number(m[1]) >= 2 && !/^[XB]$/.test(m[2])) return { kind: 'count', n: Number(m[1]), grade: null, dia: Number(m[3]) };
   return null;
+}
+
+function parseWithTail(text: string): BarNote | null {
+  const t = norm(text);
+  if (!t || t.length > 24) return null;
+  for (let k = t.length - 1; k >= 3; k--) {
+    const head = t.slice(0, k), tail = t.slice(k);
+    if (tail.length > 5) break;
+    if (!(/[A-Z]|\.$/.test(tail)) || tail.includes('@') || !/\d$/.test(head)) continue;
+    const r = parseStrict(head);
+    if (!r || !sizeOk(r.dia)) continue;
+    if (r.kind === 'count' && r.n >= 1 && r.n <= 12) return r;
+    if (r.kind === 'mesh' && r.a >= 1 && r.a <= 12 && r.b >= 1 && r.b <= 12) return r;
+  }
+  return null;
+}
+
+/** Read one piece of text as bar notation, or null. */
+export function parseBarNote(text: string): BarNote | null {
+  return parseStrict(text) ?? parseWithTail(text);
 }
 
 export interface WordBox { text: string; x0: number; y0: number; x1: number; y1: number; vertical?: boolean }

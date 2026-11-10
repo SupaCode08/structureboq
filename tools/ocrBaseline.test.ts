@@ -47,3 +47,29 @@ test('ocr gate: what is kept from a score is only the counts', () => {
   const full = { right: 1, wrong: 2, missing: 3, byCategory: score(40, 3, 10).byCategory, notes: ['x'], total: 6, tags: 1, tagsFound: 1, byType: {} };
   assert.deepEqual(Object.keys(toSetScore(full)).sort(), ['byCategory', 'missing', 'right', 'wrong']);
 });
+
+test('ocr gate: partial=true with a missing baseline set passes, notes not compared, and includes the banner', () => {
+  const r = compareOcrBaseline(base(), { s1: score(40, 3, 10) }, 'a'.repeat(64), true);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.failures, []);
+  assert.equal(r.lines[0], 'PARTIAL RUN: sets not scored here were not compared, this is not the full gate');
+  assert.ok(r.lines.includes('s2: not compared (partial run)'));
+});
+
+test('ocr gate: partial=true still fails when a scored set has more wrong values or fewer right values', () => {
+  const moreWrong = compareOcrBaseline(base(), { s1: score(40, 4, 9) }, 'a'.repeat(64), true);
+  assert.equal(moreWrong.ok, false);
+  assert.ok(moreWrong.failures.some(f => /^s1: wrong values rose 3 → 4/.test(f)));
+  const fewerRight = compareOcrBaseline(base(), { s1: score(39, 3, 11) }, 'a'.repeat(64), true);
+  assert.equal(fewerRight.ok, false);
+  assert.ok(fewerRight.failures.some(f => /^s1: right values fell 40 → 39/.test(f)));
+});
+
+test('ocr gate: partial omitted or false with a missing set still fails exactly as before', () => {
+  const omitted = compareOcrBaseline(base(), { s1: score(40, 3, 10) }, 'a'.repeat(64));
+  assert.equal(omitted.ok, false);
+  assert.ok(omitted.failures.some(f => /^s2: not scored in this run/.test(f)));
+  const explicitFalse = compareOcrBaseline(base(), { s1: score(40, 3, 10) }, 'a'.repeat(64), false);
+  assert.equal(explicitFalse.ok, false);
+  assert.ok(explicitFalse.failures.some(f => /^s2: not scored in this run/.test(f)));
+});

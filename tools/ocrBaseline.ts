@@ -17,12 +17,17 @@ export interface OcrBaseline {
 const CATEGORIES: Category[] = ['grid', 'tag', 'count', 'dimension', 'rebar'];
 
 /** `failures` make the gate fail; `lines` are everything worth printing, changes included. */
-export function compareOcrBaseline(prev: OcrBaseline, now: Record<string, SetScore>, nowOcrId: string): { ok: boolean; failures: string[]; lines: string[] } {
+export function compareOcrBaseline(prev: OcrBaseline, now: Record<string, SetScore>, nowOcrId: string, partial: boolean = false): { ok: boolean; failures: string[]; lines: string[] } {
   const failures: string[] = [], lines: string[] = [];
+  if (partial) lines.push('PARTIAL RUN: sets not scored here were not compared, this is not the full gate');
   lines.push(nowOcrId === prev.ocrId ? 'OCR code: same as the baseline' : `OCR code changed since the baseline (${prev.ocrId.slice(0, 8)} → ${nowOcrId.slice(0, 8)})`);
   for (const [name, was] of Object.entries(prev.sets)) {
     const is = now[name];
-    if (!is) { failures.push(`${name}: not scored in this run (it is in the baseline)`); continue; }
+    if (!is) {
+      if (partial) { lines.push(`${name}: not compared (partial run)`); continue; }
+      failures.push(`${name}: not scored in this run (it is in the baseline)`);
+      continue;
+    }
     const d = (a: number, b: number) => (b - a === 0 ? '±0' : b - a > 0 ? `+${b - a}` : `${b - a}`);
     lines.push(`${name}: right ${was.right} → ${is.right} (${d(was.right, is.right)}) · wrong ${was.wrong} → ${is.wrong} (${d(was.wrong, is.wrong)}) · missing ${was.missing} → ${is.missing} (${d(was.missing, is.missing)})`);
     if (is.wrong > was.wrong) failures.push(`${name}: wrong values rose ${was.wrong} → ${is.wrong}`);

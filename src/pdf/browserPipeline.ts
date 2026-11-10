@@ -20,7 +20,8 @@ import { readSheets } from './sheetReader';
 import { reconcileScheduleRows } from '../engine/sourceConflicts';
 import { ocrBoqPage } from './boqOcr';
 import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds } from './scanPrep';
-import { extractSmallStrokes, pageGeometry } from './vectorText';
+import { extractSmallStrokes, pageGeometry, rasterize } from './vectorText';
+import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules } from './titleBlock';
 import { imageBoxesOnPage, imageGray } from './imageBoxes';
 import type { OcrWord, PageOcr, PageText } from './types';
 import { laneCount, mapLanes, raceAbort, serialize } from './lanes';
@@ -204,7 +205,7 @@ export interface SheetClassification {
 }
 
 /** Quickly classify sheet from the bottom-right title block in ~50ms. */
-export async function fastClassifySheet(page: any, worker: any, pageNo: number, pageCount: number, pageText?: PageText): Promise<SheetClassification> {
+export async function fastClassifySheet(page: any, worker: any, pageNo: number, pageCount: number, pageText?: PageText, lane = 0): Promise<SheetClassification> {
   // Page 1 of a multi-sheet drawing set is always the cover sheet (แบบปก / สารบัญ)
   if (pageNo === 1 && pageCount > 2) {
     return { sheetId: 'COVER', isStructural: false, skip: true, reason: 'ข้ามใบปกระเบียบแบบ' };
@@ -217,8 +218,11 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
     if (/สารบัญแบบ|สารบัญ|TABLE OF CONTENTS|DRAWING LIST|SHEET INDEX/i.test(raw)) {
       return { sheetId: 'INDEX', isStructural: false, skip: true, reason: 'ข้ามสารบัญแบบ' };
     }
-    const mNon = norm.match(/(?:^|[^A-Z0-9])(A|AR|ARCH|EE|E|SN|SAN|M|ME|AC|ID|L)[-_ ]*0?(\d{1,2})(?:[^0-9]|$)/i);
-    const mStr = norm.match(/(?:^|[^A-Z0-9])(S|ST|STR)[-_ ]*0?(\d{1,2})(?:[^0-9]|$)/i);
+    // the sheet code is read from the title-block corner only: a header line like "(S01-S09)" elsewhere is not this sheet's code
+    const corner = pageText.items.filter(it => it.nb && it.nb[0] >= 0.76 && it.nb[1] >= 0.85);
+    const codeText = corner.length ? corner.map(it => it.str).join(' ').toUpperCase().replace(/[—–]/g, '-').replace(/\s+/g, ' ') : norm;
+    const mNon = codeText.match(/(?:^|[^A-Z0-9])(A|AR|ARCH|EE|E|SN|SAN|M|ME|AC|ID|L)[-_ ]*0?(\d{1,2})(?:[^0-9]|$)/i);
+    const mStr = codeText.match(/(?:^|[^A-Z0-9])(S|ST|STR)[-_ ]*0?(\d{1,2})(?:[^0-9]|$)/i);
     if (mNon && !mStr) {
       const id = `${mNon[1].toUpperCase()}-${mNon[2].padStart(2, '0')}`;
       return { sheetId: id, isStructural: false, skip: true, reason: `ข้ามแผ่นไม่ใช่โครงสร้าง (${id})` };
@@ -232,55 +236,47 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
     }
   }
 
-  const c = document.createElement('canvas');
+  // Real text page: return structural right away because its rendered corner would only be OCR noise of text the layer already gave.
+  if (pageText && pageText.items.map(i => i.str).join('').trim().length >= 40) {
+    return { isStructural: true, skip: false };
+  }
+
+  // The corner lettering is vector strokes, a page render at 1000 px is too small to read.
   try {
-    const vp1 = page.getViewport({ scale: 1 });
-    // Scale down large pages so crop is max ~260x140 for fast ~60ms OCR
-    const scale = Math.min(1.0, 1000 / Math.max(vp1.width, vp1.height));
-    const vp = page.getViewport({ scale });
-    const cropW = Math.min(260, Math.ceil(vp.width * 0.24));
-    const cropH = Math.min(140, Math.ceil(vp.height * 0.15));
-    if (cropW < 50 || cropH < 30) return { isStructural: true, skip: false };
+    const vpTb = page.getViewport({ scale: 1 });
+    const ops = await page.getOperatorList();
+    const s = extractSmallStrokes(ops.fnArray, ops.argsArray, pdfjs.OPS as any, vpTb.transform);
+    if (s.small.length >= 200) {
+      const tb = titleBlockStrokes(s.small, vpTb.width, vpTb.height);
+      if (tb.polys.length) {
+        const r = rasterize(tb.polys, tb.widthPt, tb.heightPt, 300 / 72, 3);
+        const tw = await titleBlockWorker(lane);
+        const res = await tw.recognize(grayToCanvas(r.data, r.width, r.height));
+        const v = titleBlockVerdict((res?.data?.words || []).map((w: any) => w.text));
+        if (v.skip) return { sheetId: v.id, isStructural: false, skip: true, reason: `ข้ามแผ่นไม่ใช่โครงสร้าง (${v.id})` };
+        if (v.structural) return { sheetId: v.id, isStructural: true, skip: false };
+      }
+      // only reached when no sheet code was read; a sheet's title-block frame has at most 4 such rules
+      if (rightColumnRules(s.vsegs, vpTb.width, vpTb.height) >= 6) return { sheetId: 'TABLE', isStructural: false, skip: true, reason: 'ข้ามหน้าตาราง (เช่น BOQ ปร.4) — ไม่มีกรอบชื่อแบบ' };
+    }
+  } catch {}
 
-    c.width = cropW;
-    c.height = cropH;
-    const ctx = c.getContext('2d');
-    if (!ctx) return { isStructural: true, skip: false };
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, cropW, cropH);
-
-    await page.render({
-      canvasContext: ctx,
-      viewport: vp,
-      transform: [1, 0, 0, 1, -(vp.width - cropW), -(vp.height - cropH)],
-    }).promise;
-
-    const res = await worker.recognize(c);
-    const rawText = res?.data?.text || '';
+  const decide = (rawText: string): SheetClassification | null => {
     const norm = rawText.toUpperCase().replace(/[—–]/g, '-').replace(/\s+/g, ' ');
 
     if (/สารบัญแบบ|สารบัญ|DRAWING\s*LIST|SHEET\s*INDEX/i.test(rawText) || (/รายการประกอบแบบ/i.test(rawText) && !/โครงสร้าง|STRUCTUR|วิศวกรรม/i.test(rawText))) {
       return { sheetId: 'COVER', isStructural: false, skip: true, reason: 'ข้ามสารบัญ / รายการประกอบแบบทั่วไป' };
     }
 
-    // Match discipline prefixes even when OCR attaches symbols or prefixes (e.g. S-01, S01, S--04, A-01, A--02)
-    const mNon = norm.match(/(?:^|[^A-Z0-9])(A|AR|ARCH|EE|E|SN|SAN|M|ME|AC|ID|L)[-_ =—–]*0?(\d{1,2})(?:[^0-9]|$)/i);
-    const mStr = norm.match(/(?:^|[^A-Z0-9])(S|ST|STR|5)[-_ =—–]*0?(\d{1,2})(?:[^0-9]|$)/i);
-
-    // If both architectural and structural prefixes appear in the same small box, it is a drawing index table
-    if (mNon && mStr) {
+    const v = sheetCodeVerdict(norm);
+    if (v.kind === 'index') {
       return { sheetId: 'INDEX', isStructural: false, skip: true, reason: 'ข้ามสารบัญแบบ (พบทั้ง A และ S)' };
     }
-
-    // Definite non-structural discipline ID
-    if (mNon && !mStr) {
-      const id = `${mNon[1].toUpperCase()}-${mNon[2].padStart(2, '0')}`;
-      return { sheetId: id, isStructural: false, skip: true, reason: `ข้ามแผ่นไม่ใช่โครงสร้าง (${id})` };
+    if (v.kind === 'nonstruct') {
+      return { sheetId: v.id, isStructural: false, skip: true, reason: `ข้ามแผ่นไม่ใช่โครงสร้าง (${v.id})` };
     }
-    // Definite structural discipline ID
-    if (mStr) {
-      const id = `${mStr[1].toUpperCase()}-${mStr[2].padStart(2, '0')}`;
-      return { sheetId: id, isStructural: true, skip: false };
+    if (v.kind === 'struct') {
+      return { sheetId: v.id, isStructural: true, skip: false };
     }
 
     // Title keywords
@@ -293,7 +289,7 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
 
     // Thai non-structural keywords (only concepts that NEVER appear in structural drawings)
     const isNonStruct = /สถาปัตยกรรม|ผั?งบริเ?วณ|ส[าภ]?รบ[ััน]?ญ|ร[าภ]ยก[าภ]รปร?ะกอบ|เฟอร?นิเจอร?|ขย[าภ]ยห[้้อ]?งน[้ำ้ๆำ]|ขย[าภ]ยป?ร?ะต[ูตู]|ขย[าภ]ยห?น[้้า]?ต[่่า]ง|ร[ูตู]ปด[้้า]น\s*[1-4A-Dก-ง]|ผั?งฝ[้้า]|ส[ุข]?ข[าภ]ภิบ[าภ]ล|บำบัดน้ำ|ไฟฟ[้้า]|แ[สล]งสว[่่า]ง|เต[้้า]ร[ััน]บ|SINGLE\s*LINE/i.test(rawText);
-    const isStruct = /ฐ[าภ]นร[าภ]ก|ค[าภ]น|เส[าภ]|โครงสร[้้า]ง|โคร?ง?ห?ลั?งค[าภ]|S\s*[-_ ]*0?\d|5\s*[-_ ]*0?\d|ตาราง.*เสา|แบบขยาย/i.test(rawText);
+    const isStruct = /ฐ[าภ]นร[าภ]ก|ค[าภ]น|เส[าภ]|โครงสร[้้า]ง|โคร?ง?ห?ลั?งค[าภ]|\b[S5]\s*[-_=]\s*\d{1,2}\b|\bS\s?\d{2}\b|ตาราง.*เสา|แบบขยาย/i.test(rawText);
 
     if (isNonStruct && !isStruct) {
       return { isStructural: false, skip: true, reason: 'ข้ามแบบสถาปัตย์ / งานระบบ' };
@@ -301,14 +297,71 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
     if (isStruct) {
       return { sheetId: 'S', isStructural: true, skip: false };
     }
-  } catch {
-    // Graceful fallback
-  } finally {
-    // Immediate canvas memory disposal
-    c.width = 0;
-    c.height = 0;
+    return null;
+  };
+
+  for (const target of [2000, 3000]) {
+    const c = document.createElement('canvas');
+    try {
+      const vp1 = page.getViewport({ scale: 1 });
+      // 2000 px long side catches most scanned sheet codes fast; retry at 3000 px when the first gives no decision
+      const scale = target / Math.max(vp1.width, vp1.height);
+      const vp = page.getViewport({ scale });
+      const cropW = Math.ceil(vp.width * 0.24);
+      const cropH = Math.ceil(vp.height * 0.15);
+      if (cropW < 50 || cropH < 30) return { isStructural: true, skip: false };
+
+      c.width = cropW;
+      c.height = cropH;
+      const ctx = c.getContext('2d');
+      if (!ctx) return { isStructural: true, skip: false };
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, cropW, cropH);
+
+      await page.render({
+        canvasContext: ctx,
+        viewport: vp,
+        transform: [1, 0, 0, 1, -(vp.width - cropW), -(vp.height - cropH)],
+      }).promise;
+
+      const res = await worker.recognize(c);
+      const rawText = res?.data?.text || '';
+      const decision = decide(rawText);
+      if (decision) return decision;
+    } catch {
+      // Graceful fallback
+    } finally {
+      // Immediate canvas memory disposal
+      c.width = 0;
+      c.height = 0;
+    }
   }
   return { isStructural: true, skip: false };
+}
+
+/** Sorts pages by their title-block corner before any page OCR: 3 at a time, results in page order. */
+export async function classifyPages(
+  doc: PdfDoc,
+  pages: number[],
+  pageCount: number,
+  textOf: (p: number) => PageText | undefined | Promise<PageText | undefined>,
+  onPage?: (done: number, total: number, page: number, cls: SheetClassification) => void,
+  abortSignal?: AbortSignal,
+): Promise<{ page: number; cls: SheetClassification; ms: number }[]> {
+  if (!pages.length) return [];
+  let done = 0;
+  const n = pages.length;
+  return raceAbort(
+    mapLanes(pages, 3, async (p, _index, lane) => {
+      const t0 = performance.now();
+      const cls = await fastClassifySheet(await doc.getPage(p), await sortOcrWorker(lane), p, pageCount, await textOf(p), lane);
+      const ms = performance.now() - t0;
+      done++;
+      onPage?.(done, n, p, cls);
+      return { page: p, cls, ms };
+    }),
+    abortSignal,
+  );
 }
 
 /** Pixels of an image pdf.js handed over as an ImageBitmap (RGBA, transparent = paper). */
@@ -411,6 +464,7 @@ async function turnedWorkers() {
 }
 
 const paddles: (Worker | null)[] = [];
+const rasterOf = new WeakMap<object, Raster>(); // the gray raster behind each canvas toImage made, for the Paddle reader
 let paddleCalls = 0;
 let webGpuAvailable: boolean | null = null;
 
@@ -441,8 +495,14 @@ export async function checkWebGpuAvailability(): Promise<boolean> {
   }
 }
 
+// one job at a time per Paddle worker: two runs at once on its model hang it
+const bandQueues: ReturnType<typeof serialize>[] = [];
+function readBand(k: number, raster: Raster, pass: 'flat' | 'turned' | 'both' = 'both', onStats?: (worker: number, stats: any) => void, preferGpu = true, abortSignal?: AbortSignal) {
+  return (bandQueues[k] ??= serialize())(() => readBandNow(k, raster, pass, onStats, preferGpu, abortSignal));
+}
+
 /** One pass ('flat' | 'turned' | 'both') of a scan read by PaddleOCR worker k (paddleWorker.ts). */
-function readBand(
+function readBandNow(
   k: number,
   raster: Raster,
   pass: 'flat' | 'turned' | 'both' = 'both',
@@ -519,6 +579,19 @@ function readBand(
     w.addEventListener('error', onError, { once: true });
     w.postMessage({ id, raster, urls: { det: detUrl, rec: recUrl, dict: dictUrl }, pass, preferGpu });
   });
+}
+
+/** PaddleOCR (WebGPU, flat pass) with the tesseract worker's recognize() shape: the whole raster is read on the first tile, the other tiles give nothing */
+function paddleAsEng(run: <T>(job: () => Promise<T>) => Promise<T>, abortSignal?: AbortSignal) {
+  return {
+    recognize: async (img: object, o?: { rectangle?: { left: number; top: number } }) => {
+      if (o?.rectangle?.left || o?.rectangle?.top) return { data: { words: [] as any[] } };
+      const r = rasterOf.get(img);
+      if (!r) throw new Error('paddleAsEng: no raster for this image');
+      const res = await run(() => readBand(0, r, 'flat', undefined, true, abortSignal));
+      return { data: { words: res.words.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
+    },
+  };
 }
 
 /**
@@ -599,6 +672,16 @@ export async function terminateAllWorkers(): Promise<void> {
     try { const w = await workerPromise; await w?.terminate?.(); } catch {}
     workerPromise = null;
   }
+  for (const p of titleBlockPromises.splice(0)) {
+    if (p) {
+      try { const w = await p; await w?.terminate?.(); } catch {}
+    }
+  }
+  for (const p of sortOcrPromises.splice(0)) {
+    if (p) {
+      try { const w = await p; await w?.terminate?.(); } catch {}
+    }
+  }
   if (drawingThaiPromise) {
     try { const w = await drawingThaiPromise; await w?.terminate?.(); } catch {}
     drawingThaiPromise = null;
@@ -620,6 +703,16 @@ export async function terminateAllWorkers(): Promise<void> {
   clearPageCache();
 }
 
+const titleBlockPromises: (Promise<any> | null)[] = [];
+export async function titleBlockWorker(k = 0) {
+  return (titleBlockPromises[k] ??= (async () => {
+    const T = await import('tesseract.js');
+    const w = await T.createWorker('eng', 1, tessFiles());
+    await w.setParameters({ tessedit_pageseg_mode: '11' as any });
+    return w;
+  })());
+}
+
 let workerPromise: Promise<any> | null = null;
 export async function ocrWorker() {
   if (!workerPromise) {
@@ -631,6 +724,17 @@ export async function ocrWorker() {
     })();
   }
   return workerPromise;
+}
+
+const sortOcrPromises: (Promise<any> | null)[] = [];
+async function sortOcrWorker(k: number) {
+  if (k === 0) return ocrWorker();
+  return (sortOcrPromises[k] ??= (async () => {
+    const T = await import('tesseract.js');
+    const w = await T.createWorker('eng', 1, tessFiles());
+    await w.setParameters({ tessedit_pageseg_mode: '6' as any });
+    return w;
+  })());
 }
 
 export interface BrowserExtraction {
@@ -647,6 +751,8 @@ export interface BrowserExtraction {
   /** what the reader found on each sheet (for reviewing the reading step) */
   readings: SheetReading[];
   skipped: { tag: string; page: number; reason: string }[];
+  /** what the page sort found on each page it looked at (automatic mode only) */
+  pageMap: { page: number; sheetId?: string; skip: boolean; reason?: string }[];
   extractedNotes?: ExtractedGeneralNotes;
   materialSpecs?: MaterialSpecs;
   /** pages each step opened, by original page number */
@@ -709,6 +815,7 @@ export async function extractInBrowser(
   const sheetIds: Record<number, string> = {};
   const strokeLettered = new Set<number>();
   let ocrWallMs = 0, ocrLanes = 1;
+  const pageMap: { page: number; sheetId?: string; skip: boolean; reason?: string }[] = [];
   if (!ocrPages.length) {
     const textWords = async (p: number) => { const vp = (await doc.getPage(p)).getViewport({ scale: 1 }); return pageTextToOcr(texts[p - 1], vp.width, vp.height).words; };
     for (const p of textPages) {
@@ -725,17 +832,47 @@ export async function extractInBrowser(
     if (candidates.length) {
       const needOcr = candidates.some(p => !hits.has(p));
       onProgress(needOcr ? 'เตรียม OCR ในเบราว์เซอร์ (โหลดข้อมูลภาษาครั้งแรก)…' : 'ใช้ผล OCR เดิมของไฟล์นี้', 0.18);
-      const tw = performance.now();
-      const pages = candidates;
       const structuralOnly = !requested;
+      const skippedSet = new Set<number>();
+      if (structuralOnly) {
+        const list = candidates.filter(p => !hits.has(p));
+        const tClassify = performance.now();
+        if (list.length) {
+          const classResults = await classifyPages(
+            doc,
+            list,
+            candidates.length,
+            p => texts[p - 1],
+            (i, n) => onProgress(`คัดหน้า ${i}/${n}…`, 0.18 + (0.1 * i) / n),
+            opts.abortSignal,
+          );
+          for (const { page: p, cls, ms } of classResults) {
+            pageMap.push({ page: p, sheetId: cls.sheetId, skip: cls.skip, reason: cls.reason });
+            if (cls.sheetId) sheetIds[p] = cls.sheetId;
+            if (cls.skip) {
+              skippedSet.add(p);
+              processLog.push({ page: p, step: 'classify' });
+              perPage.push({
+                page: p,
+                how: `skipped (${cls.reason || cls.sheetId || 'not structural'})`,
+                ms: Math.round(ms),
+                steps: '',
+              });
+            }
+          }
+        }
+        phase['classify pages'] = performance.now() - tClassify;
+      }
+      const pages = structuralOnly ? candidates.filter(p => !skippedSet.has(p)) : candidates;
       // pages are read in lanes: one full set of OCR workers per lane, as many lanes as the machine can feed
       const toRead = pages.filter(p => !hits.has(p)).length;
       const laneN = needOcr ? Math.min(laneCount(navigator.hardwareConcurrency, (navigator as any).deviceMemory), toRead) : 0;
+      const tw = performance.now();
       // lane 0 is loaded now; the others only when a vector page lands on them (a scan page needs no tesseract workers)
       const lane0 = needOcr ? await raceAbort(ocrLane(0), opts.abortSignal) : undefined;
       const lanesUsed = new Set<number>([0]);
       phase['load OCR engines'] = performance.now() - tw;
-      const alone = serialize(); // a scan page's render and GPU read never overlap another page's
+      const renderQueue = serialize(); // one scan render at a time; the Paddle worker queues its own reads, so a read overlaps the next page's render
       let started = 0;
       const readPage = async (p: number, laneIdx: number) => {
         checkAbort();
@@ -749,15 +886,6 @@ export async function extractInBrowser(
         const log: ProcessLog = [];
         const rec = (how: string, extra = '') => ({ page: p, how, ms: Math.round(performance.now() - tp), steps: Object.entries(steps).map(([k, v]) => `${k} ${(v / 1000).toFixed(1)}s`).join(', ') + extra });
         const cached = hits.get(p);
-        // When structuralOnly is active, quickly classify sheet before expensive full-page OCR
-        if (structuralOnly && !cached) {
-          const cls = await fastClassifySheet(page, lane0!.worker, p, pages.length, texts[p - 1]);
-          log.push({ page: p, step: 'classify' });
-          steps.classify = performance.now() - tp;
-          if (cls.sheetId) sheetIds[p] = cls.sheetId;
-          // Non-structural page (e.g. A-01..A-14, SN-01..03, EE-01..03, Cover/Index) skipped in ~50-150ms
-          if (cls.skip) return { log, rec: rec(`skipped (${cls.reason || cls.sheetId || 'not structural'})`), out: null };
-        }
 
         const paddleDetail: string[] = [];
         const sec = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
@@ -771,11 +899,13 @@ export async function extractInBrowser(
         } else {
           const lane = laneIdx > 0 && await isVectorTextPage(page as any, pdfjs.OPS as any) ? await ocrLane(laneIdx) : lane0!;
           lanesUsed.add(lane === lane0 ? 0 : laneIdx);
+          // no queue needed here: the Paddle worker already takes one job at a time, and a scan page's render must not hold it up
+          const eng = await checkWebGpuAvailability() ? paddleAsEng(job => job(), opts.abortSignal) : null;
           const env = {
-            worker: lane.worker, extraWorkers: [lane.thai], turnedWorkers: lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
-            toImage: (d: Uint8Array, w: number, h: number) => grayToCanvas(d, w, h),
-            renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => alone(() => renderForOcr(pg, 300 / 72, rot, prepared)),
-            readScan: (rs: Raster) => alone(() => readScan(rs, onStats, opts.abortSignal)),
+            worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: eng ? [eng, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
+            toImage: (d: Uint8Array, w: number, h: number) => { const c = grayToCanvas(d, w, h); rasterOf.set(c, { data: d, width: w, height: h } as Raster); return c; },
+            renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => renderQueue(() => renderForOcr(pg, 300 / 72, rot, prepared)),
+            readScan: (rs: Raster) => readScan(rs, onStats, opts.abortSignal),
             onTime: (step: string, ms: number) => { steps[step] = (steps[step] || 0) + ms; },
           };
           r = await ocrPdfPage(page as any, p, env as any);
@@ -869,6 +999,7 @@ export async function extractInBrowser(
       boq, ocrPages, sheetIds, materialText,
       readings: readings.map(r => ({ ...r, sheet_id: r.sheet_id || sheetIds[r.page] })),
       skipped: merged.skipped,
+      pageMap,
       extractedNotes,
       materialSpecs,
       processLog,

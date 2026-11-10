@@ -1,43 +1,11 @@
 {
-  "ocrId": "1d4620bca0f071a2b7fa8a7d1b362df37fd96ff557290ab3882b69118f089d91",
-  "generatedAt": "2026-11-07T09:53:59.602Z",
+  "ocrId": "dcd5b50a17fe8823163c055f280c4fc399f489023126c9e97deb45074d97b370",
+  "generatedAt": "2026-11-10T16:01:12.421Z",
   "sets": {
     "house_ready_1": {
-      "right": 34,
-      "wrong": 4,
-      "missing": 8,
-      "byCategory": {
-        "grid": {
-          "right": 2,
-          "wrong": 0,
-          "missing": 0
-        },
-        "tag": {
-          "right": 8,
-          "wrong": 0,
-          "missing": 1
-        },
-        "count": {
-          "right": 2,
-          "wrong": 3,
-          "missing": 0
-        },
-        "dimension": {
-          "right": 15,
-          "wrong": 1,
-          "missing": 0
-        },
-        "rebar": {
-          "right": 7,
-          "wrong": 0,
-          "missing": 7
-        }
-      }
-    },
-    "house_ready_2": {
-      "right": 47,
-      "wrong": 3,
-      "missing": 7,
+      "right": 41,
+      "wrong": 2,
+      "missing": 9,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -50,8 +18,40 @@
           "missing": 0
         },
         "count": {
-          "right": 6,
+          "right": 4,
           "wrong": 2,
+          "missing": 0
+        },
+        "dimension": {
+          "right": 17,
+          "wrong": 0,
+          "missing": 1
+        },
+        "rebar": {
+          "right": 9,
+          "wrong": 0,
+          "missing": 8
+        }
+      }
+    },
+    "house_ready_2": {
+      "right": 52,
+      "wrong": 0,
+      "missing": 5,
+      "byCategory": {
+        "grid": {
+          "right": 2,
+          "wrong": 0,
+          "missing": 0
+        },
+        "tag": {
+          "right": 9,
+          "wrong": 0,
+          "missing": 0
+        },
+        "count": {
+          "right": 8,
+          "wrong": 0,
           "missing": 0
         },
         "dimension": {
@@ -60,15 +60,15 @@
           "missing": 0
         },
         "rebar": {
-          "right": 8,
-          "wrong": 1,
-          "missing": 7
+          "right": 11,
+          "wrong": 0,
+          "missing": 5
         }
       }
     },
     "house_ready_4": {
-      "right": 57,
-      "wrong": 4,
+      "right": 59,
+      "wrong": 2,
       "missing": 8,
       "byCategory": {
         "grid": {
@@ -82,8 +82,8 @@
           "missing": 1
         },
         "count": {
-          "right": 9,
-          "wrong": 3,
+          "right": 11,
+          "wrong": 1,
           "missing": 0
         },
         "dimension": {

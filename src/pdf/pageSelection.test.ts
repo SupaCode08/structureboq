@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
-import { canProcess, deselectAll, invert, selectAll, recallSelection, rememberSelection, selectionFor, toggle, toPageSpec, type PageSelection, type SelectionStore } from './pageSelection.ts';
+import { canProcess, deselectAll, invert, selectAll, selectOnly, recallSelection, rememberSelection, selectionFor, toggle, toPageSpec, type PageSelection, type SelectionStore } from './pageSelection.ts';
 import { readTextLayers, type ProcessLog } from './pdfText.ts';
 import { parsePageSpec, partitionDrawingPages } from './pdfOcrPipeline.ts';
 import { scheduleMembersFromPage } from './scheduleParser.ts';
@@ -121,4 +121,9 @@ test('remembered selection: nothing is saved for a name+size fallback key or an 
   assert.doesNotThrow(() => rememberSelection(broken, { fileHash: H1, totalPages: 5, selectedPages: [1] }));
   assert.equal(recallSelection(broken, H1, 5), null);
   assert.equal(recallSelection(undefined, H1, 5), null);
+});
+
+test('selection: selectOnly keeps only valid pages, sorted, without repeats', () => {
+  const s = selectOnly(S(10), [9, 3, 3, 0, 11]);
+  assert.deepEqual(s.selectedPages, [3, 9]);
 });
