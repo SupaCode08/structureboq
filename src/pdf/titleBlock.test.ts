@@ -43,6 +43,10 @@ test('sheetCodeVerdict: classify sheet codes with dashed disambiguation', () => 
   assert.deepEqual(sheetCodeVerdict('S-1'), { kind: 'struct', id: 'S-01' });
   assert.deepEqual(sheetCodeVerdict('S01'), { kind: 'struct', id: 'S-01' });
   assert.deepEqual(sheetCodeVerdict('A-1'), { kind: 'nonstruct', id: 'A-01' });
+  assert.deepEqual(sheetCodeVerdict('FU 1 DDEU 1 Y 21 $8 550 [OD'), { kind: 'none' });
+  assert.deepEqual(sheetCodeVerdict('5 04'), { kind: 'none' });
+  assert.deepEqual(sheetCodeVerdict('5-04'), { kind: 'struct', id: 'S-04' });
+  assert.deepEqual(sheetCodeVerdict('S 04'), { kind: 'struct', id: 'S-04' });
 });
 
 test('rightColumnRules: count distinct long vertical rules in right 30%', () => {

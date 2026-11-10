@@ -33,7 +33,7 @@ export function sheetCodeVerdict(norm: string): { kind: 'index' | 'nonstruct' | 
   const reStr = /(?:^|[^A-Z0-9])(S|ST|STR|5)([-_ =]*)(\d{1,2})(?:[^0-9]|$)/g;
   const parse = (re: RegExp, isStr: boolean) =>
     Array.from(norm.matchAll(re))
-      .filter(m => /[-_=]/.test(m[2]) || m[3].length >= 2)
+      .filter(m => /[-_=]/.test(m[2]) || (m[1] !== '5' && m[3].length >= 2))
       .map(m => ({
         id: `${isStr && m[1] === '5' ? 'S' : m[1]}-${String(Number(m[3])).padStart(2, '0')}`,
         dashed: /[-_=]/.test(m[2]),

@@ -241,7 +241,7 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
     return { isStructural: true, skip: false };
   }
 
-  // The corner lettering is vector strokes, a page render at 1000 px is too small to read.
+  // The corner lettering is vector strokes: re-drawn from the strokes alone at 300 dpi it reads far better than a render of the whole corner.
   try {
     const vpTb = page.getViewport({ scale: 1 });
     const ops = await page.getOperatorList();
