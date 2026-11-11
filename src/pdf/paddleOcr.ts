@@ -133,8 +133,7 @@ function bilinear(r: Raster, x: number, y: number) {
   return (d[y0 * w + x0] * (1 - fx) + d[y0 * w + x1] * fx) * (1 - fy) + (d[y1 * w + x0] * (1 - fx) + d[y1 * w + x1] * fx) * fy;
 }
 
-/** One crop read left to right (turned: crop rotated so bottom-to-top text reads left to right). */
-async function readCrop(p: Paddle, r: Raster, [x0, y0, x1, y1]: number[], turned: boolean) {
+function cropInput(r: Raster, [x0, y0, x1, y1]: number[], turned: boolean) {
   const cw = turned ? y1 - y0 : x1 - x0, ch = turned ? x1 - x0 : y1 - y0;
   const H = 48, W = Math.max(16, Math.round((cw * H) / ch));
   const input = new Float32Array(3 * W * H);
@@ -144,17 +143,45 @@ async function readCrop(p: Paddle, r: Raster, [x0, y0, x1, y1]: number[], turned
     const g = bilinear(r, sx - 0.5, sy - 0.5) / 255;
     for (let c = 0; c < 3; c++) input[c * W * H + y * W + x] = (g - 0.5) / 0.5;
   }
-  const out = await p.rec.run({ [p.rec.inputNames[0]]: new p.ort.Tensor('float32', input, [1, 3, H, W]) });
-  const o = out[p.rec.outputNames[0]], [, T, C] = o.dims as number[], data = o.data as Float32Array;
+  return { input, W };
+}
+
+function decode(p: Paddle, data: Float32Array, T: number, C: number, offset: number) {
   const chars: { ch: string; t: number; p: number }[] = [];
   let prev = 0;
   for (let t = 0; t < T; t++) {
     let best = 0;
-    for (let c = 1; c < C; c++) if (data[t * C + c] > data[t * C + best]) best = c;
-    if (best && best !== prev) chars.push({ ch: p.dict[best] ?? '', t, p: data[t * C + best] });
+    const row = offset + t * C;
+    for (let c = 1; c < C; c++) if (data[row + c] > data[row + best]) best = c;
+    if (best && best !== prev) chars.push({ ch: p.dict[best] ?? '', t, p: data[row + best] });
     prev = best;
   }
   return { chars, T, conf: chars.length ? chars.reduce((a, c) => a + c.p, 0) / chars.length : 0 };
+}
+
+// Exported for test
+export async function readCrops(p: Paddle, r: Raster, jobs: { box: number[]; turned: boolean }[]): Promise<{ chars: { ch: string; t: number; p: number }[]; T: number; conf: number }[]> {
+  if (!jobs.length) return [];
+  const results: { chars: { ch: string; t: number; p: number }[]; T: number; conf: number }[] = new Array(jobs.length);
+  const groups = new Map<number, { idx: number; input: Float32Array }[]>();
+  for (let i = 0; i < jobs.length; i++) {
+    const { input, W } = cropInput(r, jobs[i].box, jobs[i].turned);
+    let g = groups.get(W);
+    if (!g) { g = []; groups.set(W, g); }
+    g.push({ idx: i, input });
+  }
+  for (const [W, items] of groups) {
+    const size = 3 * 48 * W;
+    for (let i = 0; i < items.length; i += 32) {
+      const chunk = items.slice(i, i + 32), n = chunk.length;
+      const batchInput = new Float32Array(n * size);
+      for (let j = 0; j < n; j++) batchInput.set(chunk[j].input, j * size);
+      const out = await p.rec.run({ [p.rec.inputNames[0]]: new p.ort.Tensor('float32', batchInput, [n, 3, 48, W]) });
+      const o = out[p.rec.outputNames[0]], [, T, C] = o.dims as number[], data = o.data as Float32Array;
+      for (let j = 0; j < n; j++) results[chunk[j].idx] = decode(p, data, T, C, j * T * C);
+    }
+  }
+  return results;
 }
 
 /** 3x3 box blur: bilevel scans read as clean grey strokes (thin "1"s survive the model's resize). */
@@ -174,20 +201,37 @@ async function readRaster(p: Paddle, r: Raster, st?: PaddleStats, flatOnly = fal
   if (st) { st.detMs += performance.now() - t; t = performance.now(); }
   const boxes = textBoxes(map, r.width, r.height);
   if (st) { st.postMs += performance.now() - t; st.boxes += boxes.length; }
-  const words: OcrWord[] = [];
+  const keptBoxes: [number, number, number, number][] = [];
   for (const b of boxes) {
-    const [x0, y0, x1, y1] = b, tall = y1 - y0 >= 1.5 * (x1 - x0);
+    const [x0, y0, x1, y1] = b;
     // a box at least 3x taller than wide always reads vertical, and the caller drops vertical words
     if (flatOnly && y1 - y0 >= 3 * (x1 - x0)) continue;
-    t = performance.now();
-    let read = await readCrop(p, r, b, tall), vertical = tall;
-    if (st) st.recCalls++;
+    keptBoxes.push(b);
+  }
+  const p1Jobs: { box: number[]; turned: boolean }[] = [];
+  const p2Jobs: { box: number[]; turned: boolean }[] = [];
+  for (const b of keptBoxes) {
+    const [x0, y0, x1, y1] = b, tall = y1 - y0 >= 1.5 * (x1 - x0);
+    p1Jobs.push({ box: b, turned: tall });
+    if (tall && y1 - y0 < 3 * (x1 - x0)) p2Jobs.push({ box: b, turned: false });
+  }
+  t = performance.now();
+  const p1Results = await readCrops(p, r, p1Jobs);
+  const p2Results = await readCrops(p, r, p2Jobs);
+  if (st) {
+    st.recCalls += p1Jobs.length + p2Jobs.length;
+    st.recMs += performance.now() - t;
+  }
+  const words: OcrWord[] = [];
+  let p2Idx = 0;
+  for (let i = 0; i < keptBoxes.length; i++) {
+    const b = keptBoxes[i];
+    const [x0, y0, x1, y1] = b, tall = y1 - y0 >= 1.5 * (x1 - x0);
+    let read = p1Results[i], vertical = tall;
     if (tall && y1 - y0 < 3 * (x1 - x0)) {
-      const flat = await readCrop(p, r, b, false);
-      if (st) st.recCalls++;
+      const flat = p2Results[p2Idx++];
       if (flat.conf > read.conf) { read = flat; vertical = false; }
     }
-    if (st) st.recMs += performance.now() - t;
     if (read.conf < 0.5) continue;
     const len = vertical ? y1 - y0 : x1 - x0, step = len / read.T;
     let cur: typeof read.chars = [];
