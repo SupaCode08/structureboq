@@ -503,15 +503,15 @@ export async function checkWebGpuAvailability(): Promise<boolean> {
 
 // one job at a time per Paddle worker: two runs at once on its model hang it
 const bandQueues: ReturnType<typeof serialize>[] = [];
-function readBand(k: number, raster: Raster, pass: 'flat' | 'turned' | 'both' = 'both', onStats?: (worker: number, stats: any) => void, preferGpu = true, abortSignal?: AbortSignal) {
+function readBand(k: number, raster: Raster, pass: 'flat' | 'turned' | 'both' | 'upright' = 'both', onStats?: (worker: number, stats: any) => void, preferGpu = true, abortSignal?: AbortSignal) {
   return (bandQueues[k] ??= serialize())(() => readBandNow(k, raster, pass, onStats, preferGpu, abortSignal));
 }
 
-/** One pass ('flat' | 'turned' | 'both') of a scan read by PaddleOCR worker k (paddleWorker.ts). */
+/** One pass ('flat' | 'turned' | 'both' | 'upright') of a scan read by PaddleOCR worker k (paddleWorker.ts). */
 function readBandNow(
   k: number,
   raster: Raster,
-  pass: 'flat' | 'turned' | 'both' = 'both',
+  pass: 'flat' | 'turned' | 'both' | 'upright' = 'both',
   onStats?: (worker: number, stats: any) => void,
   preferGpu = true,
   abortSignal?: AbortSignal,
@@ -588,13 +588,13 @@ function readBandNow(
 }
 
 /** PaddleOCR (WebGPU, flat pass) with the tesseract worker's recognize() shape: the whole raster is read on the first tile, the other tiles give nothing */
-function paddleAsEng(k: number, run: <T>(job: () => Promise<T>) => Promise<T>, abortSignal?: AbortSignal) {
+function paddleAsEng(k: number, run: <T>(job: () => Promise<T>) => Promise<T>, abortSignal?: AbortSignal, pass: 'flat' | 'turned' | 'both' | 'upright' = 'flat') {
   return {
     recognize: async (img: object, o?: { rectangle?: { left: number; top: number } }) => {
       if (o?.rectangle?.left || o?.rectangle?.top) return { data: { words: [] as any[] } };
       const r = rasterOf.get(img);
       if (!r) throw new Error('paddleAsEng: no raster for this image');
-      const res = await run(() => readBand(k, r, 'flat', undefined, true, abortSignal));
+      const res = await run(() => readBand(k, r, pass, undefined, true, abortSignal));
       return { data: { words: res.words.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
     },
   };
@@ -908,7 +908,7 @@ export async function extractInBrowser(
           // flat side on Paddle worker 0, turned side on worker 1, so the two sides of a page do not queue on one worker
           const gpu = await checkWebGpuAvailability();
           const eng = gpu ? paddleAsEng(0, job => job(), opts.abortSignal) : null;
-          const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal) : null;
+          const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal, 'upright') : null;
           const env = {
             worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: engTurned ? [engTurned, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
             toImage: (d: Uint8Array, w: number, h: number) => { const c = grayToCanvas(d, w, h); rasterOf.set(c, { data: d, width: w, height: h } as Raster); return c; },

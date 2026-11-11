@@ -260,8 +260,14 @@ function turnClockwise(r: Raster): Raster {
 }
 
 /** Words of a raster, boxes normalized to the raster (0..1); vertical text (second pass on the turned raster) comes back vertical. */
-export async function paddleWords(p: Paddle, raster: Raster, st?: PaddleStats, pass: 'flat' | 'turned' | 'both' = 'both'): Promise<OcrWord[]> {
+export async function paddleWords(p: Paddle, raster: Raster, st?: PaddleStats, pass: 'flat' | 'turned' | 'both' | 'upright' = 'both'): Promise<OcrWord[]> {
   const r = smooth(raster);
+  if (pass === 'upright') {
+    // The caller turned the raster; text that is upright here was read on the flat side.
+    const words = (await readRaster(p, r, st, true)).filter(w => !w.vertical);
+    if (st) st.wordsKept += words.length;
+    return words;
+  }
   if (pass === 'flat') {
     const flat = await readRaster(p, r, st);
     if (st) st.wordsKept += flat.length;

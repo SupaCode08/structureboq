@@ -53,6 +53,14 @@ const paddleEng = paddle && process.env.VECTOR_PADDLE !== '0' ? {
     return { data: { words: ws.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
   },
 } : undefined;
+const paddleEngTurned = paddle && process.env.VECTOR_PADDLE !== '0' ? {
+  recognize: async (img: object, o?: { rectangle?: { left: number; top: number } }) => {
+    if (o?.rectangle?.left || o?.rectangle?.top) return { data: { words: [] } }; // the whole raster is read on the first tile
+    const r = rasters.get(img)!;
+    const ws = await paddleWords(paddle, r, undefined, 'upright');
+    return { data: { words: ws.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
+  },
+} : undefined;
 // shortcut: B1 spike (EXTRA_FLAT_ONLY=1: tha+eng skips the turned raster, told apart as the portrait one; wrong on portrait sheets), measure only
 const extraFlat = process.env.EXTRA_FLAT_ONLY === '1' ? extra.map(w => ({
   recognize: (img: object, o?: object) => { const r = rasters.get(img); return r && r.height > r.width ? Promise.resolve({ data: { words: [] } }) : w.recognize(img as any, o as any); },
@@ -62,7 +70,7 @@ for (const p of parsePages(spec)) {
   const page = await doc.getPage(p);
   const t0 = Date.now();
   const r = await ocrPdfPage(page as any, p, {
-    worker: (paddleEng ?? worker) as any, extraWorkers: extraFlat as any, labelWorkers: labelWorkers as any, tilesToo: !!process.env.TILES_TOO,
+    worker: (paddleEng ?? worker) as any, extraWorkers: extraFlat as any, turnedWorkers: paddleEng ? [paddleEngTurned, ...extraFlat] as any : undefined, labelWorkers: labelWorkers as any, tilesToo: !!process.env.TILES_TOO,
     OPS: OPS as any,
     toImage: (d, w, h) => { const png = grayPng(d, w, h); rasters.set(png, { data: d, width: w, height: h }); return png; },
     renderPage: (pg, _scale, rot, prepared) => embeddedImage(pg, rot, prepared),
