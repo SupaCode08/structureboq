@@ -81,6 +81,12 @@ async function probabilityMap(p: Paddle, r: Raster, st?: PaddleStats) {
   for (let ty = 0; ty < Math.max(1, r.height - OVER); ty += TILE - OVER)
     for (let tx = 0; tx < Math.max(1, r.width - OVER); tx += TILE - OVER) {
       const w = Math.min(TILE, r.width - tx), h = Math.min(TILE, r.height - ty);
+      let blank = true;
+      for (let y = 0; y < h && blank; y++)
+        for (let x = 0; x < w; x++)
+          if (r.data[(ty + y) * r.width + tx + x] !== 255) { blank = false; break; }
+      // Leaving map at 0 is the same result, because textBoxes only uses pixels >= 77
+      if (blank) continue;
       const W = Math.ceil(w / 32) * 32, H = Math.ceil(h / 32) * 32;
       const input = new Float32Array(3 * W * H);
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {

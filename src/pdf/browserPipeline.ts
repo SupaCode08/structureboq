@@ -582,13 +582,13 @@ function readBandNow(
 }
 
 /** PaddleOCR (WebGPU, flat pass) with the tesseract worker's recognize() shape: the whole raster is read on the first tile, the other tiles give nothing */
-function paddleAsEng(run: <T>(job: () => Promise<T>) => Promise<T>, abortSignal?: AbortSignal) {
+function paddleAsEng(k: number, run: <T>(job: () => Promise<T>) => Promise<T>, abortSignal?: AbortSignal) {
   return {
     recognize: async (img: object, o?: { rectangle?: { left: number; top: number } }) => {
       if (o?.rectangle?.left || o?.rectangle?.top) return { data: { words: [] as any[] } };
       const r = rasterOf.get(img);
       if (!r) throw new Error('paddleAsEng: no raster for this image');
-      const res = await run(() => readBand(0, r, 'flat', undefined, true, abortSignal));
+      const res = await run(() => readBand(k, r, 'flat', undefined, true, abortSignal));
       return { data: { words: res.words.map(w => ({ text: w.text, confidence: w.conf, bbox: { x0: w.x0 * r.width, y0: w.y0 * r.height, x1: w.x1 * r.width, y1: w.y1 * r.height } })) } };
     },
   };
@@ -899,10 +899,12 @@ export async function extractInBrowser(
         } else {
           const lane = laneIdx > 0 && await isVectorTextPage(page as any, pdfjs.OPS as any) ? await ocrLane(laneIdx) : lane0!;
           lanesUsed.add(lane === lane0 ? 0 : laneIdx);
-          // no queue needed here: the Paddle worker already takes one job at a time, and a scan page's render must not hold it up
-          const eng = await checkWebGpuAvailability() ? paddleAsEng(job => job(), opts.abortSignal) : null;
+          // flat side on Paddle worker 0, turned side on worker 1, so the two sides of a page do not queue on one worker
+          const gpu = await checkWebGpuAvailability();
+          const eng = gpu ? paddleAsEng(0, job => job(), opts.abortSignal) : null;
+          const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal) : null;
           const env = {
-            worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: eng ? [eng, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
+            worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: engTurned ? [engTurned, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
             toImage: (d: Uint8Array, w: number, h: number) => { const c = grayToCanvas(d, w, h); rasterOf.set(c, { data: d, width: w, height: h } as Raster); return c; },
             renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => renderQueue(() => renderForOcr(pg, 300 / 72, rot, prepared)),
             readScan: (rs: Raster) => readScan(rs, onStats, opts.abortSignal),
