@@ -971,12 +971,9 @@ export async function extractInBrowser(
           const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal, 'upright') : null;
           const env = {
             worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: engTurned ? [engTurned, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
-            toImage: async (d: Uint8Array, w: number, h: number) => {
-              const c = grayToCanvas(d, w, h);
-              // encode once so tesseract.js does not re-encode PNG on each 2048 px tile
-              const blob = await new Promise<Blob | null>(r => c.toBlob(r));
-              const img = blob ?? c; // fall back to the canvas if the browser could not encode it
-              if (blob) { c.width = 0; c.height = 0; }
+            toImage: (d: Uint8Array, w: number, h: number) => {
+              // PGM: the same gray pixels tesseract would get from the PNG, without encoding (main thread) and decoding (worker) a PNG for every tile
+              const img = new Blob([`P5\n${w} ${h}\n255\n`, d as BlobPart]);
               rasterOf.set(img, { data: d, width: w, height: h } as Raster);
               return img;
             },
