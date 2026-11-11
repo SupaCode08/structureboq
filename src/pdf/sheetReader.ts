@@ -201,7 +201,8 @@ function splitTags(raw: string, vocab: Set<string>) {
 }
 
 /** A footing name cut short by OCR ("F(0.90X0.90X0" or "95X0.95") is the one footing name of the set it begins. */
-function completeTag(p: string, vocab: Set<string>) {
+// exported only for test
+export function completeTag(p: string, vocab: Set<string>) {
   const bare = (v: string) => v.replace(/[()]/g, '');
   const q = bare(p);
   if (q.length >= 6 && /^F\d?\.?\d/.test(q.replace(/^F/, 'F'))) {
@@ -219,6 +220,23 @@ function completeTag(p: string, vocab: Set<string>) {
       return b.includes(`${w}X${l}`) || b.includes(`${m[1]}X${m[2]}`);
     });
     if (match) return { tag: match, repaired: true };
+  }
+  // one letter where a footing size has a digit (0 read as p) is that footing when only one name fits
+  if (q.startsWith('F') && q.length >= 10) {
+    const hits = [...vocab].filter(v => {
+      if (!FOOTING_SIZE.test(v)) return false;
+      const bv = bare(v);
+      if (bv.length !== q.length) return false;
+      let diff = -1;
+      for (let i = 0; i < q.length; i++) {
+        if (q[i] !== bv[i]) {
+          if (diff >= 0) return false;
+          diff = i;
+        }
+      }
+      return diff >= 0 && /\d/.test(bv[diff]) && !/\d/.test(q[diff]);
+    });
+    if (hits.length === 1) return { tag: hits[0], repaired: true };
   }
   return null;
 }

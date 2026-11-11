@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readSheets, footingMeshAt, footingSections, footingBarNotes } from './sheetReader.ts';
+import { readSheets, footingMeshAt, footingSections, footingBarNotes, completeTag } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
 
 const W = 1207, H = 844;
@@ -188,4 +188,11 @@ test('footingBarNotes keeps every bar note at the section and ignores level dime
   const notes = footingBarNotes(p, box, [], grades);
   assert.deepEqual(notes, ['2-DB12', '3-DB12', '3012+312@0.15L']);
   assert.equal(footingMeshAt(p, box, [], grades), undefined);
+});
+
+test('completeTag repairs a footing size where one digit was misread as a letter (0 read as p)', () => {
+  const vocab = new Set(['F(0.90X0.90X0.30)', 'F(0.95X0.95)']);
+  assert.deepEqual(completeTag('F(P.90X0.90X0.30)', vocab), { tag: 'F(0.90X0.90X0.30)', repaired: true });
+  assert.deepEqual(completeTag('F(P.95X0.95)', vocab), { tag: 'F(0.95X0.95)', repaired: true });
+  assert.equal(completeTag('F(P.9PX0.90X0.30)', vocab), null);
 });
