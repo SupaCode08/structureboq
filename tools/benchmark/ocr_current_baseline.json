@@ -1,11 +1,11 @@
 {
-  "ocrId": "46ddda4df62d816622a687bb13debadf1e2230fbaf283936e69ee63c5c2175de",
-  "generatedAt": "2026-11-10T16:30:51.722Z",
+  "ocrId": "4088c18d00dcca7736e93cbff3ca2c6fbac13c1837c5845df9e4d879246484de",
+  "generatedAt": "2026-11-11T08:01:18.830Z",
   "sets": {
     "house_ready_1": {
-      "right": 41,
+      "right": 43,
       "wrong": 2,
-      "missing": 9,
+      "missing": 7,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -28,16 +28,16 @@
           "missing": 1
         },
         "rebar": {
-          "right": 9,
+          "right": 11,
           "wrong": 0,
-          "missing": 8
+          "missing": 6
         }
       }
     },
     "house_ready_2": {
-      "right": 52,
+      "right": 53,
       "wrong": 0,
-      "missing": 5,
+      "missing": 4,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -60,16 +60,16 @@
           "missing": 0
         },
         "rebar": {
-          "right": 11,
+          "right": 12,
           "wrong": 0,
-          "missing": 5
+          "missing": 4
         }
       }
     },
     "house_ready_4": {
-      "right": 59,
+      "right": 61,
       "wrong": 2,
-      "missing": 8,
+      "missing": 6,
       "byCategory": {
         "grid": {
           "right": 2,
@@ -92,9 +92,9 @@
           "missing": 1
         },
         "rebar": {
-          "right": 11,
+          "right": 13,
           "wrong": 1,
-          "missing": 6
+          "missing": 4
         }
       }
     }
