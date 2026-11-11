@@ -50,11 +50,10 @@ export async function embeddedImage(page: any, rotate90: boolean, prepared = tru
   const targetLong = (Math.max(vp1.width, vp1.height) * Number(process.env.SCAN_DPI || 400)) / 72;
   const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
   if (!prepared) return { image: grayPng(gray, W, H), width: W, height: H };
-  let skewDone = 0;
   let prep = process.env.SCAN_RAW ? { data: gray, width: W, height: H } : prepareScan(gray, W, H, k);
   if (!process.env.SCAN_RAW && !process.env.NO_DESKEW) {
     const skew = estimateSkew(prep);
-    if (Math.abs(skew) >= 0.1) { prep = rotateRaster(prep, -skew); skewDone = skew; }
+    if (Math.abs(skew) >= 0.1) prep = rotateRaster(prep, -skew);
   }
   const pxPerMm = Math.max(prep.width, prep.height) / (Math.max(vp1.width, vp1.height) / 72 * 25.4);
   const lines = process.env.SCAN_RAW ? undefined : extractLines(prep, Math.round(pxPerMm * 3));
@@ -63,6 +62,7 @@ export async function embeddedImage(page: any, rotate90: boolean, prepared = tru
   const blobs = process.env.SCAN_RAW || rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
   const circles = process.env.SCAN_RAW || rotate90 ? undefined
     : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], (b[1] - e[1]) * prep.height / prep.width) < b[2] / 2))];
-  return { image: grayPng(prep.data, prep.width, prep.height), width: prep.width, height: prep.height, skew: skewDone, lines, circles, raster: prep };
+  // The raster is already turned, so the caller must not turn the words again (same as embeddedScanForOcr in the browser)
+  return { image: grayPng(prep.data, prep.width, prep.height), width: prep.width, height: prep.height, skew: 0, lines, circles, raster: prep };
 }
 
