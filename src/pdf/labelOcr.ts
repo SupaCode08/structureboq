@@ -24,7 +24,22 @@ function mergeBoxes(bs: Box[], near: (a: Box, b: Box) => boolean): Box[] {
     for (const b of cur.sort((p, q) => p.x0 - q.x0)) {
       let o: Box | undefined;
       for (let k = out.length - 1; k >= 0 && k >= out.length - 400; k--) if (near(out[k], b)) { o = out[k]; break; }
-      if (o) { grow(o, b); changed = true; } else out.push(b);
+      if (o) {
+        grow(o, b);
+        changed = true;
+        // absorbing b expands o, which may now bridge to other boxes already in out
+        for (let again = true; again;) {
+          again = false;
+          for (let k = out.length - 1; k >= 0 && k >= out.length - 400; k--) {
+            if (out[k] !== o && near(out[k], o)) {
+              const [p] = out.splice(k, 1);
+              grow(o, p);
+              again = true;
+              break;
+            }
+          }
+        }
+      } else out.push(b);
     }
     cur = out;
   }
@@ -71,7 +86,8 @@ export function textLines(small: Polyline[], glyphs = glyphBoxes(small)): TextLi
   glyphs.forEach((g, gi) => {
     const nh = h.n.get(h.idx[gi]) || 1, nv = v.n.get(v.idx[gi]) || 1;
     const key = nv > nh ? `v${v.idx[gi]}` : `h${h.idx[gi]}`;
-    groups.set(key, [...(groups.get(key) || []), g]);
+    const gs = groups.get(key);
+    if (gs) gs.push(g); else groups.set(key, [g]);
   });
   return [...groups.entries()].map(([k, gs]) => ({ box: mergeAll(gs), vertical: k[0] === 'v' }));
 }
