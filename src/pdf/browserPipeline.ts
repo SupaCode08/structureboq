@@ -971,7 +971,15 @@ export async function extractInBrowser(
           const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal, 'upright') : null;
           const env = {
             worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: engTurned ? [engTurned, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
-            toImage: (d: Uint8Array, w: number, h: number) => { const c = grayToCanvas(d, w, h); rasterOf.set(c, { data: d, width: w, height: h } as Raster); return c; },
+            toImage: async (d: Uint8Array, w: number, h: number) => {
+              const c = grayToCanvas(d, w, h);
+              // encode once so tesseract.js does not re-encode PNG on each 2048 px tile
+              const blob = await new Promise<Blob | null>(r => c.toBlob(r));
+              const img = blob ?? c; // fall back to the canvas if the browser could not encode it
+              if (blob) { c.width = 0; c.height = 0; }
+              rasterOf.set(img, { data: d, width: w, height: h } as Raster);
+              return img;
+            },
             renderPage: (pg: PdfJsPage, _scale: number, rot: boolean, prepared: boolean) => renderQueue(() => renderForOcr(pg, 300 / 72, rot, prepared)),
             readScan: (rs: Raster) => readScan(rs, onStats, opts.abortSignal),
             onTime: (step: string, ms: number) => { steps[step] = (steps[step] || 0) + ms; },
