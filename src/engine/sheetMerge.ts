@@ -371,7 +371,7 @@ export function mergeSheetReadings(
             if (!bd) { bd = typicalBeamWD[1]; fs.depth = 'assumed'; }
             conflicts.push(`ไม่พบหน้าตัด ${piece.tag} ครบ — ใช้หน้าตัดคานที่พบบ่อยในชุดแบบ ${typicalBeamWD.join('×')} ม. ตรวจยืนยัน`);
           }
-          fs.rebar = sec?.def.top_rebar || sec?.def.bottom_rebar ? 'drawing' : 'missing';
+          fs.rebar = sec?.def.top_rebar || sec?.def.bottom_rebar ? (sec.def.inferred_fields?.includes('top_rebar') ? 'inferred' : 'drawing') : 'missing';
           if (sec?.def.section_conflicts?.length) { conflicts.push(...sec.def.section_conflicts); conf = Math.min(conf, 0.6); }
           fs.support = typicalColW ? 'inferred' : 'missing';
           pushMember({

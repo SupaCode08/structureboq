@@ -105,6 +105,20 @@ test('a bar count that cannot fit in one layer of the beam is left unread; a bol
   assert.ok(b3, 'B83 read as B3');
   assert.equal(b3.top_rebar, '2-DB12');
   assert.equal(b3.bottom_rebar, undefined);
+  assert.ok(!b3.inferred_fields?.includes('top_rebar'));
+});
+
+test('a beam cross-section with one bar row fills both layers and flags top_rebar as inferred', () => {
+  const words = [
+    word('0.20', 0.30, 0.40), word('0.35', 0.27, 0.45, 0.02, true),
+    word('2-DB12', 0.36, 0.40),
+    word('B3', 0.30, 0.55),
+  ];
+  const { readings } = readSheets([page(1, words), page(2, [word('B3', 0.5, 0.5), word('B3', 0.6, 0.6)])]);
+  const b3 = readings.flatMap(r => r.sections).find(s => s.tag === 'B3')!;
+  assert.equal(b3.top_rebar, '2-DB12');
+  assert.equal(b3.bottom_rebar, '2-DB12');
+  assert.ok(b3.inferred_fields?.includes('top_rebar'));
 });
 
 test('bare and primed tags: "F,C" labels make F and C tags, GB1\' stays apart from GB1, a circled letter is a grid bubble', () => {
@@ -120,6 +134,7 @@ test('bare and primed tags: "F,C" labels make F and C tags, GB1\' stays apart fr
   const secs = readings.flatMap(r => r.sections);
   assert.equal(secs.find(s => s.tag === "GB1'")!.top_rebar, '3-DB12');
   assert.equal(secs.find(s => s.tag === 'GB1')!.top_rebar, '2-DB12');
+  assert.ok(!secs.find(s => s.tag === 'GB1')!.inferred_fields?.includes('top_rebar'));
   assert.deepEqual([secs.find(s => s.tag === 'C')!.width_m, secs.find(s => s.tag === 'C')!.depth_m], [0.25, 0.25]);
 });
 

@@ -1471,6 +1471,11 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           const [top, bottom] = [layer(rowsOf[0], true), layer(rowsOf[rowsOf.length - 1], false)];
           if (fits(top)) sec.top_rebar = top.join('+');
           if (fits(bottom)) sec.bottom_rebar = bottom.join('+');
+          if (rowsOf.length === 1 && sec.top_rebar && sec.bottom_rebar) {
+            sec.inferred_fields ||= [];
+            if (!sec.inferred_fields.includes('top_rebar')) sec.inferred_fields.push('top_rebar');
+            sec.evidence = `${sec.evidence} (อ่านเหล็กได้แถวเดียว — เหล็กบนใช้ค่าเดียวกับเหล็กล่าง)`;
+          }
         }
         if (stirrup) { sec.stirrup = stirrup; if (stirrupSets) sec.stirrup_sets = stirrupSets; }
         else if (spacingLegacy) sec.evidence = `${sec.evidence} (ปลอก @${spacingLegacy} — อ่านขนาดเหล็กไม่ได้)`;
