@@ -122,7 +122,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
 
         (async () => {
           try {
-            const { classifyPages } = await import('../pdf/browserPipeline');
+            const { classifyPages, warmOcrEngines } = await import('../pdf/browserPipeline');
             const { toPageText } = await import('../pdf/pdfText');
             const { parseBoqPages } = await import('../pdf/boqParser');
             const all = Array.from({ length: opened!.numPages }, (_, i) => i + 1);
@@ -131,7 +131,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
             // ปร.4 pages are BOQ, not drawings: the automatic mode never reads them as sheets, so they are not sorted here either
             const boq = new Set(parseBoqPages(texts, file.name).lines.map(l => l.page));
             if (live.current && boq.size) setSorted(prev => ({ ...prev, ...Object.fromEntries([...boq].map(p => [p, { sheetId: 'BOQ', skip: true, reason: 'หน้า BOQ ปร.4 (อ่านจากข้อความ ไม่ใช่แบบ)' }])) }));
-            await classifyPages(
+            const results = await classifyPages(
               opened!,
               all.filter(p => !boq.has(p)),
               opened!.numPages,
@@ -142,7 +142,10 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
                 }
               },
             );
-            if (live.current) setSortDone(true);
+            if (live.current) {
+              setSortDone(true);
+              void warmOcrEngines(opened!, results.filter(r => !r.cls.skip && r.cls.sheetId).map(r => r.page));
+            }
           } catch {
             if (live.current) setSortDone(true);
           }

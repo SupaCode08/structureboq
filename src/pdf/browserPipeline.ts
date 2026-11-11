@@ -135,6 +135,37 @@ async function largestPageImage(page: any): Promise<{ px: any; m: number[] } | n
   return { px: bestPx, m: bestM };
 }
 
+const activeWorkerPromises = new Set<(err: Error) => void>();
+let scanPrepWorker: Worker | null = null;
+let scanPrepCalls = 0;
+
+// offload scan prep (Otsu, deskew, line removal) off the main thread so page rendering does not freeze the UI
+function prepScanInWorker(gray: Uint8Array, W: number, H: number, pageLongPt: number, rotate90: boolean) {
+  const w = (scanPrepWorker ??= new Worker(new URL('./scanPrepWorker.ts', import.meta.url), { type: 'module' }));
+  const id = ++scanPrepCalls;
+  return new Promise<{ raster: Raster; width: number; height: number; lines?: any; circles?: any }>((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      w.removeEventListener('message', onMsg);
+      w.removeEventListener('error', onErr);
+      activeWorkerPromises.delete(onAbort);
+    };
+    const onAbort = (err: Error) => { if (!settled) { settled = true; cleanup(); reject(err); } };
+    const onMsg = (e: MessageEvent) => {
+      if (!e.data || e.data.id !== id) return;
+      if (!settled) { settled = true; cleanup(); e.data.error ? reject(new Error(e.data.error)) : resolve(e.data); }
+    };
+    const onErr = (e: ErrorEvent) => {
+      scanPrepWorker = null;
+      if (!settled) { settled = true; cleanup(); reject(new Error(e.message || 'scanPrepWorker crashed')); }
+    };
+    activeWorkerPromises.add(onAbort);
+    w.addEventListener('message', onMsg);
+    w.addEventListener('error', onErr, { once: true });
+    w.postMessage({ id, gray, W, H, pageLongPt, rotate90 }, [gray.buffer]);
+  });
+}
+
 /** Largest embedded image of a scanned page as a 400-DPI prepared raster (same logic as scripts/scanImage.ts). */
 async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true) {
   const im = await largestPageImage(page);
@@ -150,8 +181,16 @@ async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true)
   const { width: W, height: H } = oriented;
   const vp1 = page.getViewport({ scale: 1 });
   if (!prepared) return { image: grayToCanvas(gray, W, H), width: W, height: H, skew: 0 };
-  const { raster, width, height, lines, circles } = prepareEmbeddedScan(gray, W, H, Math.max(vp1.width, vp1.height), rotate90);
-  return { image: null, raster, width, height, skew: 0, lines, circles };
+  const pageLongPt = Math.max(vp1.width, vp1.height);
+  try {
+    const { raster, width, height, lines, circles } = await prepScanInWorker(gray, W, H, pageLongPt, rotate90);
+    return { image: null, raster, width, height, skew: 0, lines, circles };
+  } catch (e) {
+    // a failed hand-over leaves gray detached (its buffer went to the worker): nothing left to prepare inline
+    if (!gray.byteLength) throw e;
+    const { raster, width, height, lines, circles } = prepareEmbeddedScan(gray, W, H, pageLongPt, rotate90);
+    return { image: null, raster, width, height, skew: 0, lines, circles };
+  }
 }
 
 export async function renderForOcr(page: any, scale: number, rotate90: boolean, prepared = true) {
@@ -482,8 +521,6 @@ export interface WorkerOcrResult {
   stats?: any;
 }
 
-const activeWorkerPromises = new Set<(err: Error) => void>();
-
 export async function checkWebGpuAvailability(): Promise<boolean> {
   if (webGpuAvailable !== null) return webGpuAvailable;
   const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
@@ -652,6 +689,24 @@ export async function readScan(
   return [...flatRes.words, ...turnedRes.words];
 }
 
+/** Warm up OCR lanes and WebGPU models ahead of time while the user is choosing pages. */
+export async function warmOcrEngines(doc: PdfDoc, pages: number[]): Promise<void> {
+  try {
+    if (!pages.length) return;
+    const page = await doc.getPage(pages[0]);
+    if (!(await isVectorTextPage(page as any, pdfjs.OPS as any))) return;
+    const n = laneCount(navigator.hardwareConcurrency, (navigator as any).deviceMemory);
+    const lanes = Promise.all(Array.from({ length: n }, (_, k) => ocrLane(k)));
+    const paddle = (async () => {
+      if (await checkWebGpuAvailability()) {
+        const white: Raster = { data: new Uint8Array(32 * 32).fill(255), width: 32, height: 32 };
+        await Promise.all([readBand(0, white, 'flat'), readBand(1, white, 'flat')]);
+      }
+    })();
+    await Promise.all([lanes, paddle]);
+  } catch {}
+}
+
 /**
  * Terminates all running OCR workers (PaddleOCR and Tesseract.js) and frees all
  * associated memory (WASM heap, WebGPU buffers, language models).
@@ -664,6 +719,11 @@ export async function terminateAllWorkers(): Promise<void> {
     } catch {}
   }
   activeWorkerPromises.clear();
+
+  if (scanPrepWorker) {
+    try { scanPrepWorker.terminate(); } catch {}
+    scanPrepWorker = null;
+  }
 
   // Terminate Paddle workers
   for (let i = 0; i < paddles.length; i++) {
