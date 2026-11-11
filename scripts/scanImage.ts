@@ -2,7 +2,7 @@
 import { OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { grayPng } from './png.ts';
 import { imageGray } from '../src/pdf/imageBoxes.ts';
-import { prepareScan, removeLines, estimateSkew, rotateRaster, extractLines, findRings, ringsAtLineEnds } from '../src/pdf/scanPrep.ts';
+import { orientScan, prepareEmbeddedScan } from '../src/pdf/scanPrep.ts';
 
 /** Largest embedded image of a scanned page as a grayscale raster (rotated with the page). */
 export async function embeddedImage(page: any, rotate90: boolean, prepared = true) {
@@ -38,31 +38,20 @@ export async function embeddedImage(page: any, rotate90: boolean, prepared = tru
   }
   const [dx, dy] = [bestM[0], bestM[1]];
   const base = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 180) : (dy > 0 ? 90 : 270);
-  const rot = (base + (rotate90 ? 90 : 0)) % 360;
-  let W = w0, H = h0;
-  const rotate = (src: Uint8Array, sw: number, sh: number) => {
-    const out = new Uint8Array(sw * sh);
-    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) out[x * sh + (sh - 1 - y)] = src[y * sw + x];
-    return out;
-  };
-  for (let r = 0; r < rot; r += 90) { gray = rotate(gray, W, H); [W, H] = [H, W]; }
-  const vp1 = page.getViewport({ scale: 1 });
-  const targetLong = (Math.max(vp1.width, vp1.height) * Number(process.env.SCAN_DPI || 400)) / 72;
-  const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
+  const oriented = orientScan(gray, w0, h0, base, rotate90);
+  gray = oriented.gray;
+  const { width: W, height: H } = oriented;
   if (!prepared) return { image: grayPng(gray, W, H), width: W, height: H };
-  let prep = process.env.SCAN_RAW ? { data: gray, width: W, height: H } : prepareScan(gray, W, H, k);
-  if (!process.env.SCAN_RAW && !process.env.NO_DESKEW) {
-    const skew = estimateSkew(prep);
-    if (Math.abs(skew) >= 0.1) prep = rotateRaster(prep, -skew);
-  }
-  const pxPerMm = Math.max(prep.width, prep.height) / (Math.max(vp1.width, vp1.height) / 72 * 25.4);
-  const lines = process.env.SCAN_RAW ? undefined : extractLines(prep, Math.round(pxPerMm * 3));
-  const endRings = lines && !rotate90 ? ringsAtLineEnds(prep, lines, pxPerMm) : [];
-  if (!process.env.SCAN_RAW && !process.env.KEEP_LINES) prep = removeLines(prep, Math.round(pxPerMm * Number(process.env.LINE_MM || 5)));
-  const blobs = process.env.SCAN_RAW || rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
-  const circles = process.env.SCAN_RAW || rotate90 ? undefined
-    : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], (b[1] - e[1]) * prep.height / prep.width) < b[2] / 2))];
+  const vp1 = page.getViewport({ scale: 1 });
+  const r = prepareEmbeddedScan(gray, W, H, Math.max(vp1.width, vp1.height), rotate90, {
+    dpi: Number(process.env.SCAN_DPI || 400),
+    raw: !!process.env.SCAN_RAW,
+    noDeskew: !!process.env.NO_DESKEW,
+    keepLines: !!process.env.KEEP_LINES,
+    lineMm: Number(process.env.LINE_MM || 5),
+  });
+  const { raster, width, height, lines, circles } = r;
   // The raster is already turned, so the caller must not turn the words again (same as embeddedScanForOcr in the browser)
-  return { image: grayPng(prep.data, prep.width, prep.height), width: prep.width, height: prep.height, skew: 0, lines, circles, raster: prep };
+  return { image: grayPng(r.raster.data, r.width, r.height), width, height, skew: 0, lines, circles, raster };
 }
 

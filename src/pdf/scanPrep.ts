@@ -265,3 +265,52 @@ export function ringsAtLineEnds(
   const r4 = (v: number) => Math.round(v * 1e4) / 1e4;
   return found.map(([cx, cy, d]) => [r4(cx / W), r4(cy / H), r4(d / W)] as [number, number, number]);
 }
+
+/** Rotate a scan raster by quarter turns so it matches the page viewport orientation. */
+export function orientScan(gray: Uint8Array, w: number, h: number, baseDeg: number, rotate90: boolean) {
+  const rot = (baseDeg + (rotate90 ? 90 : 0)) % 360;
+  let W = w, H = h;
+  const rotate = (src: Uint8Array, sw: number, sh: number) => {
+    const out = new Uint8Array(sw * sh);
+    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) out[x * sh + (sh - 1 - y)] = src[y * sw + x];
+    return out;
+  };
+  let g = gray;
+  for (let r = 0; r < rot; r += 90) { g = rotate(g, W, H); [W, H] = [H, W]; }
+  return { gray: g, width: W, height: H };
+}
+
+export interface EmbeddedScanOpts {
+  dpi?: number;
+  raw?: boolean;
+  noDeskew?: boolean;
+  keepLines?: boolean;
+  lineMm?: number;
+}
+
+/** One copy for the app and the Node measuring scripts, so they cannot drift again. */
+export function prepareEmbeddedScan(
+  gray: Uint8Array,
+  W: number,
+  H: number,
+  pageLongPt: number,
+  rotate90: boolean,
+  opts: EmbeddedScanOpts = {},
+) {
+  const targetLong = (pageLongPt * (opts.dpi ?? 400)) / 72;
+  const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
+  let prep = opts.raw ? { data: gray, width: W, height: H } : prepareScan(gray, W, H, k);
+  if (!opts.raw && !opts.noDeskew) {
+    const skew = estimateSkew(prep);
+    if (Math.abs(skew) >= 0.1) prep = rotateRaster(prep, -skew);
+  }
+  const pxPerMm = Math.max(prep.width, prep.height) / ((pageLongPt / 72) * 25.4);
+  const lines = opts.raw ? undefined : (rotate90 ? undefined : extractLines(prep, Math.round(pxPerMm * 3)));
+  const endRings = lines && !rotate90 ? ringsAtLineEnds(prep, lines, pxPerMm) : [];
+  if (!opts.raw && !opts.keepLines) prep = removeLines(prep, Math.round(pxPerMm * (opts.lineMm ?? 5)));
+  const blobs = opts.raw || rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
+  const circles = opts.raw || rotate90 ? undefined
+    : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], ((b[1] - e[1]) * prep.height) / prep.width) < b[2] / 2))];
+  return { raster: prep, width: prep.width, height: prep.height, lines, circles };
+}
+

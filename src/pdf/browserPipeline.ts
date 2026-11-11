@@ -19,7 +19,7 @@ export { parsePageSpec, partitionDrawingPages };
 import { readSheets } from './sheetReader';
 import { reconcileScheduleRows } from '../engine/sourceConflicts';
 import { ocrBoqPage } from './boqOcr';
-import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds } from './scanPrep';
+import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds, orientScan, prepareEmbeddedScan } from './scanPrep';
 import { extractSmallStrokes, pageGeometry, rasterize } from './vectorText';
 import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules } from './titleBlock';
 import { imageBoxesOnPage, imageGray } from './imageBoxes';
@@ -138,28 +138,12 @@ async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true)
   if (!gray) return null;
   const [dx, dy] = [bestM[0], bestM[1]];
   const base = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 180) : (dy > 0 ? 90 : 270);
-  const rot = (base + (rotate90 ? 90 : 0)) % 360;
-  let W = w, H = h;
-  const rotate = (src: Uint8Array, sw: number, sh: number) => {
-    const out = new Uint8Array(sw * sh);
-    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) out[x * sh + (sh - 1 - y)] = src[y * sw + x];
-    return out;
-  };
-  for (let r = 0; r < rot; r += 90) { gray = rotate(gray, W, H); [W, H] = [H, W]; }
-  const targetLong = (Math.max(vp1.width, vp1.height) * 400) / 72;
-  const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
+  const oriented = orientScan(gray, w, h, base, rotate90);
+  gray = oriented.gray;
+  const { width: W, height: H } = oriented;
   if (!prepared) return { image: grayToCanvas(gray, W, H), width: W, height: H, skew: 0 };
-  let prep = prepareScan(gray, W, H, k);
-  const skew = estimateSkew(prep);
-  if (Math.abs(skew) >= 0.1) prep = rotateRaster(prep, -skew);
-  const pxPerMm = Math.max(prep.width, prep.height) / ((Math.max(vp1.width, vp1.height) / 72) * 25.4);
-  const lines = rotate90 ? undefined : extractLines(prep, Math.round(pxPerMm * 3));
-  const endRings = lines && !rotate90 ? ringsAtLineEnds(prep, lines, pxPerMm) : [];
-  prep = removeLines(prep, Math.round(pxPerMm * 5));
-  const blobs = rotate90 ? [] : findRings(prep, Math.round(pxPerMm * 4), Math.round(pxPerMm * 16));
-  const circles = rotate90 ? undefined
-    : [...blobs, ...endRings.filter(e => !blobs.some(b => Math.hypot(b[0] - e[0], ((b[1] - e[1]) * prep.height) / prep.width) < b[2] / 2))];
-  return { image: null, raster: prep, width: prep.width, height: prep.height, skew: 0, lines, circles };
+  const { raster, width, height, lines, circles } = prepareEmbeddedScan(gray, W, H, Math.max(vp1.width, vp1.height), rotate90);
+  return { image: null, raster, width, height, skew: 0, lines, circles };
 }
 
 export async function renderForOcr(page: any, scale: number, rotate90: boolean, prepared = true) {
