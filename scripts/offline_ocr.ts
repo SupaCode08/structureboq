@@ -10,7 +10,6 @@ import fs from 'fs';
 import Tesseract from 'tesseract.js';
 import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { ocrPdfPage } from '../src/pdf/pdfOcrPipeline.ts';
-import { grayPng } from './png.ts';
 import { embeddedImage } from './scanImage.ts';
 import * as ort from 'onnxruntime-web';
 import { loadPaddle, paddleWords } from '../src/pdf/paddleOcr.ts';
@@ -72,7 +71,8 @@ for (const p of parsePages(spec)) {
   const r = await ocrPdfPage(page as any, p, {
     worker: (paddleEng ?? worker) as any, extraWorkers: extraFlat as any, turnedWorkers: paddleEng ? [paddleEngTurned, ...extraFlat] as any : undefined, labelWorkers: labelWorkers as any, tilesToo: !!process.env.TILES_TOO,
     OPS: OPS as any,
-    toImage: (d, w, h) => { const png = grayPng(d, w, h); rasters.set(png, { data: d, width: w, height: h }); return png; },
+    // same as the app, the same gray pixels without PNG encoding
+    toImage: (d, w, h) => { const img = Buffer.concat([Buffer.from(`P5\n${w} ${h}\n255\n`), Buffer.from(d.buffer, d.byteOffset, d.byteLength)]); rasters.set(img, { data: d, width: w, height: h }); return img; },
     renderPage: (pg, _scale, rot, prepared) => embeddedImage(pg, rot, prepared),
     readScan: paddle && (r => paddleWords(paddle, r)),
   }, Number(process.env.OCR_DPI || 300) / 72);
