@@ -421,6 +421,9 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
   return { isStructural: true, skip: false };
 }
 
+// the file picker already sorted these pages; the same bytes give the same answer
+const sortMemo = new Map<string, SheetClassification>();
+
 /** Sorts pages by their title-block corner before any page OCR: 3 at a time, results in page order. */
 export async function classifyPages(
   doc: PdfDoc,
@@ -433,11 +436,18 @@ export async function classifyPages(
   if (!pages.length) return [];
   let done = 0;
   const n = pages.length;
+  const fingerprint = (doc as any).fingerprints?.[0];
   return raceAbort(
     mapLanes(pages, 3, async (p, _index, lane) => {
-      const t0 = performance.now();
-      const cls = await fastClassifySheet(await doc.getPage(p), await sortOcrWorker(lane), p, pageCount, await textOf(p), lane);
-      const ms = performance.now() - t0;
+      const key = fingerprint ? `${fingerprint}:${p}:${pageCount > 2 ? 1 : 0}` : null;
+      let cls = key ? sortMemo.get(key) : undefined;
+      let ms = 0;
+      if (!cls) {
+        const t0 = performance.now();
+        cls = await fastClassifySheet(await doc.getPage(p), await sortOcrWorker(lane), p, pageCount, await textOf(p), lane);
+        ms = performance.now() - t0;
+        if (key) sortMemo.set(key, cls);
+      }
       done++;
       onPage?.(done, n, p, cls);
       return { page: p, cls, ms };
