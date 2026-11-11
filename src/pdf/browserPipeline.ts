@@ -58,7 +58,8 @@ export function clearPageCache() {
 
 /** Rendered page as an object URL (for the evidence viewer). */
 export async function renderPageUrl(doc: PdfDoc, pageNo: number, dpi = 110, key = ''): Promise<string> {
-  const k = `${key}:${pageNo}:${dpi}`;
+  const fileKey = key || (doc as any).fingerprints?.[0] || '';
+  const k = `${fileKey}:${pageNo}:${dpi}`;
   const hit = pageCache.get(k);
   if (hit) return hit;
   // Limit cache size to prevent memory leaks across sessions
@@ -156,6 +157,7 @@ function prepScanInWorker(gray: Uint8Array, W: number, H: number, pageLongPt: nu
       if (!settled) { settled = true; cleanup(); e.data.error ? reject(new Error(e.data.error)) : resolve(e.data); }
     };
     const onErr = (e: ErrorEvent) => {
+      try { w.terminate(); } catch {}
       scanPrepWorker = null;
       if (!settled) { settled = true; cleanup(); reject(new Error(e.message || 'scanPrepWorker crashed')); }
     };
@@ -190,6 +192,7 @@ function rasterizeInWorker(polys: Polyline[], widthPt: number, heightPt: number,
       }
     };
     const onErr = (e: ErrorEvent) => {
+      try { w.terminate(); } catch {}
       rasterWorker = null;
       if (!settled) { settled = true; cleanup(); reject(new Error(e.message || 'rasterWorker crashed')); }
     };
@@ -327,7 +330,9 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
       // only reached when no sheet code was read; a sheet's title-block frame has at most 4 such rules
       if (rightColumnRules(s.vsegs, vpTb.width, vpTb.height) >= 6) return { sheetId: 'TABLE', isStructural: false, skip: true, reason: 'ข้ามหน้าตาราง (เช่น BOQ ปร.4) — ไม่มีกรอบชื่อแบบ' };
     }
-  } catch {}
+  } catch (err: any) {
+    if (err?.name === 'AbortError' || err?.message?.includes?.('aborted') || err?.message?.includes?.('destroyed')) throw err;
+  }
 
   const decide = (rawText: string): SheetClassification | null => {
     const norm = rawText.toUpperCase().replace(/[—–]/g, '-').replace(/\s+/g, ' ');
@@ -404,7 +409,8 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
       const d11 = decide(sparse?.data?.text || "");
       if (d11) return d11;
       if (target === 2000 && renderMs > SLOW_RENDER_MS) break;
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || err?.message?.includes?.('aborted') || err?.message?.includes?.('destroyed')) throw err;
       // Graceful fallback
     } finally {
       // Immediate canvas memory disposal
@@ -439,6 +445,11 @@ export async function classifyPages(
   const fingerprint = (doc as any).fingerprints?.[0];
   return raceAbort(
     mapLanes(pages, 3, async (p, _index, lane) => {
+      if (abortSignal?.aborted) {
+        const err = new Error('Classification aborted by user');
+        err.name = 'AbortError';
+        throw err;
+      }
       const key = fingerprint ? `${fingerprint}:${p}:${pageCount > 2 ? 1 : 0}` : null;
       let cls = key ? sortMemo.get(key) : undefined;
       let ms = 0;
@@ -446,7 +457,18 @@ export async function classifyPages(
         const t0 = performance.now();
         cls = await fastClassifySheet(await doc.getPage(p), await sortOcrWorker(lane), p, pageCount, await textOf(p), lane);
         ms = performance.now() - t0;
-        if (key) sortMemo.set(key, cls);
+        if (abortSignal?.aborted) {
+          const err = new Error('Classification aborted by user');
+          err.name = 'AbortError';
+          throw err;
+        }
+        if (key) {
+          if (sortMemo.size > 500) {
+            const first = sortMemo.keys().next().value;
+            if (first) sortMemo.delete(first);
+          }
+          sortMemo.set(key, cls);
+        }
       }
       done++;
       onPage?.(done, n, p, cls);
@@ -661,6 +683,7 @@ function readBandNow(
     };
 
     const onError = (e: ErrorEvent) => {
+      try { w.terminate(); } catch {}
       paddles[k] = null;
       settleReject(new Error(e.message || 'PaddleOCR worker crashed'));
     };
@@ -737,15 +760,18 @@ export async function readScan(
 }
 
 /** Warm up OCR lanes and WebGPU models ahead of time while the user is choosing pages. */
-export async function warmOcrEngines(doc: PdfDoc, pages: number[]): Promise<void> {
+export async function warmOcrEngines(doc: PdfDoc, pages: number[], abortSignal?: AbortSignal): Promise<void> {
   try {
-    if (!pages.length) return;
+    if (!pages.length || abortSignal?.aborted) return;
     const page = await doc.getPage(pages[0]);
+    if (abortSignal?.aborted) return;
     if (!(await isVectorTextPage(page as any, pdfjs.OPS as any))) return;
+    if (abortSignal?.aborted) return;
     const n = laneCount(navigator.hardwareConcurrency, (navigator as any).deviceMemory);
     const lanes = Promise.all(Array.from({ length: n }, (_, k) => ocrLane(k)));
     const paddle = (async () => {
       if (await checkWebGpuAvailability()) {
+        if (abortSignal?.aborted) return;
         const white: Raster = { data: new Uint8Array(32 * 32).fill(255), width: 32, height: 32 };
         await Promise.all([readBand(0, white, 'flat'), readBand(1, white, 'flat')]);
       }
@@ -784,6 +810,7 @@ export async function terminateAllWorkers(): Promise<void> {
       paddles[i] = null;
     }
   }
+  bandQueues.length = 0;
   // Terminate Tesseract workers
   if (workerPromise) {
     try { const w = await workerPromise; await w?.terminate?.(); } catch {}
@@ -958,7 +985,7 @@ export async function extractInBrowser(
           const classResults = await classifyPages(
             doc,
             list,
-            candidates.length,
+            doc.numPages,
             p => texts[p - 1],
             (i, n) => onProgress(`คัดหน้า ${i}/${n}…`, 0.18 + (0.1 * i) / n),
             opts.abortSignal,

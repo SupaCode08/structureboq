@@ -49,7 +49,7 @@ self.onmessage = async (e: MessageEvent) => {
 
   if (command === 'dispose') {
     if (currentPaddle) {
-      await disposePaddle(currentPaddle);
+      try { await disposePaddle(currentPaddle); } catch {}
       currentPaddle = null;
     }
     engine = null;
@@ -74,7 +74,7 @@ self.onmessage = async (e: MessageEvent) => {
     });
   } catch (err) {
     if (currentPaddle) {
-      await disposePaddle(currentPaddle);
+      try { await disposePaddle(currentPaddle); } catch {}
       currentPaddle = null;
     }
     engine = null;

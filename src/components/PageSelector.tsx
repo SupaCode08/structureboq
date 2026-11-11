@@ -106,6 +106,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
   // a new file (by its bytes) opens its own document and starts with nothing selected
   useEffect(() => {
     live.current = true;
+    const ac = new AbortController();
     let opened: PdfDoc | null = null;
     setDoc(null); setError(''); setSel(null); setRestored(false);
     setSorted({}); setSortDone(false);
@@ -113,7 +114,7 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
       try {
         const { loadPdf } = await import('../pdf/browserPipeline');
         opened = await loadPdf(await file.arrayBuffer());
-        if (!live.current) { void opened.destroy(); return; }
+        if (!live.current || ac.signal.aborted) { void opened.destroy(); return; }
         setDoc(opened);
         // the pages processed the last time these exact bytes were opened come back selected
         const before = recallSelection(browserStore(), fileHash, opened.numPages);
@@ -127,34 +128,39 @@ export const PageSelector: React.FC<Props> = ({ file, fileHash, onProcess, onRea
             const { parseBoqPages } = await import('../pdf/boqParser');
             const all = Array.from({ length: opened!.numPages }, (_, i) => i + 1);
             const texts: ReturnType<typeof toPageText>[] = [];
-            for (const p of all) { const pg = await opened!.getPage(p); texts.push(toPageText(p, pg.getViewport({ scale: 1 }), await pg.getTextContent() as any)); }
+            for (const p of all) {
+              if (!live.current || ac.signal.aborted) return;
+              const pg = await opened!.getPage(p);
+              texts.push(toPageText(p, pg.getViewport({ scale: 1 }), await pg.getTextContent() as any));
+            }
             // ปร.4 pages are BOQ, not drawings: the automatic mode never reads them as sheets, so they are not sorted here either
             const boq = new Set(parseBoqPages(texts, file.name).lines.map(l => l.page));
-            if (live.current && boq.size) setSorted(prev => ({ ...prev, ...Object.fromEntries([...boq].map(p => [p, { sheetId: 'BOQ', skip: true, reason: 'หน้า BOQ ปร.4 (อ่านจากข้อความ ไม่ใช่แบบ)' }])) }));
+            if (live.current && !ac.signal.aborted && boq.size) setSorted(prev => ({ ...prev, ...Object.fromEntries([...boq].map(p => [p, { sheetId: 'BOQ', skip: true, reason: 'หน้า BOQ ปร.4 (อ่านจากข้อความ ไม่ใช่แบบ)' }])) }));
             const results = await classifyPages(
               opened!,
               all.filter(p => !boq.has(p)),
               opened!.numPages,
               p => texts[p - 1],
               (_done, _total, page, cls) => {
-                if (live.current) {
+                if (live.current && !ac.signal.aborted) {
                   setSorted(prev => ({ ...prev, [page]: { sheetId: cls.sheetId, skip: cls.skip, reason: cls.reason } }));
                 }
               },
+              ac.signal,
             );
-            if (live.current) {
+            if (live.current && !ac.signal.aborted) {
               setSortDone(true);
-              void warmOcrEngines(opened!, results.filter(r => !r.cls.skip && r.cls.sheetId).map(r => r.page));
+              void warmOcrEngines(opened!, results.filter(r => !r.cls.skip && r.cls.sheetId).map(r => r.page), ac.signal);
             }
           } catch {
-            if (live.current) setSortDone(true);
+            if (live.current && !ac.signal.aborted) setSortDone(true);
           }
         })();
       } catch (e) {
-        if (live.current) setError('เปิด PDF ไม่ได้: ' + (e as Error).message);
+        if (live.current && !ac.signal.aborted) setError('เปิด PDF ไม่ได้: ' + (e as Error).message);
       }
     })();
-    return () => { live.current = false; if (opened) void opened.destroy(); };
+    return () => { live.current = false; ac.abort(); if (opened) void opened.destroy(); };
   }, [file, fileHash]);
 
   if (error) return <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error} <button className="underline ml-2" onClick={onCancel}>เลือกไฟล์อื่น</button></div>;
