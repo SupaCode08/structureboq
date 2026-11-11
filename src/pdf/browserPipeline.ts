@@ -300,6 +300,7 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
     return null;
   };
 
+  const SLOW_RENDER_MS = 8000; // a sheet this heavy would take longer still at 3000 px; it stays undecided and is read as usual
   for (const target of [2000, 3000]) {
     const c = document.createElement('canvas');
     try {
@@ -318,16 +319,19 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, cropW, cropH);
 
+      const t0 = performance.now();
       await page.render({
         canvasContext: ctx,
         viewport: vp,
         transform: [1, 0, 0, 1, -(vp.width - cropW), -(vp.height - cropH)],
       }).promise;
+      const renderMs = performance.now() - t0;
 
       const res = await worker.recognize(c);
       const rawText = res?.data?.text || '';
       const decision = decide(rawText);
       if (decision) return decision;
+      if (target === 2000 && renderMs > SLOW_RENDER_MS) break;
     } catch {
       // Graceful fallback
     } finally {
