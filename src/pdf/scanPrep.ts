@@ -215,25 +215,27 @@ export function ringsAtLineEnds(
   const { width: W, height: H, data } = img;
   const ink = (x: number, y: number) => { const xi = Math.round(x), yi = Math.round(y); return xi >= 0 && yi >= 0 && xi < W && yi < H && !data[yi * W + xi]; };
   const minLen = 4 * pxPerMm;
-  const score = (cx: number, cy: number, r: number, skip: number) => {
-    let inside = 0, tot = 0;
+  type Dir = { cos: number; sin: number };
+  // near: the 36 directions away from the line (|da| >= 0.5); ring: the 48 away from it (|da| >= 0.35); fixed per line end
+  const score = (cx: number, cy: number, r: number, near36: Dir[], ring48: Dir[]) => {
+    let inside = 0;
     for (const { cos, sin } of ANGLES_24) for (const f of [0.3, 0.55]) {
-      tot++; if (ink(cx + f * r * cos, cy + f * r * sin)) inside++;
+      if (ink(cx + f * r * cos, cy + f * r * sin) && ++inside / 48 >= 0.35) return 0;
     }
-    let near = 0, nn = 0;
-    for (const { a, cos, sin } of ANGLES_36) {
-      const da = Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
-      if (da < 0.5) continue;
-      for (const f of [0.72, 1.3]) { nn++; if (ink(cx + f * r * cos, cy + f * r * sin)) near++; }
+    const nn = near36.length * 2;
+    let near = 0;
+    for (const { cos, sin } of near36) for (const f of [0.72, 1.3]) {
+      if (ink(cx + f * r * cos, cy + f * r * sin) && ++near / nn >= 0.2) return 0;
     }
-    if (!(inside / tot < 0.35 && near / nn < 0.2)) return 0;
     const tol = Math.max(2, 0.12 * r);
-    let hit = 0, n = 0;
-    for (const { a, cos, sin } of ANGLES_48) {
-      const da = Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
-      if (da < 0.35) continue;
-      n++;
-      for (let d = -tol; d <= tol; d += 1) if (ink(cx + (r + d) * cos, cy + (r + d) * sin)) { hit++; break; }
+    const n = ring48.length;
+    let hit = 0, miss = 0;
+    for (const { cos, sin } of ring48) {
+      let got = false;
+      for (let d = -tol; d <= tol; d += 1) if (ink(cx + (r + d) * cos, cy + (r + d) * sin)) { got = true; break; }
+      if (got) hit++;
+      // a ring below 0.8 is never kept (tryEnd), so 0 is as good as its exact score
+      else if ((n - ++miss) / n < 0.8) return 0;
     }
     return hit / n;
   };
@@ -243,12 +245,15 @@ export function ringsAtLineEnds(
     const key = `${ex},${ey},${dx},${dy}`;
     if (tried.has(key)) return;
     tried.add(key);
+    const skip = Math.atan2(-dy, -dx);
+    const away = ({ a }: { a: number }) => Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+    const near36 = ANGLES_36.filter(d => !(away(d) < 0.5)), ring48 = ANGLES_48.filter(d => !(away(d) < 0.35));
     let best = { s: 0, r: 0, cx: 0, cy: 0 };
     for (let mm = 3; mm <= 8; mm += 0.25) {
       const r = mm * pxPerMm;
       for (const off of [-0.15, 0, 0.15]) {
         const cx = ex + dx * r * (1 + off), cy = ey + dy * r * (1 + off);
-        const sc = score(cx, cy, r, Math.atan2(-dy, -dx));
+        const sc = score(cx, cy, r, near36, ring48);
         if (sc > best.s) best = { s: sc, r, cx, cy };
       }
     }
