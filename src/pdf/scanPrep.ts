@@ -194,6 +194,19 @@ export function findRings(img: { data: Uint8Array; width: number; height: number
  * broken into arcs, or still joined to a stub of its grid line). `img` is the binarized raster before
  * line removal; lines as extractLines returns them. Returns [cx, cy, diameter / width].
  */
+// angles and their cos/sin are fixed, computed once (same values as before)
+const precomputeAngles = (N: number) => {
+  const arr: { a: number; cos: number; sin: number }[] = [];
+  for (let k = 0; k < N; k++) {
+    const a = (2 * Math.PI * k) / N;
+    arr.push({ a, cos: Math.cos(a), sin: Math.sin(a) });
+  }
+  return arr;
+};
+const ANGLES_24 = precomputeAngles(24);
+const ANGLES_36 = precomputeAngles(36);
+const ANGLES_48 = precomputeAngles(48);
+
 export function ringsAtLineEnds(
   img: { data: Uint8Array; width: number; height: number },
   lines: { h: [number, number, number][]; v: [number, number, number][] },
@@ -203,31 +216,33 @@ export function ringsAtLineEnds(
   const ink = (x: number, y: number) => { const xi = Math.round(x), yi = Math.round(y); return xi >= 0 && yi >= 0 && xi < W && yi < H && !data[yi * W + xi]; };
   const minLen = 4 * pxPerMm;
   const score = (cx: number, cy: number, r: number, skip: number) => {
-    const N = 48, tol = Math.max(2, 0.12 * r);
+    let inside = 0, tot = 0;
+    for (const { cos, sin } of ANGLES_24) for (const f of [0.3, 0.55]) {
+      tot++; if (ink(cx + f * r * cos, cy + f * r * sin)) inside++;
+    }
+    let near = 0, nn = 0;
+    for (const { a, cos, sin } of ANGLES_36) {
+      const da = Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+      if (da < 0.5) continue;
+      for (const f of [0.72, 1.3]) { nn++; if (ink(cx + f * r * cos, cy + f * r * sin)) near++; }
+    }
+    if (!(inside / tot < 0.35 && near / nn < 0.2)) return 0;
+    const tol = Math.max(2, 0.12 * r);
     let hit = 0, n = 0;
-    for (let k = 0; k < N; k++) {
-      const a = (2 * Math.PI * k) / N;
+    for (const { a, cos, sin } of ANGLES_48) {
       const da = Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
       if (da < 0.35) continue;
       n++;
-      for (let d = -tol; d <= tol; d += 1) if (ink(cx + (r + d) * Math.cos(a), cy + (r + d) * Math.sin(a))) { hit++; break; }
+      for (let d = -tol; d <= tol; d += 1) if (ink(cx + (r + d) * cos, cy + (r + d) * sin)) { hit++; break; }
     }
-    let inside = 0, tot = 0;
-    for (let k = 0; k < 24; k++) for (const f of [0.3, 0.55]) {
-      const a = (2 * Math.PI * k) / 24;
-      tot++; if (ink(cx + f * r * Math.cos(a), cy + f * r * Math.sin(a))) inside++;
-    }
-    let near = 0, nn = 0;
-    for (let k = 0; k < 36; k++) {
-      const a = (2 * Math.PI * k) / 36;
-      const da = Math.abs(((a - skip + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
-      if (da < 0.5) continue;
-      for (const f of [0.72, 1.3]) { nn++; if (ink(cx + f * r * Math.cos(a), cy + f * r * Math.sin(a))) near++; }
-    }
-    return inside / tot < 0.35 && near / nn < 0.2 ? hit / n : 0;
+    return hit / n;
   };
   const found: [number, number, number][] = [];
+  const tried = new Set<string>();
   const tryEnd = (ex: number, ey: number, dx: number, dy: number) => {
+    const key = `${ex},${ey},${dx},${dy}`;
+    if (tried.has(key)) return;
+    tried.add(key);
     let best = { s: 0, r: 0, cx: 0, cy: 0 };
     for (let mm = 3; mm <= 8; mm += 0.25) {
       const r = mm * pxPerMm;
