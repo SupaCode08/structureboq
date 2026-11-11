@@ -366,6 +366,8 @@ export interface ExtractedMember {
   coverMode?: CoverMode;
   /** footing bars as separate sets; when present they replace bottomRebar in the calculation (bottomRebar stays as the drawing's note) */
   rebarSets?: RebarSet[];
+  /** footing: every bar note the reader found at its section, kept for the reviewer; never used in the calculation */
+  rebarNotesRead?: string[];
   /** the reviewer's ruling on each source conflict (part of the approval snapshot) */
   conflictResolutions?: ConflictResolution[];
   /** the reviewer's ruling on whether occurrences of this reference are one physical instance (part of the approval snapshot) */

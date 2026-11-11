@@ -909,6 +909,15 @@ export function footingSections(hsegs: [number, number, number][], kx: number, k
   return out;
 }
 
+function footingSectionZone(box: number[], others: number[][]): (o: OcrWord) => boolean {
+  const [y0, x0, y1, x1] = box.map(v => v / 1000);
+  const w = x1 - x0;
+  const mid = (b: number[]) => (b[1] + b[3]) / 2000;
+  const rivals = others.filter(b => b[1] / 1000 > x1 || b[3] / 1000 < x0);
+  const ownX = (o: OcrWord) => rivals.every(b => Math.abs(cx(o) - (x0 + x1) / 2) < Math.abs(cx(o) - mid(b)));
+  return (o: OcrWord) => cx(o) > x0 && cx(o) < x1 + Math.max(0.1, w) && cy(o) > y0 - Math.max(0.08, w) && cy(o) < y1 + 0.005 && ownX(o);
+}
+
 /**
  * The bottom mesh written on a footing cross-section ("5+5ø12มม." on a leader, or the two layers
  * "7ø12" / "8ø12" one above the other): bar notes beside the section, from a little above its top
@@ -917,12 +926,7 @@ export function footingSections(hsegs: [number, number, number][], kx: number, k
  * box / others: [y0, x0, y1, x1] × 1000 as footingSections gives them.
  */
 export function footingMeshAt(p: PageOcr, box: number[], others: number[][], grades: Map<number, 'RB' | 'DB'>) {
-  const [y0, x0, y1, x1] = box.map(v => v / 1000);
-  const w = x1 - x0;
-  const mid = (b: number[]) => (b[1] + b[3]) / 2000;
-  const rivals = others.filter(b => b[1] / 1000 > x1 || b[3] / 1000 < x0);
-  const ownX = (o: OcrWord) => rivals.every(b => Math.abs(cx(o) - (x0 + x1) / 2) < Math.abs(cx(o) - mid(b)));
-  const zone = (o: OcrWord) => cx(o) > x0 && cx(o) < x1 + Math.max(0.1, w) && cy(o) > y0 - Math.max(0.08, w) && cy(o) < y1 + 0.005 && ownX(o);
+  const zone = footingSectionZone(box, others);
   const notes = barPhrases(p.words).filter(ph => ph.words.every(zone));
   const meshes = [...new Set(notes.filter(ph => ph.note.kind === 'mesh').map(ph => formatBar(ph.note, grades)))];
   if (meshes.length) return meshes.length === 1 ? meshes[0] : undefined;
@@ -932,6 +936,28 @@ export function footingMeshAt(p: PageOcr, box: number[], others: number[][], gra
   const h = a.o.y1 - a.o.y0;
   if (a.n.dia !== b.n.dia || Math.abs(a.o.x0 - b.o.x0) > 1.5 * h || cy(b.o) - cy(a.o) > 4 * h || cy(b.o) - cy(a.o) < 0.8 * h) return undefined;
   return `${a.n.n}+${b.n.n}-${resolveGrade(a.n.grade ?? b.n.grade, a.n.dia, grades)}${a.n.dia}`;
+}
+
+export function footingBarNotes(p: PageOcr, box: number[], others: number[][], grades: Map<number, 'RB' | 'DB'>): string[] {
+  const zone = footingSectionZone(box, others);
+  const phrases = barPhrases(p.words).filter(ph => ph.words.every(zone));
+  const phraseWords = new Set(phrases.flatMap(ph => ph.words));
+  const items: { text: string; x: number; y: number }[] = [];
+
+  for (const ph of phrases) {
+    items.push({ text: formatBar(ph.note, grades), x: cx(ph.words[0]), y: cy(ph.words[0]) });
+  }
+
+  for (const w of p.words) {
+    if (phraseWords.has(w) || w.vertical || !zone(w)) continue;
+    const t = w.text.trim();
+    // a note OCR could not parse keeps its "@" spacing, or a "+" next to a letter or ø ("3012+312@0.15L"); "+0.20" levels and "99+9" noise do not
+    if (!/\d.*[@+].*\d/.test(t) || !(/@/.test(t) || /[a-zA-Z\u0E00-\u0E7FøØΦφ∅]/.test(t))) continue;
+    items.push({ text: t, x: cx(w), y: cy(w) });
+  }
+
+  items.sort((a, b) => (Math.abs(a.y - b.y) < 0.008 ? a.x - b.x : a.y - b.y));
+  return [...new Set(items.map(i => i.text))];
 }
 
 export interface ReaderResult { readings: SheetReading[]; notes: string[]; vocab: string[] }
@@ -1700,6 +1726,10 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         sec.confidence = Math.max(sec.confidence ?? 0, 0.85);
       } else if (Math.abs(sec.thickness_m - ts[0]) > 0.02) {
         (sec.section_conflicts ||= []).push(`ความหนาที่อ่านได้ ${sec.thickness_m} ม. ไม่ตรงกับรูปตัดที่วาด (น.${c.page}) ${ts[0]} ม.`);
+      }
+      if (!sec.rebar_notes) {
+        const notes = [...new Set(pool.flatMap(f => footingBarNotes(pages.find(q => q.page === f.page)!, f.box, found.filter(o => o.page === f.page && o !== f).map(o => o.box), setGrades)))];
+        if (notes.length) sec.rebar_notes = notes;
       }
       if (!sec.bottom_rebar) {
         const meshes = new Set(pool.map(f => footingMeshAt(pages.find(q => q.page === f.page)!, f.box, found.filter(o => o.page === f.page && o !== f).map(o => o.box), setGrades)).filter(Boolean) as string[]);

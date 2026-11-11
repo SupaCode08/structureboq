@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { CalculatedQuantity, ExtractedMember, FieldSource, MemberType, EvidenceRef } from '../engine/qsEngine';
-import { approvalFor, conflictStatuses, unconfirmedRequiredFields } from '../engine/qsEngine';
+import { approvalFor, conflictStatuses, rebarSetsFromNote, unconfirmedRequiredFields } from '../engine/qsEngine';
+import { FootingRebarSets } from './FootingRebarSets';
 import { SourceViewer } from './SourceViewer';
 
 /**
@@ -226,6 +227,56 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
               );
             })}
           </div>
+          {open.type === 'FOOTING' && (() => {
+            const m0 = members[open.idx[0]];
+            const it0 = open.items[0];
+            const draft = drafts[open.key] || {};
+            const sets = 'rebarSets' in draft ? draft.rebarSets : m0.rebarSets;
+            const notes = [...new Set(open.idx.flatMap(i => members[i].rebarNotesRead || []))];
+            return (
+              <div className="mt-4 space-y-3 pt-3 border-t border-slate-100">
+                {notes.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+                    <span>อ่านได้จากแบบ:</span>
+                    {notes.map(note => (
+                      <button
+                        key={note}
+                        type="button"
+                        onClick={() => setDrafts(d => ({ ...d, [open.key]: { ...d[open.key], bottomRebar: note } }))}
+                        className="px-2 py-0.5 rounded border border-slate-300 font-mono text-xs hover:bg-slate-50 text-slate-700"
+                      >
+                        {note}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {(sets || !notes.length) && <FootingRebarSets
+                  member={m0}
+                  sets={sets}
+                  results={it0?.rebarDetails?.sets}
+                  flags={it0?.flags || []}
+                  dirty={'rebarSets' in draft}
+                  reviewer=""
+                  onChange={newSets => setDrafts(d => ({ ...d, [open.key]: { ...d[open.key], rebarSets: newSets } }))}
+                />}
+                {notes.length > 0 && !sets && (
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const generated = notes.flatMap(n => rebarSetsFromNote({ ...m0, bottomRebar: n }).map(s => ({ ...s, source: 'drawing' as const })));
+                        setDrafts(d => ({ ...d, [open.key]: { ...d[open.key], rebarSets: generated } }));
+                      }}
+                      className="px-2.5 py-1 rounded-md border border-blue-300 text-blue-700 font-semibold text-xs hover:bg-blue-50"
+                    >
+                      แยกเป็นชุดเหล็กจากค่าที่อ่านได้ ({notes.length} ค่า)
+                    </button>
+                    <p className="text-[11px] text-slate-500">แต่ละค่าเป็นชุดของตัวเอง — ตรวจทิศ/ชั้นก่อนยืนยัน</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button onClick={() => confirm(open)} className="h-10 px-5 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-medium">
               {drafts[open.key] ? 'บันทึกและยืนยัน' : 'ยืนยันตามที่อ่านได้'}

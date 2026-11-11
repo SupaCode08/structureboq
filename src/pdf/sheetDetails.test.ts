@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readSheets, footingMeshAt, footingSections } from './sheetReader.ts';
+import { readSheets, footingMeshAt, footingSections, footingBarNotes } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
 
 const W = 1207, H = 844;
@@ -174,4 +174,18 @@ test('pile note on a footing detail: count from the line above the size, not the
   const f1 = secs.find(s => s.tag === 'F1')!, f2 = secs.find(s => s.tag === 'F2')!;
   assert.deepEqual([f1.pile_count, f1.pile_size], [2, '0.15x0.15x6.00']);
   assert.deepEqual([f2.pile_count, f2.pile_size], [4, '0.18x0.18x8.00']);
+});
+
+test('footingBarNotes keeps every bar note at the section and ignores level dimensions', () => {
+  const box = [300, 100, 334, 212];
+  const p = page(1, [
+    word('2ø12มม', 0.13, 0.22, 0.03),
+    word('3ø12มม', 0.25, 0.25, 0.03),
+    word('3012+312@0.15L', 0.25, 0.28, 0.05),
+    word('+0.20', 0.18, 0.26, 0.02),
+  ]);
+  const grades = new Map<number, 'RB' | 'DB'>();
+  const notes = footingBarNotes(p, box, [], grades);
+  assert.deepEqual(notes, ['2-DB12', '3-DB12', '3012+312@0.15L']);
+  assert.equal(footingMeshAt(p, box, [], grades), undefined);
 });

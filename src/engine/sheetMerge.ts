@@ -36,6 +36,8 @@ export interface SectionDef {
   plan_l_m?: number | null;
   top_rebar?: string | null;
   bottom_rebar?: string | null;
+  /** every bar note read at the footing's section, as read (display only) */
+  rebar_notes?: string[];
   side_rebar?: string | null;
   stirrup?: string | null;
   /** ties set at each spacing step ("2-RB6@0.10" -> 2); absent means one */
@@ -402,6 +404,7 @@ export function mergeSheetReadings(
           pushMember({
             ...base, width: w, depth: l, length: thick,
             bottomRebar: d?.bottom_rebar ? rebarCount(d.bottom_rebar) : '',
+            rebarNotesRead: d?.rebar_notes?.length ? d.rebar_notes : undefined,
             excavationDepthM: exc, footingType: piled || /เข็ม/.test(d?.evidence || '') ? 'PILE_CAP' : 'ISOLATED',
             pileCount: d?.pile_count || undefined,
             provenance: { evidence, fieldSources: fs, confidence: conf, conflicts },
