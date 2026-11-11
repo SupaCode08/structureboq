@@ -4,7 +4,7 @@
  * are injected, so the browser and the Node benchmark run identical logic.
  */
 import type { OcrWord, PageOcr } from './types';
-import { extractSmallStrokes, rasterize, pageGeometry, type OpsTable } from './vectorText';
+import { extractSmallStrokes, rasterize, pageGeometry, type OpsTable, type Polyline } from './vectorText';
 import { ocrRaster, unrotate, dedupeWords, type TesseractLike } from './ocr';
 import { ocrLabels } from './labelOcr';
 import { glyphWords, withGlyphWords } from './glyphRead';
@@ -30,6 +30,8 @@ export interface OcrEnv {
   OPS: OpsTable;
   /** grayscale raster -> image accepted by tesseract (canvas / PNG buffer) */
   toImage(data: Uint8Array, width: number, height: number): Promise<any> | any;
+  /** rasterize off the main thread (browser worker); same result as rasterize() */
+  rasterizeAsync?(polys: Polyline[], widthPt: number, heightPt: number, scale: number, pen: number, rotate: boolean): Promise<Raster>;
   /** full page render for scanned pages (browser canvas); null when unavailable */
   /** prepared = binarized, deskewed, lines removed; returns the skew it corrected (degrees) */
   renderPage?(page: PdfJsPage, scale: number, rotate90: boolean, prepared: boolean): Promise<{ image: any; width: number; height: number; raster?: Raster; skew?: number; lines?: { h: [number, number, number][]; v: [number, number, number][] }; circles?: [number, number, number][] } | null>;
@@ -130,7 +132,9 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
       const readSide = async (rot: boolean, wks: TesseractLike[]) => {
         env.onProgress?.(`หน้า ${pageNo}: อ่านตัวอักษรเวกเตอร์${rot ? ' (แนวตั้ง)' : ''}`);
         const t0 = performance.now();
-        const r = rasterize(strokes.small, vp.width, vp.height, scale, 3, rot);
+        const r = env.rasterizeAsync
+          ? await env.rasterizeAsync(strokes.small, vp.width, vp.height, scale, 3, rot)
+          : rasterize(strokes.small, vp.width, vp.height, scale, 3, rot);
         const img = await env.toImage(r.data, r.width, r.height);
         clock(`rasterize ${rot ? 'v' : 'h'}`, t0);
         const per = await Promise.all(wks.map(async (wk, i) => {

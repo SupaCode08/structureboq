@@ -20,7 +20,7 @@ import { readSheets } from './sheetReader';
 import { reconcileScheduleRows } from '../engine/sourceConflicts';
 import { ocrBoqPage } from './boqOcr';
 import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds, orientScan, prepareEmbeddedScan } from './scanPrep';
-import { extractSmallStrokes, pageGeometry, rasterize } from './vectorText';
+import { extractSmallStrokes, pageGeometry, rasterize, type Polyline } from './vectorText';
 import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules, photoVerdict } from './titleBlock';
 import { imageBoxesOnPage, imageGray } from './imageBoxes';
 import type { OcrWord, PageOcr, PageText } from './types';
@@ -163,6 +163,43 @@ function prepScanInWorker(gray: Uint8Array, W: number, H: number, pageLongPt: nu
     w.addEventListener('message', onMsg);
     w.addEventListener('error', onErr, { once: true });
     w.postMessage({ id, gray, W, H, pageLongPt, rotate90 }, [gray.buffer]);
+  });
+}
+
+let rasterWorker: Worker | null = null;
+let rasterCalls = 0;
+
+// offload stroke rasterization off the main thread so vector pages do not freeze the UI
+function rasterizeInWorker(polys: Polyline[], widthPt: number, heightPt: number, scale: number, pen: number, rotate: boolean): Promise<Raster> {
+  const w = (rasterWorker ??= new Worker(new URL('./rasterWorker.ts', import.meta.url), { type: 'module' }));
+  const id = ++rasterCalls;
+  return new Promise<Raster>((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => {
+      w.removeEventListener('message', onMsg);
+      w.removeEventListener('error', onErr);
+      activeWorkerPromises.delete(onAbort);
+    };
+    const onAbort = (err: Error) => { if (!settled) { settled = true; cleanup(); reject(err); } };
+    const onMsg = (e: MessageEvent) => {
+      if (!e.data || e.data.id !== id) return;
+      if (!settled) {
+        settled = true;
+        cleanup();
+        e.data.error ? reject(new Error(e.data.error)) : resolve({ data: e.data.data, width: e.data.width, height: e.data.height });
+      }
+    };
+    const onErr = (e: ErrorEvent) => {
+      rasterWorker = null;
+      if (!settled) { settled = true; cleanup(); reject(new Error(e.message || 'rasterWorker crashed')); }
+    };
+    activeWorkerPromises.add(onAbort);
+    w.addEventListener('message', onMsg);
+    w.addEventListener('error', onErr, { once: true });
+    w.postMessage({ id, polys, widthPt, heightPt, scale, pen, rotate });
+  }).catch(err => {
+    if (err?.name === 'AbortError') throw err;
+    return rasterize(polys, widthPt, heightPt, scale, pen, rotate);
   });
 }
 
@@ -724,6 +761,10 @@ export async function terminateAllWorkers(): Promise<void> {
     try { scanPrepWorker.terminate(); } catch {}
     scanPrepWorker = null;
   }
+  if (rasterWorker) {
+    try { rasterWorker.terminate(); } catch {}
+    rasterWorker = null;
+  }
 
   // Terminate Paddle workers
   for (let i = 0; i < paddles.length; i++) {
@@ -971,6 +1012,7 @@ export async function extractInBrowser(
           const engTurned = gpu ? paddleAsEng(1, job => job(), opts.abortSignal, 'upright') : null;
           const env = {
             worker: eng ?? lane.worker, extraWorkers: [lane.thai], turnedWorkers: engTurned ? [engTurned, lane.turned[1]] : lane.turned, OPS: pdfjs.OPS as any, imagePixels: bitmapPixels,
+            rasterizeAsync: rasterizeInWorker,
             toImage: (d: Uint8Array, w: number, h: number) => {
               // PGM: the same gray pixels tesseract would get from the PNG, without encoding (main thread) and decoding (worker) a PNG for every tile
               const img = new Blob([`P5\n${w} ${h}\n255\n`, d as BlobPart]);
