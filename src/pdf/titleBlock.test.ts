@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules } from './titleBlock.ts';
+import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules, photoVerdict } from './titleBlock.ts';
 import type { Polyline } from './vectorText.ts';
 
 test('titleBlockVerdict: classification cases', () => {
@@ -60,4 +60,41 @@ test('rightColumnRules: count distinct long vertical rules in right 30%', () => 
   // a long vertical at x 500 is not counted
   assert.equal(rightColumnRules([[500, 0, 700]], 1000, 700), 0);
 });
+
+test('photoVerdict: classify photos/renders by colour and white share', () => {
+  // small RGB image of random saturated colours (10x10)
+  const saturatedData = new Uint8Array(10 * 10 * 3);
+  for (let i = 0; i < 100; i++) {
+    saturatedData[i * 3] = (i * 97) % 256;
+    saturatedData[i * 3 + 1] = 0;
+    saturatedData[i * 3 + 2] = 255;
+  }
+  const saturated = { data: saturatedData, width: 10, height: 10 };
+  assert.equal(photoVerdict(saturated, 0.2), true);
+  assert.equal(photoVerdict(saturated, 0.05), false);
+
+  // mostly white image with black lines (grey only) cover 1 -> false
+  const greyData = new Uint8Array(10 * 10 * 3);
+  for (let i = 0; i < 100; i++) {
+    const v = i < 80 ? 255 : 0;
+    greyData[i * 3] = v;
+    greyData[i * 3 + 1] = v;
+    greyData[i * 3 + 2] = v;
+  }
+  assert.equal(photoVerdict({ data: greyData, width: 10, height: 10 }, 1), false);
+
+  // kind 1 image -> false
+  assert.equal(photoVerdict({ data: new Uint8Array(100), width: 10, height: 10, kind: 1 }, 1), false);
+
+  // mostly white image with 20% blue lines (white share > 0.6) -> false
+  const blueLinesData = new Uint8Array(10 * 10 * 3);
+  for (let i = 0; i < 100; i++) {
+    const isBlue = i % 5 === 0;
+    blueLinesData[i * 3] = isBlue ? 0 : 255;
+    blueLinesData[i * 3 + 1] = isBlue ? 0 : 255;
+    blueLinesData[i * 3 + 2] = 255;
+  }
+  assert.equal(photoVerdict({ data: blueLinesData, width: 10, height: 10 }, 0.5), false);
+});
+
 

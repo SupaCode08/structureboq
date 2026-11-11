@@ -59,3 +59,25 @@ export function rightColumnRules(vsegs: [number, number, number][], widthPt: num
   return cols.size;
 }
 
+// Scans are mostly white with no colour; photos and renders have colour >= 15% and white <= 60%.
+export function photoVerdict(px: { data: Uint8Array | Uint8ClampedArray; width: number; height: number; kind?: number }, cover: number): boolean {
+  if (cover < 0.10 || px.kind === 1 || px.data.length < px.width * px.height * 3) return false;
+  const channels = px.kind === 3 ? 4 : 3;
+  if (px.data.length < px.width * px.height * channels) return false;
+  const total = px.width * px.height;
+  let samples = 0;
+  let white = 0;
+  let colour = 0;
+  for (let p = 0; p < total; p += 7) {
+    samples++;
+    const i = p * channels;
+    const r = px.data[i];
+    const g = px.data[i + 1];
+    const b = px.data[i + 2];
+    if (r > 200 && g > 200 && b > 200) white++;
+    if (Math.max(r, g, b) - Math.min(r, g, b) > 40) colour++;
+  }
+  return samples > 0 && (colour / samples) >= 0.15 && (white / samples) <= 0.60;
+}
+
+

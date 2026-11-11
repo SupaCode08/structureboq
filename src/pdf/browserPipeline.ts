@@ -21,7 +21,7 @@ import { reconcileScheduleRows } from '../engine/sourceConflicts';
 import { ocrBoqPage } from './boqOcr';
 import { prepareScan, estimateSkew, rotateRaster, removeLines, extractLines, findRings, ringsAtLineEnds, orientScan, prepareEmbeddedScan } from './scanPrep';
 import { extractSmallStrokes, pageGeometry, rasterize } from './vectorText';
-import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules } from './titleBlock';
+import { titleBlockStrokes, titleBlockVerdict, sheetCodeVerdict, rightColumnRules, photoVerdict } from './titleBlock';
 import { imageBoxesOnPage, imageGray } from './imageBoxes';
 import type { OcrWord, PageOcr, PageText } from './types';
 import { laneCount, mapLanes, raceAbort, serialize } from './lanes';
@@ -97,8 +97,7 @@ function grayToCanvas(data: Uint8Array, w: number, h: number): HTMLCanvasElement
   return c;
 }
 
-/** Largest embedded image of a scanned page as a 400-DPI prepared raster (same logic as scripts/scanImage.ts). */
-async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true) {
+async function largestPageImage(page: any): Promise<{ px: any; m: number[] } | null> {
   const ops = await page.getOperatorList();
   const vp1 = page.getViewport({ scale: 1 });
   const vt = vp1.transform;
@@ -133,6 +132,14 @@ async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true)
   }
   const bestPx = best?.data ? best : bitmapPixels(best);
   if (!bestPx?.data) return null;
+  return { px: bestPx, m: bestM };
+}
+
+/** Largest embedded image of a scanned page as a 400-DPI prepared raster (same logic as scripts/scanImage.ts). */
+async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true) {
+  const im = await largestPageImage(page);
+  if (!im) return null;
+  const { px: bestPx, m: bestM } = im;
   const { width: w, height: h } = bestPx;
   let gray = imageGray(bestPx);
   if (!gray) return null;
@@ -141,6 +148,7 @@ async function embeddedScanForOcr(page: any, rotate90: boolean, prepared = true)
   const oriented = orientScan(gray, w, h, base, rotate90);
   gray = oriented.gray;
   const { width: W, height: H } = oriented;
+  const vp1 = page.getViewport({ scale: 1 });
   if (!prepared) return { image: grayToCanvas(gray, W, H), width: W, height: H, skew: 0 };
   const { raster, width, height, lines, circles } = prepareEmbeddedScan(gray, W, H, Math.max(vp1.width, vp1.height), rotate90);
   return { image: null, raster, width, height, skew: 0, lines, circles };
@@ -327,6 +335,12 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
       c.width = 0;
       c.height = 0;
     }
+  }
+  const im = await largestPageImage(page).catch(() => null);
+  if (im) {
+    const vp1 = page.getViewport({ scale: 1 });
+    const cover = Math.abs(im.m[0] * im.m[3] - im.m[1] * im.m[2]) / (vp1.width * vp1.height);
+    if (photoVerdict(im.px, cover)) return { isStructural: false, skip: true, reason: 'ข้ามหน้าภาพถ่าย/ภาพ render (ไม่พบรหัสแผ่น)' };
   }
   return { isStructural: true, skip: false };
 }
