@@ -1,10 +1,10 @@
 {
-  "ocrId": "4088c18d00dcca7736e93cbff3ca2c6fbac13c1837c5845df9e4d879246484de",
-  "generatedAt": "2026-11-11T08:01:18.830Z",
+  "ocrId": "7992a048e176b8afe1f4261a8b8a3d1be10272e82c43c6c1d5f9c76f1462f262",
+  "generatedAt": "2026-11-11T13:35:05.830Z",
   "sets": {
     "house_ready_1": {
-      "right": 43,
-      "wrong": 2,
+      "right": 45,
+      "wrong": 0,
       "missing": 7,
       "byCategory": {
         "grid": {
@@ -18,8 +18,8 @@
           "missing": 0
         },
         "count": {
-          "right": 4,
-          "wrong": 2,
+          "right": 6,
+          "wrong": 0,
           "missing": 0
         },
         "dimension": {
