@@ -14,7 +14,7 @@ export function titleBlockVerdict(texts: string[]): { id?: string; skip: boolean
   const ids: string[] = [];
   for (const text of texts) {
     const t = text.replace(/[—–]/g, '-').toUpperCase().trim();
-    const m = t.match(/^([A-Z]{1,2})-?(\d{2})$/);
+    const m = t.match(/^([A-Z]{1,2})[-=_]*(\d{2})$/);
     if (m) ids.push(`${m[1]}-${m[2]}`);
   }
   const structural = ids.some(id => /^S-\d{2}$/.test(id));

@@ -331,6 +331,10 @@ export async function fastClassifySheet(page: any, worker: any, pageNo: number, 
       const rawText = res?.data?.text || '';
       const decision = decide(rawText);
       if (decision) return decision;
+      // scanned corners often read only as sparse text
+      const sparse = await (await titleBlockWorker(lane)).recognize(c);
+      const d11 = decide(sparse?.data?.text || "");
+      if (d11) return d11;
       if (target === 2000 && renderMs > SLOW_RENDER_MS) break;
     } catch {
       // Graceful fallback

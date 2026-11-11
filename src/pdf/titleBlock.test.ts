@@ -10,6 +10,7 @@ test('titleBlockVerdict: classification cases', () => {
   assert.deepEqual(titleBlockVerdict(['A-01', 'S-03']), { id: 'S-03', skip: false, structural: true });
   assert.deepEqual(titleBlockVerdict(['FE-03']), { id: undefined, skip: false, structural: false });
   assert.deepEqual(titleBlockVerdict(['A09']), { id: 'A-09', skip: true, structural: false });
+  assert.deepEqual(titleBlockVerdict(['S—=17']), { id: 'S-17', structural: true, skip: false });
   assert.deepEqual(titleBlockVerdict([]), { id: undefined, skip: false, structural: false });
 });
 
