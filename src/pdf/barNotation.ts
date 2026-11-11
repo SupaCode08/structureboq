@@ -89,6 +89,11 @@ function parseStrict(text: string): BarNote | null {
   }
   m = t.match(new RegExp(`^(\\d{1,2})\\+(\\d{1,2})-?(?:${GRADE}|(${SIGN_OCR}))?(\\d{1,2})$`));
   if (m && !sizeOk(Number(m[5]))) m = t.match(new RegExp(`^(\\d{1,2})\\+(\\d)-?(?:${GRADE}|(${SIGN_OCR}))?(\\d{2})$`));
+  else if (m && !m[3] && !m[4] && m[2].length === 2 && /[06892]$/.test(m[2])) {
+    // b's second digit is a diameter sign look-alike (0/6/8/9/2) misread as part of b
+    const m2 = t.match(new RegExp(`^(\\d{1,2})\\+(\\d)-?(?:${GRADE}|(${SIGN_OCR}))?(\\d{2})$`));
+    if (m2 && sizeOk(Number(m2[5]))) m = m2;
+  }
   if (m) {
     const dia = Number(m[5]);
     if (sizeOk(dia) && Number(m[1]) >= 2 && Number(m[2]) >= 2) return { kind: 'mesh', a: Number(m[1]), b: Number(m[2]), grade: grade(m[3]), dia };
@@ -130,7 +135,15 @@ function parseWithTail(text: string): BarNote | null {
 
 /** Read one piece of text as bar notation, or null. */
 export function parseBarNote(text: string): BarNote | null {
-  return parseStrict(text) ?? parseWithTail(text);
+  const note = parseStrict(text) ?? parseWithTail(text);
+  if (note) return note;
+  const trimmed = text.trim();
+  // Strip trailing % / %. unit look-alike that would otherwise swallow bar size digits in norm
+  if (trimmed.endsWith('%.') || trimmed.endsWith('%')) {
+    const stripped = trimmed.endsWith('%.') ? trimmed.slice(0, -2) : trimmed.slice(0, -1);
+    return parseStrict(stripped) ?? parseWithTail(stripped);
+  }
+  return null;
 }
 
 export interface WordBox { text: string; x0: number; y0: number; x1: number; y1: number; vertical?: boolean }

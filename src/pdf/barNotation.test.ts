@@ -178,3 +178,22 @@ test('a Thai unit read as junk after the size is dropped, never a bare number', 
   assert.equal(parseBarNote('2-DB13'), null);
   assert.equal(parseBarNote('50-401'), null);
 });
+
+test('footing detail OCR misreads: trailing "%" / "%." unit and diameter sign look-alikes in mesh', () => {
+  // Trailing % / %. unit look-alike removed when norm would otherwise strip size digits
+  assert.deepEqual(parseBarNote('5012%.'), { kind: 'count', n: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5012%'), { kind: 'count', n: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5012'), { kind: 'count', n: 5, grade: null, dia: 12 });
+
+  // Mesh with diameter sign 0 read as second digit of b, with or without trailing %.
+  assert.deepEqual(parseBarNote('5+5012'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5+5012%.'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('5+5012%'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+
+  // Unchanged mesh notations must keep exact values
+  assert.deepEqual(parseBarNote('6+11-DB12'), { kind: 'mesh', a: 6, b: 11, grade: 'DB', dia: 12 });
+  assert.deepEqual(parseBarNote('7+8-DB12'), { kind: 'mesh', a: 7, b: 8, grade: 'DB', dia: 12 });
+  assert.deepEqual(parseBarNote('5+5-DB12'), { kind: 'mesh', a: 5, b: 5, grade: 'DB', dia: 12 });
+  assert.deepEqual(parseBarNote('5+5Ø12'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('7+8Ø12'), { kind: 'mesh', a: 7, b: 8, grade: null, dia: 12 });
+});
