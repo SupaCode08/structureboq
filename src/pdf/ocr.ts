@@ -16,6 +16,7 @@ export interface OcrOptions {
   overlap?: number;
   minConfidence?: number;
   onProgress?: (done: number, total: number) => void;
+  crop?: (rect: { left: number; top: number; width: number; height: number }) => Promise<any>;
 }
 
 const iou = (a: OcrWord, b: OcrWord) => {
@@ -36,10 +37,13 @@ export async function ocrRaster(worker: TesseractLike, image: any, width: number
   const words: { text: string; conf: number; x0: number; y0: number; x1: number; y1: number }[] = [];
   let done = 0;
   for (const rectangle of rects) {
-    const { data } = await worker.recognize(image, { rectangle });
+    const { data } = opts.crop
+      ? await worker.recognize(await opts.crop(rectangle))
+      : await worker.recognize(image, { rectangle });
+    const dx = opts.crop ? rectangle.left : 0, dy = opts.crop ? rectangle.top : 0;
     for (const w of data.words) {
       if (w.confidence < minConf || !/[A-Za-z0-9]/.test(w.text)) continue;
-      words.push({ text: w.text, conf: w.confidence, x0: w.bbox.x0 / width, y0: w.bbox.y0 / height, x1: w.bbox.x1 / width, y1: w.bbox.y1 / height });
+      words.push({ text: w.text, conf: w.confidence, x0: (w.bbox.x0 + dx) / width, y0: (w.bbox.y0 + dy) / height, x1: (w.bbox.x1 + dx) / width, y1: (w.bbox.y1 + dy) / height });
     }
     opts.onProgress?.(++done, rects.length);
   }

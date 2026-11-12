@@ -137,9 +137,17 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
           : rasterize(strokes.small, vp.width, vp.height, scale, 3, rot);
         const img = await env.toImage(r.data, r.width, r.height);
         clock(`rasterize ${rot ? 'v' : 'h'}`, t0);
+        const crop = async (rect: { left: number; top: number; width: number; height: number }) => {
+          const tile = new Uint8Array(rect.width * rect.height);
+          for (let row = 0; row < rect.height; row++) {
+            const src = (rect.top + row) * r.width + rect.left;
+            tile.set(r.data.subarray(src, src + rect.width), row * rect.width);
+          }
+          return env.toImage(tile, rect.width, rect.height);
+        };
         const per = await Promise.all(wks.map(async (wk, i) => {
           const t1 = performance.now();
-          const ws = await ocrRaster(wk, img, r.width, r.height);
+          const ws = await ocrRaster(wk, img, r.width, r.height, i > 0 ? { crop } : undefined);
           clock(`ocr ${i ? 'extra' : 'eng'} ${rot ? 'v' : 'h'}`, t1);
           return rot ? unrotate(ws) : ws.map(w => ({ ...w, vertical: false }));
         }));
