@@ -9,3 +9,4 @@ coverage/
 *.bak*
 *.pdf
 
+.agy_view/

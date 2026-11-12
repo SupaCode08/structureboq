@@ -260,3 +260,40 @@ test('FIX 5: a square spread footing with a single count note infers two-way bot
   assert.ok(f95.inferred_fields?.includes('bottom_rebar'));
   assert.ok(f95.evidence?.includes('อ่านเหล็กได้ทางเดียว — ฐานรากสี่เหลี่ยมจัตุรัสใช้สองทางเท่ากัน'));
 });
+
+test('stair detail reads waist thickness and slope rebar; beam search area is unchanged', () => {
+  const plan = page(1, [word('ST1', 0.3, 0.3), word('B1', 0.5, 0.3)]);
+  const stairWords = [
+    word('1:20', 0.9, 0.9),
+    word('ST1', 0.371, 0.774),
+    word('0.45', 0.278, 0.233),
+    word('0.45', 0.385, 0.262),
+    word('9', 0.262, 0.282, 0.01), word('.@0.20', 0.276, 0.282, 0.015),
+    word('2', 0.272, 0.297, 0.01), word('@0.25', 0.288, 0.296, 0.02),
+    word('0.125', 0.157, 0.323),
+    word('12', 0.270, 0.332),
+    word('12W@0.125', 0.269, 0.350),
+    word('99%@0.20', 0.258, 0.365),
+    word('0.125', 0.480, 0.438),
+    word('@0.20', 0.539, 0.448),
+    word('1.00', 0.633, 0.501),
+    word('Φ12.@0.125', 0.435, 0.550),
+    word('912@0.25', 0.610, 0.558),
+    word('3.60', 0.420, 0.713),
+    // Beam title to verify BEAM search area (reach 0.20, x [-0.11, +0.13]) is unchanged
+    word('B1', 0.92, 0.774),
+    word('0.20', 0.92, 0.65), // reach 0.124 <= 0.20 (within beam reach)
+    word('0.40', 0.92, 0.50, 0.02, true), // reach 0.274 > 0.20 (outside beam reach, would be inside stair reach 0.60)
+  ];
+  const secs = readSheets([plan, page(2, stairWords)]).readings.filter(r => r.page === 2).flatMap(r => r.sections);
+  const st1 = secs.find(s => s.tag === 'ST1')!;
+  assert.ok(st1, 'ST1 section found');
+  assert.equal(st1.thickness_m, 0.125);
+  assert.equal(st1.bottom_rebar, 'DB12@0.125');
+  assert.equal(st1.top_rebar, 'DB12@0.25');
+
+  const b1 = secs.find(s => s.tag === 'B1')!;
+  assert.ok(b1, 'B1 section found');
+  assert.equal(b1.width_m, 0.20);
+  assert.equal(b1.depth_m, null); // 0.40 at reach 0.274 is excluded by beam's reach 0.20
+});

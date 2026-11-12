@@ -13,7 +13,8 @@
     { "tag": "B3", "type": "BEAM", "count": 4, "width": 0.2, "depth": 0.4, "topRebar": "2-DB16", "bottomRebar": "2-DB16", "stirrup": "RB9@0.20", "remark": "ชั้นล่าง 3 + ชั้นบน 1" },
     { "tag": "BX", "type": "BEAM", "width": 0.2, "depth": 0.4, "topRebar": "2-DB12", "bottomRebar": "2-DB12", "stirrup": "RB6@0.20" },
     { "tag": "S1", "type": "SLAB", "thickness": 0.1, "bottomRebar": "RB9@0.25" },
-    { "tag": "GS", "type": "SLAB", "thickness": 0.1, "topRebar": "RB9@0.20" }
+    { "tag": "GS", "type": "SLAB", "thickness": 0.1, "topRebar": "RB9@0.20" },
+    { "tag": "ST1", "type": "STAIR", "count": 1, "depth": 0.125, "bottomRebar": "DB12@0.125", "topRebar": "DB12@0.25", "remark": "อ่านโดย agy (Gemini) จากภาพ น.32 แผ่น S-09 ตามที่ผู้ใช้สั่ง 2026-11-12 (Claude ตรวจกับภาพแล้วตรงกัน): ท้องบันไดหนา 0.125, เหล็กล่างตามลาด ø12มม.@0.125ม., เหล็กบนที่ปลาย ø12มม.@0.25ม. (ø12 = DB12 ในแบบชุดนี้), เหล็กกระจาย ø9มม.@ตามแบบ (ไม่ระบุระยะ), ระยะราบ 'ไม่เกิน 3.60 ม' เป็นค่าสูงสุด, ความสูง/ความกว้างไม่มีในแบบนี้" }
   ],
   "conventions": [
     "ผังฐานรากสองทางเลือกบนแผ่นเดียว (เสาเข็ม F3/F4 ซ้าย, แผ่ F(…) ขวา)",

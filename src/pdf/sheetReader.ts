@@ -1389,11 +1389,12 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
       const x = cx(w), y = cy(w);
       const isSlabTitle = parts.every(q => /^(S\d|SP|GS)/.test(q.tag)) && !/^\d+$/.test(clean(w.text));
       const isFootingTitle = parts.some(q => /^F/.test(q.tag));
-      const planAbove = plans.filter(pl => pl.region && pl.region[3] < y && Math.max(pl.region[0], x - 0.11) < Math.min(pl.region[2], x + 0.13));
+      const isStairTitle = parts.some(q => /^ST/.test(q.tag));
+      const planAbove = plans.filter(pl => pl.region && pl.region[3] < y && Math.max(pl.region[0], x - (isStairTitle ? 0.25 : 0.11)) < Math.min(pl.region[2], x + (isStairTitle ? 0.30 : 0.13)));
       const planBottom = planAbove.length ? Math.max(...planAbove.map(pl => pl.region[3])) : undefined;
-      const maxReach = planBottom !== undefined ? Math.max(0.10, y - planBottom - 0.01) : (isFootingTitle ? 0.75 : 0.2);
+      const maxReach = planBottom !== undefined ? Math.max(0.10, y - planBottom - 0.01) : (isFootingTitle ? 0.75 : isStairTitle ? 0.6 : 0.2);
       const titleTags = new Set(parts.map(p => p.tag));
-      const above = tagWords.filter(t => t.w !== w && !t.w.vertical && cx(t.w) > x - 0.11 && cx(t.w) < x + 0.13 && cy(t.w) < y - 0.03 && /^F/.test(t.parts[0].tag) === isFootingTitle && !t.parts.every(p => titleTags.has(p.tag)))
+      const above = tagWords.filter(t => t.w !== w && !t.w.vertical && cx(t.w) > x - (isStairTitle ? 0.25 : 0.11) && cx(t.w) < x + (isStairTitle ? 0.30 : 0.13) && cy(t.w) < y - 0.03 && /^F/.test(t.parts[0].tag) === isFootingTitle && !t.parts.every(p => titleTags.has(p.tag)))
         .map(t => cy(t.w)).sort((a, b) => b - a)[0];
       const reach = Math.min(maxReach, above !== undefined ? y - above - 0.01 : 1);
       // a weak title does not compete with a more confident one for the words between them
@@ -1409,7 +1410,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           return Math.hypot(cx(o) - cx(t.w), (cy(o) - cy(t.w)) * 0.6) < d * 0.8;
         });
       };
-      const inRegion = (o: OcrWord) => cx(o) > x - (isSlabTitle ? 0.2 : 0.11) && cx(o) < x + (isSlabTitle ? 0.2 : 0.13) && cy(o) < y - 0.004 && cy(o) > y - reach && !inAnyPlan(o) && mine(o);
+      const inRegion = (o: OcrWord) => cx(o) > x - (isSlabTitle ? 0.2 : isStairTitle ? 0.25 : 0.11) && cx(o) < x + (isSlabTitle ? 0.2 : isStairTitle ? 0.30 : 0.13) && cy(o) < y - 0.004 && cy(o) > y - reach && !inAnyPlan(o) && mine(o);
       const hNums = nums.filter(n => !n.w.vertical && inRegion(n.w));
       const vNums = nums.filter(n => n.w.vertical && inRegion(n.w));
       const notesHere = phrases.filter(ph => {
@@ -1544,7 +1545,21 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           sec.evidence = `${sec.evidence} (เสาเข็ม ${n ? `${clean(n.text)} ต้น ` : ''}${sec.pile_size} ม.)`;
         }
       } else if (type === 'STAIR') {
-        sec.thickness_m = [...hNums, ...vNums].map(n => n.v).find(v => v >= 0.1 && v <= 0.2) ?? null;
+        // a stair waist is often given to the millimetre ("0.125"), which DIM leaves out
+        const exact = p.words.filter(o => inRegion(o) && /^0\.\d{3}$/.test(clean(o.text))).map(o => ({ w: o, v: Number(clean(o.text)) }));
+        const candT = [...hNums, ...vNums, ...exact].filter(n => n.v >= 0.1 && n.v <= 0.2)
+          .sort((a, b) => Math.abs(cx(a.w) - x) - Math.abs(cx(b.w) - x));
+        sec.thickness_m = candT[0]?.v ?? null;
+        if (spaced.length) {
+          const maxDia = Math.max(...spaced.map(ph => (ph.note as { dia: number }).dia));
+          const withDia = spaced.filter(ph => (ph.note as { dia: number }).dia === maxDia)
+            .sort((a, b) => (a.note as { s: number }).s - (b.note as { s: number }).s);
+          if (withDia.length) {
+            sec.bottom_rebar = formatBar(withDia[0].note, setGrades);
+            const larger = withDia.find(ph => (ph.note as { s: number }).s > (withDia[0].note as { s: number }).s);
+            if (larger) sec.top_rebar = formatBar(larger.note, setGrades);
+          }
+        }
       }
       const sDen = localDen(p, w, den);
       const rect = (type === 'BEAM' || type === 'COLUMN') && sDen && sDen <= 30 ? outlineAbove(p, w, 0.12) : undefined;
