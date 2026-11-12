@@ -46,6 +46,7 @@ function norm(t: string) {
     // Thai two-way mesh indicators: (ตะแกรง 2 ทาง), (สองทาง), #
     .replace(/\(?(ตะแกรง\s*(?:2|สอง)?\s*ทาง?|2\s*ทาง|สอง\s*ทาง|สอง\s*ทิศทาง|TWOWAY|2-WAY)\)?/gi, '')
     .replace(/#+$/g, '')
+    .replace(/(?<=@\d+(?:\.\d+)?)[%#.]*$/g, '')
     // Thai standards มอก. 20 / 24 steel grades: SD30, SD40, SD50, SR24
     .replace(/SD(30|40|50)[-_]*(DB)?/gi, 'DB')
     .replace(/SR(24)[-_]*(RB)?/gi, 'RB')
@@ -70,6 +71,8 @@ const sizeOk = (d: number) => SIZES.has(d);
 /** spacings are written 0.10, 0.125, 0.15, 0.175, 0.20…: a "0.12"/"0.17" is a 0.125/0.175 cut short by OCR */
 function untruncate(raw: string, s: number) {
   if (/^0?\.(12|17)$/.test(raw)) return Number((s + 0.005).toFixed(3));
+  // spacings come in 5 mm steps: a third decimal off that grid is the "มม." suffix read as a digit ("0.153")
+  if (/^0?\.\d{3}$/.test(raw) && Math.round(s * 1000) % 5) return Number(raw.slice(0, -1));
   return Number(s.toFixed(3));
 }
 
@@ -79,8 +82,9 @@ function parseStrict(text: string): BarNote | null {
   let m: RegExpMatchArray | null;
 
   const legs = t.match(new RegExp(`^([1-4])-?(?=${GRADE}|${SIGN})`));
-  m = (legs ? t.slice(legs[0].length) : t).match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})@(\\d*\\.?\\d+)(CM)?$`));
-  if (!legs) m ??= t.match(/^()[0OoZ2]?(6|9)@(\d*\.?\d+)(CM)?$/);
+  const JUNK = '[H%.\\s]{0,3}';
+  m = (legs ? t.slice(legs[0].length) : t).match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
+  if (!legs) m ??= t.match(new RegExp(`^()[0OoZ2]?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
   if (m) {
     const dia = Number(m[2]);
     let s = Number(m[3]);
@@ -98,12 +102,27 @@ function parseStrict(text: string): BarNote | null {
     const dia = Number(m[5]);
     if (sizeOk(dia) && Number(m[1]) >= 2 && Number(m[2]) >= 2) return { kind: 'mesh', a: Number(m[1]), b: Number(m[2]), grade: grade(m[3]), dia };
   }
-  m = t.match(new RegExp(`^(\\d{1,2})-?${GRADE}(\\d{1,2})$`));
-  if (m && sizeOk(Number(m[3])) && Number(m[1]) >= 1) return { kind: 'count', n: Number(m[1]), grade: grade(m[2]), dia: Number(m[3]) };
-  if (m && Number(m[1]) >= 1 && /^[025]$/.test(m[3])) return { kind: 'count', n: Number(m[1]), grade: grade(m[2]), dia: Number(`1${m[3]}`) };
-  m = t.match(new RegExp(`^(\\d{1,2})-?${SIGN}(\\d{1,2})$`));
-  if (m && sizeOk(Number(m[2])) && Number(m[1]) >= 1) return { kind: 'count', n: Number(m[1]), grade: null, dia: Number(m[2]) };
-  m = t.match(new RegExp(`^(\\d)-?${SIGN_OCR}(1[0256]|19|20|25|28|32)$`));
+  const countDia = (raw: string) => {
+    const d = Number(raw);
+    if (sizeOk(d)) return d;
+    if (raw.length === 3) {
+      const dropped = Number(raw.slice(0, -1));
+      if (sizeOk(dropped)) return dropped;
+    }
+    return null;
+  };
+  m = t.match(new RegExp(`^(\\d{1,2})-?${GRADE}(\\d{1,3})$`));
+  if (m && Number(m[1]) >= 1) {
+    const d = countDia(m[3]);
+    if (d) return { kind: 'count', n: Number(m[1]), grade: grade(m[2]), dia: d };
+    if (/^[025]$/.test(m[3])) return { kind: 'count', n: Number(m[1]), grade: grade(m[2]), dia: Number(`1${m[3]}`) };
+  }
+  m = t.match(new RegExp(`^(\\d{1,2})-?${SIGN}(\\d{1,3})$`));
+  if (m && Number(m[1]) >= 1) {
+    const d = countDia(m[2]);
+    if (d) return { kind: 'count', n: Number(m[1]), grade: null, dia: d };
+  }
+  m = t.match(new RegExp(`^(\\d)-?${SIGN_OCR}(1[0256]|19|20|25|28|32)\\d?$`));
   if (m && Number(m[1]) >= 2) return { kind: 'count', n: Number(m[1]), grade: null, dia: Number(m[2]) };
   m = t.match(/^(\D{0,4}?)(\d{1,3})[@©€®](\d*\.?\d+)(CM)?$/);
   if (m && (m[1] || m[2].length > 1)) {
@@ -113,7 +132,7 @@ function parseStrict(text: string): BarNote | null {
     if (m[4] || s >= 5) s /= 100;
     if (dia && s >= 0.05 && s <= 0.4) return { kind: 'spacing', grade: null, dia, s: untruncate(m[3], s) };
   }
-  m = t.match(/^(\d)([^\d\s]{1,2})(1[0256]|19|20|25|28|32)$/);
+  m = t.match(/^(\d)([^\d\s]{1,2})(1[0256]|19|20|25|28|32)\d?$/);
   if (m && Number(m[1]) >= 2 && !/^[XB]$/.test(m[2])) return { kind: 'count', n: Number(m[1]), grade: null, dia: Number(m[3]) };
   return null;
 }
@@ -137,7 +156,7 @@ function parseWithTail(text: string): BarNote | null {
 export function parseBarNote(text: string): BarNote | null {
   const note = parseStrict(text) ?? parseWithTail(text);
   if (note) return note;
-  const trimmed = text.trim();
+  const trimmed = text.trim().replace(/#+$/g, '');
   // Strip trailing % / %. unit look-alike that would otherwise swallow bar size digits in norm
   if (trimmed.endsWith('%.') || trimmed.endsWith('%')) {
     const stripped = trimmed.endsWith('%.') ? trimmed.slice(0, -2) : trimmed.slice(0, -1);

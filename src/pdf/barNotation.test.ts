@@ -197,3 +197,22 @@ test('footing detail OCR misreads: trailing "%" / "%." unit and diameter sign lo
   assert.deepEqual(parseBarNote('5+5Ø12'), { kind: 'mesh', a: 5, b: 5, grade: null, dia: 12 });
   assert.deepEqual(parseBarNote('7+8Ø12'), { kind: 'mesh', a: 7, b: 8, grade: null, dia: 12 });
 });
+
+test('extra unit digit in count note and spacing notes with junk before @', () => {
+  // FIX 1: extra digit after bar size from Thai unit "มม."
+  assert.deepEqual(parseBarNote('29123'), { kind: 'count', n: 2, grade: null, dia: 12 });
+  assert.deepEqual(parseBarNote('30123'), { kind: 'count', n: 3, grade: null, dia: 12 });
+  assert.equal(parseBarNote('2912345'), null);
+  assert.equal(parseBarNote('29'), null);
+
+  // FIX 2: spacing notes with junk between diameter and "@"
+  assert.deepEqual(parseBarNote('09H@0.25%#'), { kind: 'spacing', grade: null, dia: 9, s: 0.25 });
+  assert.deepEqual(parseBarNote('09H%.@0.20%#'), { kind: 'spacing', grade: null, dia: 9, s: 0.20 });
+  assert.equal(parseBarNote('09H@'), null);
+  assert.equal(parseBarNote('0912@0.20'), null);
+});
+
+test('a spacing with a third decimal off the 5 mm grid drops it ("มม." read as a digit); 0.125 stays', () => {
+  assert.equal((parseBarNote('ø6@0.153') as { s: number }).s, 0.15);
+  assert.equal((parseBarNote('ø6@0.125') as { s: number }).s, 0.125);
+});

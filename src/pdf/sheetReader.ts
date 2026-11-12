@@ -12,7 +12,7 @@
  */
 import type { OcrWord, PageOcr } from './types';
 import type { SheetReading, PlanInstance, SectionDef, GridAxisMark, LevelMark } from '../engine/sheetMerge';
-import { barPhrases, gradeBySize, formatBar, resolveGrade, type BarNote } from './barNotation';
+import { barPhrases, gradeBySize, formatBar, resolveGrade, type BarNote, type Grade } from './barNotation';
 
 /** Ties set at each spacing step of a tie note ("2-RB6@0.10" -> 2); undefined for a single set. */
 const tieSets = (note: BarNote) => (note.kind === 'spacing' && note.legs && note.legs > 1 ? note.legs : undefined);
@@ -1392,11 +1392,12 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
       const planAbove = plans.filter(pl => pl.region && pl.region[3] < y && Math.max(pl.region[0], x - 0.11) < Math.min(pl.region[2], x + 0.13));
       const planBottom = planAbove.length ? Math.max(...planAbove.map(pl => pl.region[3])) : undefined;
       const maxReach = planBottom !== undefined ? Math.max(0.10, y - planBottom - 0.01) : (isFootingTitle ? 0.75 : 0.2);
-      const above = tagWords.filter(t => t.w !== w && !t.w.vertical && cx(t.w) > x - 0.11 && cx(t.w) < x + 0.13 && cy(t.w) < y - 0.03 && /^F/.test(t.parts[0].tag) === isFootingTitle)
+      const titleTags = new Set(parts.map(p => p.tag));
+      const above = tagWords.filter(t => t.w !== w && !t.w.vertical && cx(t.w) > x - 0.11 && cx(t.w) < x + 0.13 && cy(t.w) < y - 0.03 && /^F/.test(t.parts[0].tag) === isFootingTitle && !t.parts.every(p => titleTags.has(p.tag)))
         .map(t => cy(t.w)).sort((a, b) => b - a)[0];
       const reach = Math.min(maxReach, above !== undefined ? y - above - 0.01 : 1);
       // a weak title does not compete with a more confident one for the words between them
-      const ownTitles = allTitles.filter(t => t.w !== w && !(weakTitle(t) && (w.conf ?? 99) > (t.w.conf ?? 99)));
+      const ownTitles = allTitles.filter(t => t.w !== w && !(weakTitle(t) && (w.conf ?? 99) > (t.w.conf ?? 99)) && !t.parts.every(q => titleTags.has(q.tag)));
       const inAnyPlan = (o: OcrWord) => plans.some(pl => pl.region && cx(o) >= pl.region[0] && cx(o) <= pl.region[2] && cy(o) >= pl.region[1] && cy(o) <= pl.region[3]);
       const mine = (o: OcrWord) => {
         const d = Math.hypot(cx(o) - x, (cy(o) - y) * 0.6);
@@ -1411,7 +1412,14 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
       const inRegion = (o: OcrWord) => cx(o) > x - (isSlabTitle ? 0.2 : 0.11) && cx(o) < x + (isSlabTitle ? 0.2 : 0.13) && cy(o) < y - 0.004 && cy(o) > y - reach && !inAnyPlan(o) && mine(o);
       const hNums = nums.filter(n => !n.w.vertical && inRegion(n.w));
       const vNums = nums.filter(n => n.w.vertical && inRegion(n.w));
-      const notesHere = phrases.filter(ph => ph.words.every(inRegion));
+      const notesHere = phrases.filter(ph => {
+        if (!ph.words.length || !inRegion(ph.words[0])) return false;
+        for (let i = 1; i < ph.words.length; i++) {
+          const cw = ph.words[i], prev = ph.words[i - 1];
+          if (!inRegion(cw) && !(Math.abs(cy(cw) - cy(prev)) < 0.01 && Math.abs(cw.x0 - prev.x1) <= 0.03)) return false;
+        }
+        return true;
+      });
       const counts = notesHere.filter(ph => ph.note.kind === 'count').sort((a, b) => cy(a.words[0]) - cy(b.words[0]));
       const spaced = notesHere.filter(ph => ph.note.kind === 'spacing');
       const meshes = notesHere.filter(ph => ph.note.kind === 'mesh');
@@ -1759,6 +1767,22 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         if (meshes.size === 1) {
           sec.bottom_rebar = [...meshes][0];
           sec.evidence = `${sec.evidence} (เหล็กตะแกรงจากหมายเหตุที่รูปตัดฐานราก กว้าง ${c.wM} ม.)`;
+        } else if (meshes.size === 0 && sec.plan_w_m != null && sec.plan_w_m === sec.plan_l_m && sec.rebar_notes?.length === 1) {
+          const countPhrases = pool.flatMap(f => {
+            const pg = pages.find(q => q.page === f.page);
+            if (!pg) return [];
+            const zone = footingSectionZone(f.box, found.filter(o => o.page === f.page && o !== f).map(o => o.box));
+            return barPhrases(pg.words).filter(ph => ph.words.every(zone) && ph.note.kind === 'count');
+          });
+          if (countPhrases.length >= 1) {
+            const count = countPhrases[0].note as { kind: 'count'; n: number; dia: number; grade: Grade };
+            if (count.n >= 3 && countPhrases.every(ph => (ph.note as { n: number; dia: number }).n === count.n && (ph.note as { n: number; dia: number }).dia === count.dia)) {
+              const gr = resolveGrade(count.grade, count.dia, setGrades);
+              sec.bottom_rebar = `${count.n}+${count.n}-${gr}${count.dia}`;
+              sec.inferred_fields = [...(sec.inferred_fields || []), 'bottom_rebar'];
+              sec.evidence = `${sec.evidence} (อ่านเหล็กได้ทางเดียว — ฐานรากสี่เหลี่ยมจัตุรัสใช้สองทางเท่ากัน)`;
+            }
+          }
         }
       }
     }

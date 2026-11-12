@@ -396,7 +396,7 @@ export function mergeSheetReadings(
             const named = reconcile('length', [{ value: Number(nm[3]), page: sh.page, ref: `ชื่อฐานรากในผัง (${piece.tag})`, method: 'vision' }, { value: thick, page: sec?.page ?? null, ref: 'แบบขยาย / ตาราง', method: 'vision' }]);
             if (named.kind === 'CONFLICT') { recon = [...recon, named]; conf = Math.min(conf, 0.5); }
           }
-          fs.rebar = d?.bottom_rebar ? 'drawing' : 'missing';
+          fs.rebar = d?.bottom_rebar ? (d.inferred_fields?.includes('bottom_rebar') ? 'inferred' : 'drawing') : 'missing';
           const exc = d?.height_m && d.height_m > thick ? d.height_m : 1.0;
           fs.excavation = d?.height_m ? 'drawing' : 'assumed';
           const piled = !!d?.pile_count || /เข็ม/.test(footingPlanTitle || '');

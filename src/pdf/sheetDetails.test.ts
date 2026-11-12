@@ -211,3 +211,52 @@ test('completeTag repairs a footing size where one digit was misread as a letter
   assert.deepEqual(completeTag('F(P.95X0.95)', vocab), { tag: 'F(0.95X0.95)', repaired: true });
   assert.equal(completeTag('F(P.9PX0.90X0.30)', vocab), null);
 });
+
+test('FIX 3: a stirrup note cut by midpoint split between two side-by-side titles still belongs to the left title', () => {
+  const plan = page(1, [word('B1', 0.3, 0.3), word('B2', 0.6, 0.3)]);
+  // B1 at x=0.3, B2 at x=0.6, midpoint x=0.45.
+  // Stirrup words: as OCR reads it: 'Lb6' at cx=0.415 (in region), '.@0.15%' at cx=0.455 (past midpoint 0.45)
+  const detail = page(2, [
+    word('1:20', 0.9, 0.9),
+    word('B1', 0.3, 0.6), word('0.20', 0.3, 0.45), word('0.40', 0.25, 0.50, 0.02, true),
+    word('2-DB16', 0.3, 0.48),
+    word('Lb6', 0.415, 0.52, 0.02), word('.@0.15%', 0.455, 0.52, 0.05),
+    word('B2', 0.6, 0.6), word('0.20', 0.6, 0.45), word('0.40', 0.55, 0.50, 0.02, true),
+  ]);
+  const secs = readSheets([plan, detail]).readings.filter(r => r.page === 2).flatMap(r => r.sections);
+  const b1 = secs.find(s => s.tag === 'B1')!;
+  assert.ok(b1);
+  assert.equal(b1.stirrup, 'RB6@0.15');
+});
+
+test('FIX 4: a duplicate tag inside a slab detail is ignored as a section boundary, keeping bottom rebar within reach', () => {
+  const plan = page(1, [word('S1', 0.3, 0.3), word('S1', 0.5, 0.3)]);
+  // Title S1 under detail at y=0.892, mark S1 inside detail at y=0.859, bottom bar 09@0.25# at y=0.83
+  const detail = page(2, [
+    word('1:20', 0.9, 0.9),
+    word('S1', 0.4, 0.892),
+    word('0.10', 0.35, 0.84, 0.015),
+    word('S1', 0.4, 0.859),
+    word('09@0.25#', 0.4, 0.83, 0.03),
+  ]);
+  const s1 = readSheets([plan, detail]).readings.filter(r => r.page === 2).flatMap(r => r.sections).find(s => s.tag === 'S1');
+  assert.ok(s1);
+  assert.equal(s1.thickness_m, 0.1);
+  assert.equal(s1.bottom_rebar, 'RB9@0.25');
+});
+
+test('FIX 5: a square spread footing with a single count note infers two-way bottom rebar and flags inferred_fields', () => {
+  const plan = page(1, [word('F(0.95x0.95)', 0.3, 0.5, 0.05)]);
+  const detailWords = [
+    word('F(0.95x0.95)', 0.87, 0.817, 0.05),
+    word('1:20', 0.29, 0.84),
+    word('5012', 0.27, 0.262, 0.03),
+  ];
+  const { readings } = readSheets([plan, page(2, detailWords, section(0.1, 0.95, 0.2, 0.3, true))]);
+  const f95 = readings.flatMap(r => r.sections).find(s => s.member_type === 'FOOTING')!;
+  assert.ok(f95);
+  assert.equal(f95.thickness_m, 0.2);
+  assert.equal(f95.bottom_rebar, '5+5-DB12');
+  assert.ok(f95.inferred_fields?.includes('bottom_rebar'));
+  assert.ok(f95.evidence?.includes('อ่านเหล็กได้ทางเดียว — ฐานรากสี่เหลี่ยมจัตุรัสใช้สองทางเท่ากัน'));
+});
