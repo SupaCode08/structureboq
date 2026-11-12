@@ -50,6 +50,9 @@ export interface SectionDef {
   pile_size?: string;
   main_rebar?: string | null;
   height_m?: number | null;
+  stair_risers?: number | null;
+  stair_rise_m?: number | null;
+  stair_run_m?: number | null;
   from_level?: string | null;
   to_level?: string | null;
   /** fields filled by a reading rule rather than read directly (e.g. width shared on the sheet) */
@@ -521,14 +524,15 @@ export function mergeSheetReadings(
     for (const s of sh.sections || []) {
       if (s.member_type !== 'STAIR') continue;
       if (members.some(m => m.memberType === 'STAIR' && m.tag === normTag(s.tag))) continue;
-      const rise = s.height_m || 0;
-      const run = (() => { const m = (s.evidence || '').match(/แนวราบ\s*(\d+(?:\.\d+)?)/); return m ? Number(m[1]) : 0; })();
+      const rise = s.stair_rise_m || s.height_m || 0;
+      const run = s.stair_run_m || (() => { const m = (s.evidence || '').match(/แนวราบ\s*(\d+(?:\.\d+)?)/); return m ? Number(m[1]) : 0; })();
       const slope = rise && run ? Number(Math.hypot(rise, run).toFixed(3)) : (s.length_m || 0);
       members.push({
         tag: normTag(s.tag), memberType: 'STAIR', count: 1, unit: 'm',
         width: assumptions.stairWidthM, depth: s.thickness_m || 0, length: slope,
         topRebar: s.top_rebar || '', bottomRebar: s.bottom_rebar || '',
         distRebar: s.dist_rebar || undefined,
+        stairRisers: s.stair_risers || undefined,
         stairRunM: run || undefined,
         stairRiseM: rise || undefined,
         level: 'บันได', gridLocation: '-', sourceFile, sourceSheetOrLayer: `${sh.sheet_id || ''} p${sh.page}`.trim(),

@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readSheets, footingMeshAt, footingSections, footingBarNotes, completeTag } from './sheetReader.ts';
+import { readSheets, footingMeshAt, footingSections, footingBarNotes, completeTag, stairSteps } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
 
 const W = 1207, H = 844;
@@ -296,4 +296,50 @@ test('stair detail reads waist thickness and slope rebar; beam search area is un
   assert.ok(b1, 'B1 section found');
   assert.equal(b1.width_m, 0.20);
   assert.equal(b1.depth_m, null); // 0.40 at reach 0.274 is excluded by beam's reach 0.20
+});
+
+test('stairSteps detects step outline from segments, rejects dash-dot and noise lines', () => {
+  const risers: [number, number, number][] = [
+    [0.3501, 0.3177, 0.348],
+    [0.3795, 0.348, 0.3782],
+    [0.4089, 0.3782, 0.4083],
+    [0.4382, 0.4083, 0.4385],
+    [0.4676, 0.4385, 0.4688],
+    [0.4969, 0.4688, 0.4991],
+    [0.5262, 0.4991, 0.5291],
+    [0.5555, 0.5291, 0.5594],
+    [0.5849, 0.5594, 0.5896],
+    [0.6143, 0.5896, 0.6197],
+  ];
+  const treads: [number, number, number][] = [
+    [0.3501, 0.348, 0.3795],
+    [0.3795, 0.3782, 0.4089],
+    [0.4089, 0.4083, 0.4382],
+    [0.4382, 0.4385, 0.4676],
+    [0.4676, 0.4688, 0.4969],
+    [0.4969, 0.4991, 0.5262],
+    [0.5262, 0.5291, 0.5555],
+    [0.5555, 0.5594, 0.5849],
+    [0.5849, 0.5896, 0.6143],
+    [0.6143, 0.6197, 0.6436],
+  ];
+  const dashDot: [number, number, number][] = [
+    [0.6436, 0.6197, 0.6197 + 0.0057],
+    [0.6436, 0.6197 + 0.028, 0.6197 + 0.028 + 0.0057],
+    [0.6436, 0.6197 + 0.056, 0.6197 + 0.056 + 0.0057],
+  ];
+  const longLine: [number, number, number] = [0.2, 0.3, 0.8];
+
+  const vsegs = [...risers, ...dashDot];
+  const hsegs = [...treads, longLine];
+  const region: [number, number, number, number] = [0.3, 0.3, 0.7, 0.7];
+
+  const got = stairSteps(hsegs, vsegs, region);
+  assert.ok(got);
+  assert.equal(got.risers, 10);
+  assert.ok(Math.abs(got.riserN - 0.0302) < 1e-3, `riserN ${got.riserN} expected ≈ 0.0302`);
+  assert.ok(Math.abs(got.treadN - 0.0294) < 1e-3, `treadN ${got.treadN} expected ≈ 0.0294`);
+
+  const twoSteps = stairSteps(treads.slice(0, 2), risers.slice(0, 2), region);
+  assert.equal(twoSteps, null);
 });

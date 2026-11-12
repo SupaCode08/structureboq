@@ -927,6 +927,114 @@ export function footingSections(hsegs: [number, number, number][], kx: number, k
   return out;
 }
 
+const round3 = (v: number) => Number(v.toFixed(3));
+
+/**
+ * Detects stair step outline (riser/tread chain) drawn to scale in normalized coordinates.
+ * Consecutive steps share an endpoint (riser end = tread start, tread end = next riser start).
+ * Returns the longest chain inside region whose risers and treads each agree in length within 10%.
+ */
+export function stairSteps(
+  hsegs: [number, number, number][] | undefined,
+  vsegs: [number, number, number][] | undefined,
+  region: [number, number, number, number]
+): { risers: number; riserN: number; treadN: number } | null {
+  if (!hsegs?.length || !vsegs?.length) return null;
+
+  const rx0 = Math.min(region[0], region[2]);
+  const ry0 = Math.min(region[1], region[3]);
+  const rx1 = Math.max(region[0], region[2]);
+  const ry1 = Math.max(region[1], region[3]);
+  const tol = 0.002;
+
+  const hIn = hsegs
+    .map(s => [Math.min(s[0], s[2]), s[1], Math.max(s[0], s[2])] as [number, number, number])
+    .filter(s => s[2] - s[0] >= tol && s[1] >= ry0 - tol && s[1] <= ry1 + tol && s[2] >= rx0 - tol && s[0] <= rx1 + tol);
+
+  const vIn = vsegs
+    .map(s => [s[0], Math.min(s[1], s[2]), Math.max(s[1], s[2])] as [number, number, number])
+    .filter(s => s[2] - s[1] >= tol && s[0] >= rx0 - tol && s[0] <= rx1 + tol && s[2] >= ry0 - tol && s[1] <= ry1 + tol);
+
+  if (vIn.length < 3 || !hIn.length) return null;
+
+  interface Step {
+    dir: 'down-right' | 'up-right' | 'down-left' | 'up-left';
+    v: [number, number, number];
+    h: [number, number, number];
+    vlen: number;
+    hlen: number;
+    entry: { x: number; y: number };
+    exit: { x: number; y: number };
+  }
+
+  const steps: Step[] = [];
+  for (const v of vIn) {
+    const vlen = v[2] - v[1];
+    for (const h of hIn) {
+      const hlen = h[2] - h[0];
+      if (Math.abs(v[0] - h[0]) < tol && Math.abs(v[2] - h[1]) < tol) {
+        steps.push({ dir: 'down-right', v, h, vlen, hlen, entry: { x: v[0], y: v[1] }, exit: { x: h[2], y: h[1] } });
+      } else if (Math.abs(v[0] - h[0]) < tol && Math.abs(v[1] - h[1]) < tol) {
+        steps.push({ dir: 'up-right', v, h, vlen, hlen, entry: { x: v[0], y: v[2] }, exit: { x: h[2], y: h[1] } });
+      } else if (Math.abs(v[0] - h[2]) < tol && Math.abs(v[2] - h[1]) < tol) {
+        steps.push({ dir: 'down-left', v, h, vlen, hlen, entry: { x: v[0], y: v[1] }, exit: { x: h[0], y: h[1] } });
+      } else if (Math.abs(v[0] - h[2]) < tol && Math.abs(v[1] - h[1]) < tol) {
+        steps.push({ dir: 'up-left', v, h, vlen, hlen, entry: { x: v[0], y: v[2] }, exit: { x: h[0], y: h[1] } });
+      }
+    }
+  }
+
+  if (steps.length < 3) return null;
+
+  const canFollow = (a: Step, b: Step) =>
+    a.dir === b.dir &&
+    a.v !== b.v &&
+    a.h !== b.h &&
+    Math.abs(a.exit.x - b.entry.x) < tol &&
+    Math.abs(a.exit.y - b.entry.y) < tol;
+
+  const adj = new Map<Step, Step[]>();
+  for (const s of steps) {
+    adj.set(s, steps.filter(other => canFollow(s, other)));
+  }
+
+  let bestChain: Step[] = [];
+
+  function dfs(current: Step[], minV: number, maxV: number, minH: number, maxH: number) {
+    if (current.length > bestChain.length) {
+      bestChain = current;
+    }
+    const last = current[current.length - 1];
+    const nextList = adj.get(last) || [];
+    for (const next of nextList) {
+      if (current.some(s => s.v === next.v || s.h === next.h)) continue;
+      const nMinV = Math.min(minV, next.vlen), nMaxV = Math.max(maxV, next.vlen);
+      if (nMaxV > 1.10 * nMinV) continue;
+      const nMinH = Math.min(minH, next.hlen), nMaxH = Math.max(maxH, next.hlen);
+      if (nMaxH > 1.10 * nMinH) continue;
+      dfs([...current, next], nMinV, nMaxV, nMinH, nMaxH);
+    }
+  }
+
+  for (const s of steps) {
+    dfs([s], s.vlen, s.vlen, s.hlen, s.hlen);
+  }
+
+  if (bestChain.length < 3) return null;
+
+  const median = (arr: number[]) => {
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+
+  return {
+    risers: bestChain.length,
+    riserN: median(bestChain.map(s => s.vlen)),
+    treadN: median(bestChain.map(s => s.hlen)),
+  };
+}
+
 function footingSectionZone(box: number[], others: number[][]): (o: OcrWord) => boolean {
   const [y0, x0, y1, x1] = box.map(v => v / 1000);
   const w = x1 - x0;
@@ -1558,6 +1666,21 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
             sec.bottom_rebar = formatBar(withDia[0].note, setGrades);
             const larger = withDia.find(ph => (ph.note as { s: number }).s > (withDia[0].note as { s: number }).s);
             if (larger) sec.top_rebar = formatBar(larger.note, setGrades);
+          }
+        }
+        const stDen = localDen(p, w);
+        if (stDen) {
+          const stairRegion: [number, number, number, number] = [x - 0.25, y - reach, x + 0.30, y - 0.004];
+          const steps = stairSteps(p.hsegs, p.vsegs, stairRegion);
+          if (steps) {
+            const k = (72 / 25.4) * (1000 / stDen);
+            const riser_m = round3(Math.round((steps.riserN * p.height / k) / 0.005) * 0.005);
+            const tread_m = round3(Math.round((steps.treadN * p.width / k) / 0.005) * 0.005);
+            sec.stair_risers = steps.risers;
+            sec.stair_rise_m = round3(steps.risers * riser_m);
+            sec.stair_run_m = round3(steps.risers * tread_m);
+            sec.measured_fields = [...new Set([...(sec.measured_fields || []), 'steps'])];
+            sec.evidence = `${sec.evidence} (วัดขั้นบันไดจากรูปตัด 1:${stDen}: ${steps.risers} ลูกตั้ง สูง ${riser_m} ลูกนอน ${tread_m} ม.)`;
           }
         }
       }
