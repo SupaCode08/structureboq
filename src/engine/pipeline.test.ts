@@ -159,9 +159,14 @@ test('BOQ compare: per-key verdicts with integer-rounded BOQ tolerance', () => {
   assert.equal(by.structural_concrete_m3.verdict, 'close');
   assert.equal(by.excavation_m3.verdict, 'missing_in_takeoff');
   assert.equal(rep.boqRoundedToInteger, false);
-  // Integer-rounded BOQ: 3.2 vs 3 is inside the ±0.5 rounding band
-  const rounded = compareTakeoffWithBoq(p, { structural_concrete_m3: { quantity: 3, unit: 'ลบ.ม.', sources: src(3) } });
+  // Integer-rounded BOQ: 2.3 vs 3 is inside ceil band (2 < 2.3 <= 3); 3.2 vs 3 cannot round up to 3
+  const p23 = computeProject([
+    { tag: 'B1', memberType: 'BEAM', width: 0.2, depth: 0.4, length: 2.875, count: 10, isClearSpan: true, topRebar: '2-DB12', bottomRebar: '2-DB12', stirrupRebar: 'RB6@0.15' },
+  ]);
+  const rounded = compareTakeoffWithBoq(p23, { structural_concrete_m3: { quantity: 3, unit: 'ลบ.ม.', sources: src(3) } });
   assert.equal(rounded.rows.find(r => r.key === 'structural_concrete_m3')!.verdict, 'rounding');
+  const notRounded = compareTakeoffWithBoq(p, { structural_concrete_m3: { quantity: 3, unit: 'ลบ.ม.', sources: src(3) } });
+  assert.notEqual(notRounded.rows.find(r => r.key === 'structural_concrete_m3')!.verdict, 'rounding');
 });
 
 test('Vision self-consistency: members seen by only one pass are kept with lower confidence', () => {

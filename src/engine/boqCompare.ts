@@ -130,10 +130,11 @@ export function compareTakeoffWithBoq(result: BOQProjectResult, boqIn: BoqTotals
     else {
       diff = Number((s - b).toFixed(3));
       pct = b !== 0 ? Number(((diff / b) * 100).toFixed(1)) : null;
-      // A BOQ rounded to whole units can be off by up to 0.5 per line
-      const roundTol = rounded ? 0.5 * (boq[key]?.sources.length || 1) : 0;
+      // A BOQ rounded to whole units rounds each line up (ceil), so true total lies in (b - k, b]
+      const k = boq[key]?.sources.length || 1;
+      const isRounding = rounded && s > b - k && s <= b + 1e-9;
       const a = Math.abs(pct ?? 100);
-      verdict = a <= 5 ? 'match' : Math.abs(diff) <= roundTol ? 'rounding' : a <= 15 ? 'close' : 'off';
+      verdict = a <= 5 ? 'match' : isRounding ? 'rounding' : a <= 15 ? 'close' : 'off';
     }
     return {
       key, label: meta.label, unit: meta.unit, system: Number(s.toFixed(2)), boq: b, diff, pct, verdict,
