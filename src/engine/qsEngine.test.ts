@@ -965,6 +965,85 @@ test('Quantity traceability: breakdown of net weight, hook weight, lap weight, a
   assert.ok(details.wastageWeightKg! > 0, 'Wastage weight must be calculated');
 });
 
+test('STAIR with steps and distribution rebar (F2, F3, F4)', () => {
+  const stair: ExtractedMember = {
+    provenance: READ,
+    tag: 'ST1',
+    memberType: 'STAIR',
+    width: 0.9,
+    depth: 0.125,
+    length: 4.33,
+    count: 1,
+    unit: 'm',
+    bottomRebar: 'DB12@0.125',
+    topRebar: 'DB12@0.25',
+    distRebar: 'RB9@0.20',
+    stairRiseM: 2.4,
+    stairRunM: 3.6,
+    stairRisers: 10,
+  };
+  const res = calculateMember(stair, 1);
+  const expectedVNet = Number((0.9 * 0.125 * 4.33 + 0.9 * 0.5 * 3.6 * 2.4 / 10).toFixed(4));
+  assert.equal(res.volumeNetM3, expectedVNet);
+
+  const expectedFormwork = Number((0.9 * 4.33 + 2 * 0.125 * 4.33 + 0.9 * 2.4 + 2 * 0.5 * 3.6 * 2.4 / 10).toFixed(4));
+  assert.equal(res.formworkNetM2, expectedFormwork);
+
+  assert.ok(res.rebarByDia!.DB12 > 0, 'rebar has bars for DB12');
+  assert.ok(res.rebarByDia!.RB9 > 0, 'rebar has bars for RB9');
+  const details = res.rebarDetails!;
+  assert.ok(details.barList.some(b => b.bar === 'DB12' && b.purpose.includes('ตามแนวลาด')));
+  assert.ok(details.barList.some(b => b.bar === 'DB12' && b.purpose.includes('เหล็กบนตามแนวลาด')));
+  assert.ok(details.barList.some(b => b.bar === 'RB9' && b.purpose.includes('เหล็กกระจาย')));
+
+  assert.ok(!res.flags!.some(f => f.code === 'STAIR_STEPS_MISSING'));
+  assert.ok(!res.flags!.some(f => f.code === 'STAIR_DIST_MISSING'));
+});
+
+test('STAIR without rise/run/risers and without distRebar (F2, F3, F4)', () => {
+  const stair: ExtractedMember = {
+    provenance: READ,
+    tag: 'ST2',
+    memberType: 'STAIR',
+    width: 0.9,
+    depth: 0.125,
+    length: 4.33,
+    count: 1,
+    unit: 'm',
+    bottomRebar: 'DB12@0.125',
+    topRebar: 'DB12@0.25',
+  };
+  const res = calculateMember(stair, 2);
+  const expectedVNet = Number((0.9 * 0.125 * 4.33).toFixed(4));
+  assert.equal(res.volumeNetM3, expectedVNet);
+
+  const expectedFormwork = Number((0.9 * 4.33 + 2 * 0.125 * 4.33).toFixed(4));
+  assert.equal(res.formworkNetM2, expectedFormwork);
+
+  assert.ok(res.flags!.some(f => f.code === 'STAIR_STEPS_MISSING'));
+  assert.ok(res.flags!.some(f => f.code === 'STAIR_DIST_MISSING'));
+});
+
+test('BEAM formulaStr contains formwork formula and formwork number matches 2d+w (F1)', () => {
+  const beam: ExtractedMember = {
+    provenance: READ,
+    tag: 'B1',
+    memberType: 'BEAM',
+    width: 0.20,
+    depth: 0.40,
+    length: 4.00,
+    count: 1,
+    unit: 'm',
+    isClearSpan: true,
+  };
+  const res = calculateMember(beam, 1);
+  assert.ok(res.formulaStr.includes('ไม้แบบ'));
+  const expectedFormwork = Number((1 * (2 * 0.40 + 0.20) * 4.00).toFixed(4));
+  assert.equal(res.formworkNetM2, expectedFormwork);
+  assert.ok(res.formulaStr.includes(`${res.formworkNetM2} m²`));
+});
+
+
 
 
 

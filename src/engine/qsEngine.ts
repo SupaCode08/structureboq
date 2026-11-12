@@ -357,7 +357,11 @@ export interface ExtractedMember {
   topRebar?: string;
   bottomRebar?: string;
   stirrupRebar?: string;
+  distRebar?: string;
   stirrupSets?: number;
+  stairRiseM?: number;
+  stairRunM?: number;
+  stairRisers?: number;
   thickness?: number;
   slabType?: 'CAST_IN_PLACE' | 'PRECAST_PLANK' | 'SLAB_ON_GROUND';
   footingType?: 'ISOLATED' | 'PILE_CAP';
@@ -1300,18 +1304,44 @@ export function computeDetailedRebar(
     }
   } else if (member.memberType === 'STAIR') {
     const main = parseSpacedBar(member.bottomRebar);
-    const dist = parseSpacedBar(member.topRebar);
+    const top = parseSpacedBar(member.topRebar);
+    const dist = parseSpacedBar(member.distRebar);
     if (main) {
       const diaM = Number(main.bar.replace(/\D/g, '')) || 12;
       const nPieces = count * Math.ceil(wM / main.spacing + 1);
       const cutLen = lNetM + 0.6;
       pushBarItem(main.bar, diaM, nPieces, cutLen, 'เหล็กบันได ค.ส.ล. ตามแนวลาด', undefined, lNetM, 0.6, 0);
+
+      if (top) {
+        const diaTop = Number(top.bar.replace(/\D/g, '')) || 12;
+        const nTop = count * Math.ceil(wM / top.spacing + 1);
+        pushBarItem(top.bar, diaTop, nTop, cutLen, 'เหล็กบันได ค.ส.ล. เหล็กบนตามแนวลาด', undefined, lNetM, 0.6, 0);
+        flags.push({
+          code: 'STAIR_TOP_FULL_LENGTH',
+          severity: 'warn',
+          field: 'topRebar',
+          message: 'เหล็กบนบันไดคิดเต็มความยาวลาด — แบบอาจให้เฉพาะช่วงปลาย ตรวจกับแบบ',
+        });
+      }
+
       if (dist) {
         const diaD = Number(dist.bar.replace(/\D/g, '')) || 9;
-        const nDist = count * Math.ceil(lNetM / dist.spacing + 1);
+        const layers = top ? 2 : 1;
+        const nDist = count * layers * Math.ceil(lNetM / dist.spacing + 1);
         pushBarItem(dist.bar, diaD, nDist, wM, 'เหล็กบันได ค.ส.ล. เหล็กกระจาย', undefined, wM, 0, 0);
+      } else {
+        flags.push({
+          code: 'STAIR_DIST_MISSING',
+          severity: 'warn',
+          field: 'distRebar',
+          message: 'ไม่พบเหล็กกระจายบันได — ยังไม่คิด กรอกในช่องเหล็กกระจาย',
+        });
       }
-      rebarFormulaStr = `บันได: ${main.bar}@${main.spacing}m ตามลาด${dist ? ` + ${dist.bar}@${dist.spacing}m` : ''}`;
+
+      const groups: string[] = [`ล่าง ${main.bar}@${main.spacing} ตามลาด`];
+      if (top) groups.push(`บน ${top.bar}@${top.spacing} ตามลาด`);
+      if (dist) groups.push(`กระจาย ${dist.bar}@${dist.spacing}`);
+      rebarFormulaStr = `บันได: ${groups.join(' + ')}`;
     } else {
       const kgNeeded = (vNet * 110.0);
       const totLen = kgNeeded / REBAR_KG_PER_M.DB12;
@@ -1839,7 +1869,7 @@ function calculateMemberFrom(member: ExtractedMember, idx: number, specs: Materi
   }
 
   const count = member.count || 1;
-  const vGross = Number((count * wM * dM * lGrossM).toFixed(4));
+  let vGross = Number((count * wM * dM * lGrossM).toFixed(4));
   let vNet = Number((count * wM * dM * lNetM).toFixed(4));
   let formworkNetM2 = 0;
   let formulaStr = '';
@@ -1856,10 +1886,10 @@ function calculateMemberFrom(member: ExtractedMember, idx: number, specs: Materi
     const isGroundBeam = /^GB/i.test(member.tag);
     const soffit = isGroundBeam && !rules.groundBeamSoffitFormwork ? 0 : wM;
     formworkNetM2 = Number((count * (2 * dM + soffit) * lNetM).toFixed(4));
-    formulaStr = `${count} × ${wM.toFixed(3)}m(w) × ${dM.toFixed(3)}m(d) × ${lNetM.toFixed(3)}m(L_net) = ${vNet.toFixed(4)} m³ [Gross: ${lGrossM.toFixed(3)}m - Ded: ${totalDeductionM.toFixed(3)}m]`;
+    formulaStr = `${count} × ${wM.toFixed(3)}m(w) × ${dM.toFixed(3)}m(d) × ${lNetM.toFixed(3)}m(L_net) = ${vNet.toFixed(4)} m³ [Gross: ${lGrossM.toFixed(3)}m - Ded: ${totalDeductionM.toFixed(3)}m] [ไม้แบบ: ${count} × (2×${dM.toFixed(3)} + ${soffit.toFixed(3)}) × ${lNetM.toFixed(3)} = ${formworkNetM2} m²]`;
   } else if (member.memberType === 'COLUMN') {
     formworkNetM2 = Number((count * 2 * (wM + dM) * lNetM).toFixed(4));
-    formulaStr = `${count} × ${wM.toFixed(3)}m(c_x) × ${dM.toFixed(3)}m(c_y) × ${lNetM.toFixed(3)}m(H) = ${vNet.toFixed(4)} m³`;
+    formulaStr = `${count} × ${wM.toFixed(3)}m(c_x) × ${dM.toFixed(3)}m(c_y) × ${lNetM.toFixed(3)}m(H) = ${vNet.toFixed(4)} m³ [ไม้แบบ: ${count} × 2×(${wM.toFixed(3)}+${dM.toFixed(3)}) × ${lNetM.toFixed(3)} = ${formworkNetM2} m²]`;
   } else if (member.memberType === 'FOOTING') {
     const margin = rules.excavationMarginM ?? 0.10;
     const leanT = rules.leanThicknessM ?? 0.05;
@@ -1874,7 +1904,7 @@ function calculateMemberFrom(member: ExtractedMember, idx: number, specs: Materi
     excavationM3 = Number((count * (wM + 2 * margin) * (dM + 2 * margin) * excDepth * (rules.excavationBulkingFactor ?? 1.0)).toFixed(4));
     backfillM3 = Number(Math.max(0, excavationM3 - vNet - leanConcreteM3 - sandBeddingM3).toFixed(4));
     pilesNos = count * (member.pileCount || 0);
-    formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(2)}m(L) × ${lNetM.toFixed(2)}m(D) = ${vNet.toFixed(4)} m³ [Lean: ${leanConcreteM3.toFixed(3)}m³, Sand: ${sandBeddingM3.toFixed(3)}m³, ดินขุด: ${excavationM3.toFixed(3)}m³]`;
+    formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(2)}m(L) × ${lNetM.toFixed(2)}m(D) = ${vNet.toFixed(4)} m³ [Lean: ${leanConcreteM3.toFixed(3)}m³, Sand: ${sandBeddingM3.toFixed(3)}m³, ดินขุด: ${excavationM3.toFixed(3)}m³, ไม้แบบ: ${count} × 2×(${wM.toFixed(2)}+${dM.toFixed(2)}) × ${lNetM.toFixed(2)} = ${formworkNetM2} m²]`;
   } else if (member.memberType === 'SLAB') {
     const isGroundSlab = (member.tag && member.tag.toUpperCase().includes('GS')) || member.slabType === 'SLAB_ON_GROUND';
     const isPrecast = member.slabType === 'PRECAST_PLANK' || (member.notes && member.notes.includes('สำเร็จรูป'));
@@ -1883,18 +1913,32 @@ function calculateMemberFrom(member: ExtractedMember, idx: number, specs: Materi
       precastSlabM2 = Number((count * wM * dM).toFixed(2));
       wiremeshM2 = precastSlabM2;
       formworkNetM2 = 0;
-      formulaStr = `แผ่นพื้นสำเร็จรูป ${precastSlabM2.toFixed(2)} ตร.ม. + คอนกรีตทับหน้า Topping ${lNetM.toFixed(2)}m = ${vNet.toFixed(4)} m³`;
+      formulaStr = `แผ่นพื้นสำเร็จรูป ${precastSlabM2.toFixed(2)} ตร.ม. + คอนกรีตทับหน้า Topping ${lNetM.toFixed(2)}m = ${vNet.toFixed(4)} m³ [ไม้แบบ: 0 m²]`;
     } else if (isGroundSlab) {
       formworkNetM2 = Number((count * 2 * (wM + dM) * lNetM).toFixed(4));
       sandBeddingM3 = Number((count * wM * dM * (member.sandThicknessM ?? rules.slabSandThicknessM ?? 0.05)).toFixed(4));
-      formulaStr = `${count} × ${wM.toFixed(2)}m × ${dM.toFixed(2)}m × ${lNetM.toFixed(2)}m(หนา) = ${vNet.toFixed(4)} m³ [Slab-on-Ground, ไม้แบบขอบ: ${formworkNetM2.toFixed(2)}m², ทรายรองพื้น ${sandBeddingM3.toFixed(3)}m³]`;
+      formulaStr = `${count} × ${wM.toFixed(2)}m × ${dM.toFixed(2)}m × ${lNetM.toFixed(2)}m(หนา) = ${vNet.toFixed(4)} m³ [Slab-on-Ground, ไม้แบบขอบ: ${count} × 2×(${wM.toFixed(2)}+${dM.toFixed(2)}) × ${lNetM.toFixed(2)} = ${formworkNetM2} m², ทรายรองพื้น ${sandBeddingM3.toFixed(3)}m³]`;
     } else {
       formworkNetM2 = Number((count * (wM * dM + 2 * (wM + dM) * lNetM)).toFixed(4));
-      formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(2)}m(L) × ${lNetM.toFixed(2)}m(หนา) = ${vNet.toFixed(4)} m³ [ไม้แบบท้องพื้น+ขอบ: ${formworkNetM2.toFixed(2)}m²]`;
+      formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(2)}m(L) × ${lNetM.toFixed(2)}m(หนา) = ${vNet.toFixed(4)} m³ [ไม้แบบท้องพื้น+ขอบ: ${count} × (${wM.toFixed(2)}×${dM.toFixed(2)} + 2×(${wM.toFixed(2)}+${dM.toFixed(2)})×${lNetM.toFixed(2)}) = ${formworkNetM2} m²]`;
     }
   } else if (member.memberType === 'STAIR') {
-    formworkNetM2 = Number((count * (wM * dM + 2 * dM * lNetM)).toFixed(4));
-    formulaStr = `${count} บันได ค.ส.ล. กว้าง ${wM.toFixed(2)}m × ท้องบันได ${dM.toFixed(2)}m = ${vNet.toFixed(4)} m³`;
+    const hasSteps = (member.stairRiseM ?? 0) > 0 && (member.stairRunM ?? 0) > 0 && (member.stairRisers ?? 0) > 0;
+    const soffit = wM * lNetM;
+    const sides = 2 * dM * lNetM;
+    if (hasSteps) {
+      const vSteps = count * wM * 0.5 * member.stairRunM! * member.stairRiseM! / member.stairRisers!;
+      vNet = Number((count * wM * dM * lNetM + vSteps).toFixed(4));
+      vGross = Number((count * wM * dM * lGrossM + vSteps).toFixed(4));
+      const risers = wM * member.stairRiseM!;
+      const stepSides = 2 * 0.5 * member.stairRunM! * member.stairRiseM! / member.stairRisers!;
+      formworkNetM2 = Number((count * (soffit + sides + risers + stepSides)).toFixed(4));
+      formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(3)}m(หนา) × ${lNetM.toFixed(2)}m(ลาด) + ขั้น ${count} × ${wM.toFixed(2)}m × ½×${member.stairRunM!.toFixed(2)}m×${member.stairRiseM!.toFixed(2)}m/${member.stairRisers} = ${vNet.toFixed(4)} m³ [ไม้แบบ: ท้อง ${count} × ${wM.toFixed(2)}×${lNetM.toFixed(2)} + ข้าง ${count} × 2×${dM.toFixed(3)}×${lNetM.toFixed(2)} + ตั้ง ${count} × ${wM.toFixed(2)}×${member.stairRiseM!.toFixed(2)} + ข้างขั้น ${count} × 2×½×${member.stairRunM!.toFixed(2)}×${member.stairRiseM!.toFixed(2)}/${member.stairRisers} = ${formworkNetM2} m²]`;
+    } else {
+      flags.push({ code: 'STAIR_STEPS_MISSING', severity: 'warn', message: 'ขั้นบันไดยังไม่คิด (ต้องมีความสูง ระยะราบ และจำนวนขั้น)' });
+      formworkNetM2 = Number((count * (soffit + sides)).toFixed(4));
+      formulaStr = `${count} × ${wM.toFixed(2)}m(w) × ${dM.toFixed(3)}m(หนา) × ${lNetM.toFixed(2)}m(ลาด) = ${vNet.toFixed(4)} m³ [ไม้แบบ: ${count} × (${wM.toFixed(2)}×${lNetM.toFixed(2)} + 2×${dM.toFixed(3)}×${lNetM.toFixed(2)}) = ${formworkNetM2} m²]`;
+    }
   } else if (member.memberType === 'WALL') {
     const wallArea = Number((count * lNetM * dM).toFixed(4));
     const plasterArea = Number((2 * wallArea).toFixed(4));

@@ -36,6 +36,7 @@ export interface SectionDef {
   plan_l_m?: number | null;
   top_rebar?: string | null;
   bottom_rebar?: string | null;
+  dist_rebar?: string | null;
   /** every bar note read at the footing's section, as read (display only) */
   rebar_notes?: string[];
   side_rebar?: string | null;
@@ -527,6 +528,9 @@ export function mergeSheetReadings(
         tag: normTag(s.tag), memberType: 'STAIR', count: 1, unit: 'm',
         width: assumptions.stairWidthM, depth: s.thickness_m || 0, length: slope,
         topRebar: s.top_rebar || '', bottomRebar: s.bottom_rebar || '',
+        distRebar: s.dist_rebar || undefined,
+        stairRunM: run || undefined,
+        stairRiseM: rise || undefined,
         level: 'บันได', gridLocation: '-', sourceFile, sourceSheetOrLayer: `${sh.sheet_id || ''} p${sh.page}`.trim(),
         rawDimensionStr: s.evidence || s.tag,
         provenance: {
