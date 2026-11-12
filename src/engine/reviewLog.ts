@@ -30,7 +30,7 @@ const TYPE_LABEL: Record<string, Partial<Record<string, string>>> = {
   COLUMN: { width: 'ด้าน X', depth: 'ด้าน Y', length: 'ความสูง', topRebar: 'เหล็กยืน' },
   FOOTING: { depth: 'ยาว', length: 'หนา', bottomRebar: 'ตะแกรงล่าง' },
   SLAB: { width: 'ด้าน X', depth: 'ด้าน Y', length: 'หนา' },
-  STAIR: { depth: 'หนาท้อง', length: 'ยาวลาด', bottomRebar: 'เหล็กหลัก', topRebar: 'เหล็กกระจาย' },
+  STAIR: { depth: 'หนาท้อง', length: 'ยาวลาด', bottomRebar: 'เหล็กล่างตามลาด', topRebar: 'เหล็กบนตามลาด', distRebar: 'เหล็กกระจาย', stairRiseM: 'สูงรวม', stairRunM: 'ราบรวม', stairRisers: 'จำนวนลูกตั้ง' },
   WALL: { width: 'หนาผนัง', depth: 'สูงผนัง', length: 'ยาวผนัง' },
   DOOR: { width: 'กว้าง', depth: 'สูง', length: 'จำนวนชุด' },
   WINDOW: { width: 'กว้าง', depth: 'สูง', length: 'จำนวนชุด' },

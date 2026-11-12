@@ -535,7 +535,12 @@ export function mergeSheetReadings(
         rawDimensionStr: s.evidence || s.tag,
         provenance: {
           evidence: [{ page: sh.page, bboxNorm: boxToNorm(s.box_2d), label: 'แบบขยายบันได', text: s.evidence, method: 'vision' }],
-          fieldSources: { width: 'assumed', depth: s.thickness_m ? 'drawing' : 'missing', length: slope ? 'drawing' : 'missing' },
+          fieldSources: {
+            width: 'assumed', depth: s.thickness_m ? 'drawing' : 'missing', length: slope ? 'drawing' : 'missing',
+            rebar: s.bottom_rebar || s.top_rebar ? 'drawing' : 'missing',
+            dist: s.dist_rebar ? 'drawing' : 'missing',
+            steps: run && rise ? 'drawing' : 'missing',
+          },
           confidence: Math.min(s.confidence ?? 0.6, 0.6),
           conflicts: [],
         },

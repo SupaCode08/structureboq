@@ -43,6 +43,12 @@ const FIELDS: Record<MemberType, Field[]> = {
   ],
   STAIR: [
     { key: 'width', label: 'กว้าง', source: 'width', unit: 'ม.' }, { key: 'depth', label: 'หนาท้อง', source: 'depth', unit: 'ม.' }, { key: 'length', label: 'ยาวลาด', source: 'length', unit: 'ม.' },
+    { key: 'bottomRebar', label: 'เหล็กล่างตามลาด', source: 'rebar', text: true, hint: 'DB12@0.125' },
+    { key: 'topRebar', label: 'เหล็กบนตามลาด', source: 'rebar', text: true, hint: 'DB12@0.25' },
+    { key: 'distRebar', label: 'เหล็กกระจาย', source: 'dist', text: true, hint: 'RB9@0.20' },
+    { key: 'stairRiseM', label: 'สูงรวม', source: 'steps', unit: 'ม.' },
+    { key: 'stairRunM', label: 'ราบรวม', source: 'steps', unit: 'ม.' },
+    { key: 'stairRisers', label: 'จำนวนลูกตั้ง', source: 'steps', unit: 'ขั้น' },
   ],
   WALL: [
     { key: 'width', label: 'หนาผนัง', source: 'width', unit: 'ม.' }, { key: 'depth', label: 'สูงผนัง', source: 'depth', unit: 'ม.' }, { key: 'length', label: 'ยาวผนัง', source: 'length', unit: 'ม.' },
