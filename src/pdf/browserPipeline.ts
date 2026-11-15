@@ -367,7 +367,14 @@ export async function fastClassifySheet(page: any, getWorker: any, pageNo: numbe
       }
       // only reached when no sheet code was read; a sheet's title-block frame has at most 4 such rules
       if (rightColumnRules(s.vsegs, vpTb.width, vpTb.height) >= 6) return { sheetId: 'TABLE', isStructural: false, skip: true, reason: 'ข้ามหน้าตาราง (เช่น BOQ ปร.4) — ไม่มีกรอบชื่อแบบ' };
-      // Vector-outline sheet already checked: do not fall through to slow 2000px/3000px Tesseract corner renders
+      // Vector-outline sheet already checked: do not fall through to slow 2000px/3000px Tesseract corner renders,
+      // but a render/photo sheet with a drawn title-block frame is still skipped
+      const imV = await largestPageImage(page).catch(() => null);
+      if (imV) {
+        const vp1 = page.getViewport({ scale: 1 });
+        const cover = Math.abs(imV.m[0] * imV.m[3] - imV.m[1] * imV.m[2]) / (vp1.width * vp1.height);
+        if (photoVerdict(imV.px, cover)) return { isStructural: false, skip: true, reason: 'ข้ามหน้าภาพถ่าย/ภาพ render (ไม่พบรหัสแผ่น)' };
+      }
       return { isStructural: true, skip: false };
     }
   } catch (err: any) {
@@ -456,16 +463,16 @@ export async function fastClassifySheet(page: any, getWorker: any, pageNo: numbe
       }
       if (dark * step * 4 < imgData.length * 0.0015) continue;
 
-      const gray = new Uint8Array(cropW * cropH);
-      for (let i = 0, j = 0; i < gray.length; i++, j += 4) {
-        gray[i] = (imgData[j] * 77 + imgData[j + 1] * 150 + imgData[j + 2] * 29) >> 8;
-      }
-      const pRes = await readBand(1, { data: gray, width: cropW, height: cropH }, 'flat', undefined, false).catch(() => null);
-      if (pRes?.words?.length) {
-        const dPad = decide(pRes.words.map(w => w.text).join(' '));
+      // scanned sheet codes are ~10 px tall at this size: tesseract misses them, PaddleOCR on the GPU reads them
+      // (0.1–0.4 s a corner). Worker 0 on the GPU is what the scan read uses anyway, so this also loads it early.
+      // Never Paddle on WASM here: single-thread text detection took minutes per corner.
+      if (await checkWebGpuAvailability()) {
+        const gray = new Uint8Array(cropW * cropH);
+        for (let i = 0, j = 0; i < gray.length; i++, j += 4) gray[i] = (imgData[j] * 77 + imgData[j + 1] * 150 + imgData[j + 2] * 29) >> 8;
+        const ws = await readScan({ data: gray, width: cropW, height: cropH }).catch(() => null);
+        const dPad = ws?.length ? decide(ws.map(w => w.text).join(' ')) : null;
         if (dPad) return dPad;
       }
-
       const worker = typeof getWorker === 'function' ? await getWorker() : getWorker;
       const res = await worker.recognize(c);
       const rawText = res?.data?.text || '';
