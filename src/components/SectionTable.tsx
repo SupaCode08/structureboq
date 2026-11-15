@@ -19,6 +19,7 @@ interface SectionTableProps {
   onUpdateMembers: (updates: { index: number; patch: Partial<ExtractedMember> }[]) => void;
   /** false until a reviewer name is given: values are still confirmed, but nothing is approved */
   canApprove?: boolean;
+  onRequestReviewer?: () => void;
 }
 
 type Field = { key: keyof ExtractedMember; label: string; source: string; text?: boolean; unit?: string; hint?: string };
@@ -87,7 +88,7 @@ export const SOURCE_BADGE: Record<FieldSource, { th: string; cls: string }> = {
 
 const blankZero = (v: any) => (v === 0 || v === undefined || v === null ? '' : v);
 
-export const SectionTable: React.FC<SectionTableProps> = ({ items, members, pageUrl, onUpdateMembers, canApprove = true }) => {
+export const SectionTable: React.FC<SectionTableProps> = ({ items, members, pageUrl, onUpdateMembers, canApprove = true, onRequestReviewer }) => {
   const [drafts, setDrafts] = useState<Record<string, Partial<ExtractedMember>>>({});
   const [openKey, setOpenKey] = useState<string | null>(null);
 
@@ -119,6 +120,7 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
   };
 
   const confirm = (g: typeof groups[number]) => {
+    if (!canApprove) { onRequestReviewer?.(); }
     const draft = drafts[g.key] || {};
     const fields = FIELDS[g.type];
     onUpdateMembers(g.idx.map(i => {
@@ -166,12 +168,50 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
   if (!open) return null;
   const conflicts = [...new Set(open.idx.flatMap(i => members[i].provenance?.conflicts || []))];
   const vol = open.items.reduce((a, it) => a + it.volumeNetM3, 0);
+  const fw = open.items.reduce((a, it) => a + it.formworkNetM2, 0);
+  const rb = open.items.reduce((a, it) => a + (it.rebarWeightKg || 0), 0);
+
+  const isGroupReady = (g: typeof groups[number]) => needsOf(g) > 0 && g.idx.every(i => {
+    const m = members[i];
+    if (!(Number(m.width) > 0 && Number(m.depth) > 0 && Number(m.length) > 0)) return false;
+    return conflictStatuses(m).every(c => c.state === 'resolved');
+  });
+  const readyGroups = groups.filter(isGroupReady);
+  const confirmAllReady = () => {
+    if (!readyGroups.length) return;
+    if (!canApprove) { onRequestReviewer?.(); return; }
+    const updates: { index: number; patch: Partial<ExtractedMember> }[] = [];
+    for (const g of readyGroups) {
+      const fields = FIELDS[g.type];
+      for (const i of g.idx) {
+        const m = members[i];
+        const fs = { ...(m.provenance?.fieldSources || {}) };
+        for (const f of fields) {
+          if (fs[f.source] === 'inferred' || fs[f.source] === 'assumed') fs[f.source] = 'reviewer';
+        }
+        const provenance = m.provenance && {
+          ...m.provenance, fieldSources: fs, confidence: Math.max(m.provenance.confidence, 0.9),
+          conflicts: (m.provenance.conflicts || []).filter(c => !c.startsWith('ไม่พบแบบขยาย')),
+        };
+        const merged = { ...m, provenance };
+        if (unconfirmedRequiredFields(merged).length === 0) {
+          updates.push({ index: i, patch: { provenance, review: approvalFor(merged, `ยืนยันหน้าตัด ${m.tag}`) } });
+        }
+      }
+    }
+    if (updates.length) onUpdateMembers(updates);
+  };
 
   return (
     <div className="grid lg:grid-cols-[300px_1fr] gap-4 items-start">
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden lg:sticky lg:top-[72px]">
-        <div className="px-3 py-2 border-b border-slate-200 text-sm text-slate-600">
-          {groups.length} เบอร์ · รอยืนยัน <b className="text-amber-700">{pending}</b>
+        <div className="px-3 py-2 border-b border-slate-200 text-sm text-slate-600 flex items-center justify-between gap-2">
+          <span>{groups.length} เบอร์ · รอยืนยัน <b className="text-amber-700">{pending}</b></span>
+          {readyGroups.length > 0 && (
+            <button onClick={confirmAllReady} className="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium shrink-0">
+              ยืนยันทั้งหมด ({readyGroups.length})
+            </button>
+          )}
         </div>
         <div className="max-h-[70vh] overflow-y-auto">
           {groups.map(g => {
@@ -205,7 +245,7 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
             <h3 className="text-lg font-semibold font-mono text-slate-900">{open.tag}</h3>
-            <span className="text-slate-600">{TYPE_TH[open.type]} · {open.idx.length} ชิ้น · คอนกรีต {vol.toFixed(3)} ลบ.ม.</span>
+            <span className="text-slate-600">{TYPE_TH[open.type]} · {open.idx.length} ชิ้น · คอนกรีต {vol.toFixed(3)} ลบ.ม. · ไม้แบบ {fw.toFixed(2)} ตร.ม. · เหล็ก {rb.toFixed(1)} กก.</span>
             <span className="text-sm text-slate-500">แก้ครั้งเดียว ใช้กับทุกตำแหน่งของเบอร์นี้</span>
           </div>
           {conflicts.length > 0 && (
@@ -283,6 +323,14 @@ export const SectionTable: React.FC<SectionTableProps> = ({ items, members, page
               </div>
             );
           })()}
+          {open.items[0]?.formulaStr && (
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-700 space-y-1">
+              <div><span className="font-sans font-semibold text-slate-500">สูตรคอนกรีต/ไม้แบบ (ตัวอย่าง 1 ชิ้น):</span> {open.items[0].formulaStr}</div>
+              {open.items[0].rebarFormulaStr && (
+                <div><span className="font-sans font-semibold text-slate-500">สูตรเหล็กเสริม:</span> {open.items[0].rebarFormulaStr}</div>
+              )}
+            </div>
+          )}
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button onClick={() => confirm(open)} className="h-10 px-5 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-medium">
               {drafts[open.key] ? 'บันทึกและยืนยัน' : 'ยืนยันตามที่อ่านได้'}

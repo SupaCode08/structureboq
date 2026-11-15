@@ -6,7 +6,7 @@
 import type { OcrWord, PageOcr } from './types';
 import { extractSmallStrokes, rasterize, pageGeometry, type OpsTable, type Polyline } from './vectorText';
 import { ocrRaster, unrotate, dedupeWords, type TesseractLike } from './ocr';
-import { ocrLabels } from './labelOcr';
+import { filterTitleBlockBoilerplate, ocrLabels, vectorTextLines } from './labelOcr';
 import { glyphWords, withGlyphWords } from './glyphRead';
 import { imageBoxesOnPage, type PdfImage } from './imageBoxes';
 import type { Raster } from './ocr';
@@ -32,6 +32,7 @@ export interface OcrEnv {
   toImage(data: Uint8Array, width: number, height: number): Promise<any> | any;
   /** rasterize off the main thread (browser worker); same result as rasterize() */
   rasterizeAsync?(polys: Polyline[], widthPt: number, heightPt: number, scale: number, pen: number, rotate: boolean): Promise<Raster>;
+  vectorLinesAndRasterAsync?(polys: Polyline[], widthPt: number, heightPt: number, scale: number, pen: number): Promise<{ raster: Raster; lines: ReturnType<typeof vectorTextLines> }>;
   /** full page render for scanned pages (browser canvas); null when unavailable */
   /** prepared = binarized, deskewed, lines removed; returns the skew it corrected (degrees) */
   renderPage?(page: PdfJsPage, scale: number, rotate90: boolean, prepared: boolean): Promise<{ image: any; width: number; height: number; raster?: Raster; skew?: number; lines?: { h: [number, number, number][]; v: [number, number, number][] }; circles?: [number, number, number][] } | null>;
@@ -46,6 +47,8 @@ export interface OcrEnv {
   imagePixels?(img: any): Promise<PdfImage | null> | PdfImage | null;
   /** one-pass scan reader (PaddleOCR, paddleOcr.ts) used instead of the tesseract passes; words normalized to the raster */
   readScan?(raster: Raster): Promise<OcrWord[]>;
+  /** fast vector-line reader: recognizes pre-located text-line boxes directly without full-page detection */
+  readVectorLines?(raster: Raster, jobs: { box: number[]; turned: boolean }[], scale: number): Promise<OcrWord[]>;
   onProgress?(msg: string): void;
   /** timing only: milliseconds spent in one step of reading this page (no effect on the result) */
   onTime?(step: string, ms: number): void;
@@ -121,11 +124,37 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
 
   if (strokes.small.length >= VECTOR_TEXT_MIN_STROKES) {
     kind = 'vector_text';
-    if (env.labelWorkers?.length) {
-      env.onProgress?.(`หน้า ${pageNo}: อ่านตัวอักษรทีละป้าย`);
-      words.push(...await ocrLabels(strokes.small, vp.width, vp.height, { workers: env.labelWorkers, toImage: env.toImage }));
-    }
-    if (!env.labelWorkers?.length || env.tilesToo) {
+    if (env.readVectorLines) {
+      env.onProgress?.(`หน้า ${pageNo}: อ่านตัวอักษรเวกเตอร์แบบเร็ว`);
+      const t0 = performance.now();
+      const { raster: r, lines } = env.vectorLinesAndRasterAsync
+        ? await env.vectorLinesAndRasterAsync(strokes.small, vp.width, vp.height, scale, 3)
+        : {
+            lines: filterTitleBlockBoilerplate(vectorTextLines(strokes.small), vp.width, vp.height),
+            raster: env.rasterizeAsync
+              ? await env.rasterizeAsync(strokes.small, vp.width, vp.height, scale, 3, false)
+              : rasterize(strokes.small, vp.width, vp.height, scale, 3, false),
+          };
+      const padPx = 6;
+      const jobs = lines.map(L => ({
+        box: [
+          Math.max(0, Math.floor(L.box.x0 * scale) - padPx),
+          Math.max(0, Math.floor(L.box.y0 * scale) - padPx),
+          Math.min(r.width, Math.ceil(L.box.x1 * scale) + padPx),
+          Math.min(r.height, Math.ceil(L.box.y1 * scale) + padPx),
+        ],
+        turned: L.vertical,
+      }));
+      clock('rasterize lines', t0);
+      const t1 = performance.now();
+      words.push(...await env.readVectorLines(r, jobs, scale));
+      clock('ocr lines', t1);
+    } else {
+      if (env.labelWorkers?.length) {
+        env.onProgress?.(`หน้า ${pageNo}: อ่านตัวอักษรทีละป้าย`);
+        words.push(...await ocrLabels(strokes.small, vp.width, vp.height, { workers: env.labelWorkers, toImage: env.toImage }));
+      }
+      if (!env.labelWorkers?.length || env.tilesToo) {
       const engines = [env.worker, ...(env.extraWorkers || [])];
       const turned = env.turnedWorkers?.length === engines.length ? env.turnedWorkers : null;
       // one raster: every engine on it (at once when each engine is its own worker)
@@ -157,6 +186,7 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
       const sides = turned ? await Promise.all([readSide(false, engines), readSide(true, turned)])
         : [await readSide(false, engines), await readSide(true, engines)];
       words.push(...sides.flat());
+    }
     }
   } else if (strokes.imageCount > 0 && env.renderPage) {
     kind = 'raster';

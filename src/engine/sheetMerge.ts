@@ -236,6 +236,21 @@ export function mergeSheetReadings(
 
   const colSections = [...sectionsByTag.values()].flat().filter(s => s.def.member_type === 'COLUMN' && !isSteelSection(s.def));
   const typicalColW = colSections.length ? Math.min(...colSections.map(c => c.def.width_m || 0.2)) : 0;
+  const planCols = new Map<string, string>();
+  for (const sh of sheets) {
+    if (sh.sheet_type !== 'footing_plan' && sh.sheet_type !== 'framing_plan') continue;
+    for (const inst of sh.instances || []) {
+      if (inst.from_grid) {
+        const parts = inst.tag.split(',').map(normTag).filter(Boolean);
+        for (const t of parts) {
+          const isCol = (parts.length > 1 && /^C/.test(t)) || (inst.member_type || '').toUpperCase() === 'COLUMN';
+          if (isCol && !/^(เสา|COL|C\??)$/i.test(t)) {
+            planCols.set(`${sh.page}|${inst.from_grid}`, t);
+          }
+        }
+      }
+    }
+  }
   const beamSizes = new Map<string, number>();
   for (const s of [...sectionsByTag.values()].flat()) {
     if (s.def.member_type === 'BEAM' && s.def.width_m && s.def.depth_m && !isSteelSection(s.def)) beamSizes.set(`${s.def.width_m}x${s.def.depth_m}`, (beamSizes.get(`${s.def.width_m}x${s.def.depth_m}`) || 0) + 1);
@@ -377,11 +392,36 @@ export function mergeSheetReadings(
           }
           fs.rebar = sec?.def.top_rebar || sec?.def.bottom_rebar ? (sec.def.inferred_fields?.includes('top_rebar') ? 'inferred' : 'drawing') : 'missing';
           if (sec?.def.section_conflicts?.length) { conflicts.push(...sec.def.section_conflicts); conf = Math.min(conf, 0.6); }
-          fs.support = typicalColW ? 'inferred' : 'missing';
+          // shortcut: square columns only (w === d), orientation along beam unneeded
+          const colEnd = (grid?: string | null) => {
+            if (!grid) return undefined;
+            const tag = planCols.get(`${sh.page}|${grid}`);
+            if (!tag) return undefined;
+            const s = lookupSection(tag);
+            if (!s || s.def.member_type !== 'COLUMN' || isSteelSection(s.def)) return undefined;
+            const { width_m: w, depth_m: d } = s.def;
+            if (!w || !d || w !== d) return undefined;
+            if (s.def.inferred_fields?.includes('width') || s.def.inferred_fields?.includes('depth')) return undefined;
+            return { tag, s, w, d };
+          };
+          const c1 = colEnd(inst.from_grid);
+          const c2 = colEnd(inst.to_grid);
+          let colW1 = typicalColW, colW2 = typicalColW;
+          if (c1 && c2) {
+            colW1 = c1.w;
+            colW2 = c2.w;
+            fs.support = 'drawing';
+            evidence.push(
+              { page: c1.s.page || sh.page, label: `เสารองรับ ${c1.tag} @ ${inst.from_grid}`, text: `${c1.w}×${c1.d} ม.`, method: 'vision' },
+              { page: c2.s.page || sh.page, label: `เสารองรับ ${c2.tag} @ ${inst.to_grid}`, text: `${c2.w}×${c2.d} ม.`, method: 'vision' },
+            );
+          } else {
+            fs.support = typicalColW ? 'inferred' : 'missing';
+          }
           pushMember({
             ...base,
             width: bw, depth: bd, length: len || 0,
-            supportColW1: typicalColW, supportColW2: typicalColW, isClearSpan: false,
+            supportColW1: colW1, supportColW2: colW2, isClearSpan: false,
             topRebar: rebarCount(sec?.def.top_rebar), bottomRebar: sumBars(sec?.def.bottom_rebar),
             stirrupRebar: sec?.def.stirrup || '', stirrupSets: sec?.def.stirrup_sets || undefined,
             provenance: { evidence, fieldSources: fs, confidence: conf, conflicts },

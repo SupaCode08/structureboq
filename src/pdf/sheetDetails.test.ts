@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readSheets, footingMeshAt, footingSections, footingBarNotes, completeTag, stairSteps } from './sheetReader.ts';
+import { readSheets, footingMeshAt, footingSections, footingBarNotes, completeTag, stairSteps, detailScaleOnly } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
 
 const W = 1207, H = 844;
@@ -342,4 +342,13 @@ test('stairSteps detects step outline from segments, rejects dash-dot and noise 
 
   const twoSteps = stairSteps(treads.slice(0, 2), risers.slice(0, 2), region);
   assert.equal(twoSteps, null);
+});
+
+test('detailScaleOnly: a sheet whose every scale is 1:30 or larger is a detail sheet, also when OCR splits "1 :20"', () => {
+  const w = (text: string, x: number, y: number) => ({ text, x0: x, x1: x + 0.02, y0: y, y1: y + 0.01, conf: 90 }) as OcrWord;
+  assert.equal(detailScaleOnly([w('1:20', 0.5, 0.9), w('1:25', 0.2, 0.9)]), true);
+  assert.equal(detailScaleOnly([w('1', 0.5, 0.9), w(':20', 0.52, 0.9)]), true);
+  assert.equal(detailScaleOnly([w('1:20', 0.5, 0.9), w('1:100', 0.2, 0.5)]), false);
+  assert.equal(detailScaleOnly([w('0.20', 0.5, 0.5), w('B1', 0.2, 0.5)]), false);
+  assert.equal(detailScaleOnly([w('21:20', 0.5, 0.9)]), false);
 });

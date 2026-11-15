@@ -12,7 +12,8 @@ import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { ocrPdfPage } from '../src/pdf/pdfOcrPipeline.ts';
 import { embeddedImage } from './scanImage.ts';
 import * as ort from 'onnxruntime-web';
-import { loadPaddle, paddleWords } from '../src/pdf/paddleOcr.ts';
+import { loadPaddle, paddleWords, paddleWordsFromBoxes } from '../src/pdf/paddleOcr.ts';
+import { mergeVectorOcr } from '../src/pdf/labelOcr.ts';
 import { requireFullBoq } from './fullGuard.ts';
 requireFullBoq('offline_ocr.ts');
 
@@ -33,7 +34,7 @@ if (process.env.LABELS === '1') for (const lang of ['eng', 'tha+eng']) {
   await w.setParameters({ tessedit_pageseg_mode: '7' as any });
   labelWorkers.push(w);
 }
-const extra = [];
+const extra: Tesseract.Worker[] = [];
 for (const lang of (process.env.OCR_EXTRA ?? 'tha+eng').split(',').filter(Boolean)) {
   const w = await Tesseract.createWorker(lang);
   await w.setParameters({ tessedit_pageseg_mode: '11' as any });
@@ -75,6 +76,15 @@ for (const p of parsePages(spec)) {
     toImage: (d, w, h) => { const img = Buffer.concat([Buffer.from(`P5\n${w} ${h}\n255\n`), Buffer.from(d.buffer, d.byteOffset, d.byteLength)]); rasters.set(img, { data: d, width: w, height: h }); return img; },
     renderPage: (pg, _scale, rot, prepared) => embeddedImage(pg, rot, prepared),
     readScan: paddle && (r => paddleWords(paddle, r)),
+    readVectorLines: paddle && process.env.VECTOR_PADDLE !== '0' ? async (rs, jobs) => {
+      const res = await paddleWordsFromBoxes(paddle, rs, jobs);
+      if (!extra[0]) return res.words;
+      return mergeVectorOcr(res.words, res.lines, jobs, rs, async strip => {
+        const pgm = Buffer.concat([Buffer.from(`P5\n${strip.width} ${strip.height}\n255\n`), Buffer.from(strip.data)]);
+        const tres = await extra[0].recognize(pgm);
+        return (tres?.data as any)?.words || [];
+      });
+    } : undefined,
   }, Number(process.env.OCR_DPI || 300) / 72);
   console.log(`p${p} ${r.kind} strokes=${r.smallStrokes} words=${r.words.length} ${Date.now() - t0}ms`);
   results.push(r);

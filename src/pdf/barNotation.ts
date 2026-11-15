@@ -39,6 +39,7 @@ function norm(t: string) {
   return t.toUpperCase()
     .replace(/[๐-๙]/g, ch => THAI_TO_ARABIC[ch] || ch)
     .replace(/[“”"'’‘`]/g, '')
+    .replace(/[\u4E00-\u9FFF]+/g, '')
     .replace(/[—–~_]/g, '-')
     .replace(/\s+/g, '')
     // Thai beam rebar positions & modifiers: (บน), (ล่าง), (พิเศษ), (ริม), (กลาง), (คอม้า), (รัดรอบ)
@@ -46,7 +47,7 @@ function norm(t: string) {
     // Thai two-way mesh indicators: (ตะแกรง 2 ทาง), (สองทาง), #
     .replace(/\(?(ตะแกรง\s*(?:2|สอง)?\s*ทาง?|2\s*ทาง|สอง\s*ทาง|สอง\s*ทิศทาง|TWOWAY|2-WAY)\)?/gi, '')
     .replace(/#+$/g, '')
-    .replace(/(?<=@\d+(?:\.\d+)?)[%#.]*$/g, '')
+    .replace(/(?<=@\d*\.?\d+)(?:[%#.H]+1?|%\d)$/g, '')
     // Thai standards มอก. 20 / 24 steel grades: SD30, SD40, SD50, SR24
     .replace(/SD(30|40|50)[-_]*(DB)?/gi, 'DB')
     .replace(/SR(24)[-_]*(RB)?/gi, 'RB')
@@ -55,15 +56,16 @@ function norm(t: string) {
     .replace(/(ซม|CM)\.?/gi, '§')
     .replace(/(ม\.|M\.|M\b)/gi, '')
     .replace(/§/g, 'CM')
-    .replace(/(?<=\d)(AA?[1-9L]?|HH|HN|3A|A2|A8|2%)\.?(?=@|$)/, '')
+    .replace(/(?<=\d)(AA?[1-9L]?|HH|HN|H%|H[1-4]?|3%|3A|A2|A8|(?<![01])2%|N|%+[AN]?)\.?H?(?=@|$)/g, '')
     // Thai stirrup prefixes: ป., ปล., ปลอก, 2-ปล., etc.
     .replace(/^([1-4])-?(?:ปลอก|ปล|ป)\.?-?/i, '$1-')
     .replace(/^(ปลอก|ปล|ป)\.?-?/i, '')
     .replace(/^(STIRRUPS?|STRR?|TIES?)\.?-?/i, '')
     .replace(/^(U|V|IJ|1J|J|LJ)(?=[ØøΦφ∅0OoZRD]?\d{1,2}@)/, '')
+    .replace(/([0Oo][69])3(?=\.?@)/g, '$1')
     .replace(/\.+(?=@)/g, '')
     .replace(/[,;:]+$/, '')
-    .replace(/(?<=\d)(WU|UU|JU|VU|WL|UL|JL|LJ|NL|WN|1J|UJ)\.?$/, '');
+    .replace(/(?<=\d)(?:[%3]?(?:WU|UU|JU|VU|WL|UL|JL|LJ|NL|WN|1J|UJ|[UW]))\.?(?=@|$)/g, '');
 }
 
 const sizeOk = (d: number) => SIZES.has(d);
@@ -84,7 +86,7 @@ function parseStrict(text: string): BarNote | null {
   const legs = t.match(new RegExp(`^([1-4])-?(?=${GRADE}|${SIGN})`));
   const JUNK = '[H%.\\s]{0,3}';
   m = (legs ? t.slice(legs[0].length) : t).match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
-  if (!legs) m ??= t.match(new RegExp(`^()[0OoZ2]?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
+  if (!legs) m ??= t.match(new RegExp(`^()-*(?:[1IL][0Oo]|[0OoZ2B])?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
   if (m) {
     const dia = Number(m[2]);
     let s = Number(m[3]);
@@ -124,7 +126,7 @@ function parseStrict(text: string): BarNote | null {
   }
   m = t.match(new RegExp(`^(\\d)-?${SIGN_OCR}(1[0256]|19|20|25|28|32)\\d?$`));
   if (m && Number(m[1]) >= 2) return { kind: 'count', n: Number(m[1]), grade: null, dia: Number(m[2]) };
-  m = t.match(/^(\D{0,4}?)(\d{1,3})[@©€®](\d*\.?\d+)(CM)?$/);
+  m = t.match(/^([1L][BP]|\D{0,4}?)(\d{1,3})[@©€®](\d*\.?\d+)(CM)?$/);
   if (m && (m[1] || m[2].length > 1)) {
     const d2 = Number(m[2].slice(-2)), d1 = Number(m[2].slice(-1));
     const dia = m[2].length >= 2 && sizeOk(d2) && d2 >= 10 ? d2 : sizeOk(d1) ? d1 : 0;

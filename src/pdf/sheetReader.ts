@@ -1064,6 +1064,13 @@ export function footingMeshAt(p: PageOcr, box: number[], others: number[][], gra
   return `${a.n.n}+${b.n.n}-${resolveGrade(a.n.grade ?? b.n.grade, a.n.dia, grades)}${a.n.dia}`;
 }
 
+/** Every scale written on the sheet ("1:20", OCR may split it "1 :20") is a detail scale, 1:30 or larger. */
+export function detailScaleOnly(words: OcrWord[]): boolean {
+  const text = [...words].sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0).map(w => w.text).join(' ');
+  const scales = [...text.matchAll(/(?<![\d.])1\s*:\s*(\d{2,3})\b/g)].map(m => Number(m[1]));
+  return scales.length > 0 && scales.every(n => n <= 30);
+}
+
 export function footingBarNotes(p: PageOcr, box: number[], others: number[][], grades: Map<number, 'RB' | 'DB'>): string[] {
   const zone = footingSectionZone(box, others);
   const phrases = barPhrases(p.words).filter(ph => ph.words.every(zone));
@@ -1108,7 +1115,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
     // in the vocabulary it would block the repair back to the tag it came from
     const slipOf = t.match(/^([A-Z]*([A-Z]))(\d)(\d[A-Z]?)$/);
     if (slipOf && AS_LETTER[slipOf[3]] === slipOf[2] && (counts.get(slipOf[1] + slipOf[4]) ?? 0) >= n) return false;
-    return n >= 2 && (/\d/.test(t) || /^(SP|GS)$/.test(t) || (bare.get(t) ?? 0) >= 2) && (t.length >= 2 || (bare.get(t) ?? 0) >= 2);
+    return n >= 2 && (/\d/.test(t) || /^(SP|GS|BX)$/.test(t) || (bare.get(t) ?? 0) >= 2) && (t.length >= 2 || (bare.get(t) ?? 0) >= 2);
   }).map(([t]) => t));
   for (const p of pages) {
     if (isDrawingIndexSheet(p)) continue;
@@ -1242,6 +1249,8 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         .sort((a, b) => b.n - a.n)[0];
       if (best && best.n >= planTags.length * 0.6) { plans = best.r; gridFromReference = true; }
     }
+    // a sheet drawn only at detail scales (1:10–1:30) is sections, not a plan: a "grid" there is section dimensions
+    if (detailScaleOnly(p.words)) plans = plans.filter(pl => pl.outlined || pl.drawn);
     if (plans.length && !gridFromReference && planTags.filter(t => plans.some(pl => inRegion(pl, t.w))).length < 3) plans = plans.filter(pl => pl.outlined);
 
     if (plans.length) {
@@ -1482,6 +1491,9 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         }
       } else if (/^\.\d{2}$/.test(t)) {
         mergedDecimals.push({ ...w, text: '0' + t });
+      } else {
+        const rep = t.match(/^(0\.\d{2})\1$/);
+        if (rep) mergedDecimals.push({ ...w, text: rep[1] });
       }
     }
     const allWords = [...p.words.filter(w => !usedDec.has(w)), ...mergedDecimals];
@@ -1605,7 +1617,8 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         if (stirrup) { sec.stirrup = stirrup; if (stirrupSets) sec.stirrup_sets = stirrupSets; }
         else if (spacingLegacy) sec.evidence = `${sec.evidence} (ปลอก @${spacingLegacy} — อ่านขนาดเหล็กไม่ได้)`;
         if (!sec.width_m && !sec.main_rebar) {
-          const below = (o: OcrWord) => Math.abs(cx(o) - x) < 0.07 && cy(o) > y + 0.01 && cy(o) < y + 0.5 && mine(o);
+          const sameCol = (o: OcrWord) => !ownTitles.some(t => /^C/.test(t.parts[0].tag) && Math.abs(cx(t.w) - x) < 0.08 && cy(t.w) > y && cy(t.w) < cy(o));
+          const below = (o: OcrWord) => Math.abs(cx(o) - x) < 0.07 && cy(o) > y + 0.01 && cy(o) < y + 0.5 && sameCol(o);
           const bNums = nums.filter(n => below(n.w) && n.v >= 0.15 && n.v <= 0.8).sort((a, b) => cy(b.w) - cy(a.w));
           const bNotes = phrases.filter(ph => ph.words.every(below)).sort((a, b) => cy(b.words[0]) - cy(a.words[0]));
           const main = bNotes.find(ph => ph.note.kind === 'count');
@@ -1743,12 +1756,24 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           if (candNums.length && candDepths.length) {
             const w_m = Math.min(...candNums.map(n => n.v));
             const d_m = Math.max(...candDepths.map(n => n.v));
+            const secX = candNums.reduce((s, n) => s + cx(n.w), 0) / candNums.length;
+            const maxDepthY1 = Math.max(...candDepths.map(n => n.w.y1));
+            const minWidthY0 = Math.min(...candNums.map(n => n.w.y0));
+            const secY = maxDepthY1 + 0.02;
+            const inGuess = (o: OcrWord) => cx(o) > secX - 0.11 && cx(o) < secX + 0.13 && cy(o) < maxDepthY1 + 0.015 && cy(o) > minWidthY0 - 0.01;
+            const notesGuess = phrases.filter(ph => ph.words.length && inGuess(ph.words[0]));
+            const gCounts = notesGuess.filter(ph => ph.note.kind === 'count').sort((a, b) => cy(a.words[0]) - cy(b.words[0]));
+            const gBars = gCounts.map(ph => formatBar(ph.note, setGrades));
+            const gStir = notesGuess.filter(ph => ph.note.kind === 'spacing' && (ph.note as { dia: number }).dia <= 12)
+              .sort((a, b) => Math.hypot(cx(a.words[0]) - secX, cy(a.words[0]) - secY) - Math.hypot(cx(b.words[0]) - secX, cy(b.words[0]) - secY))[0];
             sections.unshift({
               tag: expectedPrefix,
               member_type: 'BEAM',
               width_m: w_m,
               depth_m: d_m,
-              box_2d: [b2.box_2d![0], Math.round(expectedX * 1000), b2.box_2d![2], Math.round((expectedX + (b2.box_2d![3] - b2.box_2d![1]) / 1000) * 1000)], box_src: 'guess',
+              ...(gBars.length >= 2 ? { top_rebar: gBars[0], bottom_rebar: gBars[gBars.length - 1] } : gBars.length === 1 ? { top_rebar: gBars[0], bottom_rebar: gBars[0], inferred_fields: ['top_rebar'] } : {}),
+              ...(gStir ? { stirrup: formatBar(gStir.note, setGrades), ...(tieSets(gStir.note) ? { stirrup_sets: tieSets(gStir.note) } : {}) } : {}),
+              box_2d: [Math.max(0, Math.round((maxDepthY1 + 0.004) * 1000)), Math.max(0, Math.round((secX - 0.02) * 1000)), Math.min(1000, Math.round((maxDepthY1 + 0.036) * 1000)), Math.min(1000, Math.round((secX + 0.02) * 1000))], box_src: 'guess',
               evidence: `แถวรูปตัดคาน: ตำแหน่งถัดจาก ${b2.tag} ตรงกับ ${expectedPrefix} (${w_m}×${d_m} ม.)`,
               confidence: 0.85,
             });

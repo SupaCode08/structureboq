@@ -62,21 +62,33 @@ export async function loadPaddle(
   options?: { executionProviders?: ('webgpu' | 'wasm' | 'cpu')[] }
 ): Promise<Paddle> {
   const sessionOpts = options?.executionProviders ? { executionProviders: options.executionProviders } : undefined;
-  const detSession = await ort.InferenceSession.create(det as any, sessionOpts);
   const recSession = await ort.InferenceSession.create(rec as any, sessionOpts);
+  let detSession: any = null;
+  let detLoading: Promise<any> | null = null;
+  const ensureDet = async () => {
+    if (!det) throw new Error('det model not provided');
+    if (detSession) return detSession;
+    detLoading ??= ort.InferenceSession.create(det as any, sessionOpts).then((s: any) => {
+      detSession = wrapSessionWithDispose(s);
+      return detSession;
+    });
+    return detLoading;
+  };
   return {
     ort,
-    det: wrapSessionWithDispose(detSession),
+    get det() { return detSession; },
+    ensureDet,
     rec: wrapSessionWithDispose(recSession),
     dict: ['', ...dictText.split(/\r?\n/).filter((_, i, a) => i < a.length - 1 || a[i]), ' '],
     dispose: async () => disposePaddle({ ort, det: detSession, rec: recSession, dict: [] }),
-  };
+  } as Paddle;
 }
 
 const TILE = 960, OVER = 96;
 const MEAN = [0.485, 0.456, 0.406], STD = [0.229, 0.224, 0.225];
 
 async function probabilityMap(p: Paddle, r: Raster, st?: PaddleStats) {
+  const det = p.det ?? await (p as any).ensureDet?.();
   const map = new Uint8Array(r.width * r.height);
   for (let ty = 0; ty < Math.max(1, r.height - OVER); ty += TILE - OVER)
     for (let tx = 0; tx < Math.max(1, r.width - OVER); tx += TILE - OVER) {
@@ -94,8 +106,8 @@ async function probabilityMap(p: Paddle, r: Raster, st?: PaddleStats) {
         for (let c = 0; c < 3; c++) input[c * W * H + y * W + x] = (v - MEAN[c]) / STD[c];
       }
       if (st) st.detTiles++;
-      const out = await p.det.run({ [p.det.inputNames[0]]: new p.ort.Tensor('float32', input, [1, 3, H, W]) });
-      const prob = out[p.det.outputNames[0]].data as Float32Array;
+      const out = await det.run({ [det.inputNames[0]]: new p.ort.Tensor('float32', input, [1, 3, H, W]) });
+      const prob = out[det.outputNames[0]].data as Float32Array;
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
         const i = (ty + y) * r.width + tx + x, v = Math.round(prob[y * W + x] * 255);
         if (v > map[i]) map[i] = v;
@@ -134,16 +146,21 @@ function bilinear(r: Raster, x: number, y: number) {
 }
 
 function cropInput(r: Raster, [x0, y0, x1, y1]: number[], turned: boolean) {
-  const cw = turned ? y1 - y0 : x1 - x0, ch = turned ? x1 - x0 : y1 - y0;
-  const H = 48, W = Math.max(16, Math.round((cw * H) / ch));
+  const cw = Math.max(1, turned ? y1 - y0 : x1 - x0), ch = Math.max(1, turned ? x1 - x0 : y1 - y0);
+  const H = 48, rawW = Math.max(16, Math.round((cw * H) / ch));
+  const W = Math.ceil(rawW / 32) * 32;
   const input = new Float32Array(3 * W * H);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const u = ((x + 0.5) * cw) / W, v = ((y + 0.5) * ch) / H;
+  input.fill(1.0);
+  for (let y = 0; y < H; y++) for (let x = 0; x < rawW; x++) {
+    const u = ((x + 0.5) * cw) / rawW, v = ((y + 0.5) * ch) / H;
     const sx = turned ? x0 + v : x0 + u, sy = turned ? y1 - u : y0 + v;
     const g = bilinear(r, sx - 0.5, sy - 0.5) / 255;
-    for (let c = 0; c < 3; c++) input[c * W * H + y * W + x] = (g - 0.5) / 0.5;
+    const val = (g - 0.5) / 0.5;
+    input[y * W + x] = val;
+    input[W * H + y * W + x] = val;
+    input[2 * W * H + y * W + x] = val;
   }
-  return { input, W };
+  return { input, W, wRatio: W / rawW };
 }
 
 function decode(p: Paddle, data: Float32Array, T: number, C: number, offset: number) {
@@ -160,15 +177,15 @@ function decode(p: Paddle, data: Float32Array, T: number, C: number, offset: num
 }
 
 // Exported for test
-export async function readCrops(p: Paddle, r: Raster, jobs: { box: number[]; turned: boolean }[]): Promise<{ chars: { ch: string; t: number; p: number }[]; T: number; conf: number }[]> {
+export async function readCrops(p: Paddle, r: Raster, jobs: { box: number[]; turned: boolean }[]): Promise<{ chars: { ch: string; t: number; p: number }[]; T: number; conf: number; wRatio: number }[]> {
   if (!jobs.length) return [];
-  const results: { chars: { ch: string; t: number; p: number }[]; T: number; conf: number }[] = new Array(jobs.length);
-  const groups = new Map<number, { idx: number; input: Float32Array }[]>();
+  const results: { chars: { ch: string; t: number; p: number }[]; T: number; conf: number; wRatio: number }[] = new Array(jobs.length);
+  const groups = new Map<number, { idx: number; input: Float32Array; wRatio: number }[]>();
   for (let i = 0; i < jobs.length; i++) {
-    const { input, W } = cropInput(r, jobs[i].box, jobs[i].turned);
+    const { input, W, wRatio } = cropInput(r, jobs[i].box, jobs[i].turned);
     let g = groups.get(W);
     if (!g) { g = []; groups.set(W, g); }
-    g.push({ idx: i, input });
+    g.push({ idx: i, input, wRatio });
   }
   for (const [W, items] of groups) {
     const size = 3 * 48 * W;
@@ -178,7 +195,7 @@ export async function readCrops(p: Paddle, r: Raster, jobs: { box: number[]; tur
       for (let j = 0; j < n; j++) batchInput.set(chunk[j].input, j * size);
       const out = await p.rec.run({ [p.rec.inputNames[0]]: new p.ort.Tensor('float32', batchInput, [n, 3, 48, W]) });
       const o = out[p.rec.outputNames[0]], [, T, C] = o.dims as number[], data = o.data as Float32Array;
-      for (let j = 0; j < n; j++) results[chunk[j].idx] = decode(p, data, T, C, j * T * C);
+      for (let j = 0; j < n; j++) results[chunk[j].idx] = { ...decode(p, data, T, C, j * T * C), wRatio: chunk[j].wRatio };
     }
   }
   return results;
@@ -193,6 +210,71 @@ function smooth(r: Raster): Raster {
     out[y * W + x] = s / n;
   }
   return { data: out, width: W, height: H };
+}
+
+function decodeWordsFromCrop(
+  read: { chars: { ch: string; t: number; p: number }[]; T: number; conf: number; wRatio: number },
+  [x0, y0, x1, y1]: number[],
+  vertical: boolean,
+  rW: number,
+  rH: number,
+): OcrWord[] {
+  if (read.conf < 0.5) return [];
+  const out: OcrWord[] = [];
+  const len = vertical ? y1 - y0 : x1 - x0, step = (len * read.wRatio) / read.T;
+  let cur: typeof read.chars = [];
+  const flush = () => {
+    const text = cur.map(c => c.ch).join('');
+    if (cur.length && /[A-Za-z0-9\u0E00-\u0E7F]/.test(text)) {
+      const a0 = Math.max(0, (cur[0].t - 0.5) * step), a1 = Math.min(len, (cur[cur.length - 1].t + 1.5) * step);
+      const conf = Math.round((cur.reduce((s, c) => s + c.p, 0) / cur.length) * 100);
+      out.push(vertical
+        ? { text, conf, vertical: true, x0: x0 / rW, x1: x1 / rW, y0: (y1 - a1) / rH, y1: (y1 - a0) / rH }
+        : { text, conf, vertical: false, x0: (x0 + a0) / rW, x1: (x0 + a1) / rW, y0: y0 / rH, y1: y1 / rH });
+    }
+    cur = [];
+  };
+  for (const c of read.chars) if (c.ch === ' ') flush(); else cur.push(c);
+  flush();
+  return out;
+}
+
+/** Recognize pre-located text line crops directly (skipping DBNet text detection). */
+export async function paddleWordsFromBoxes(
+  p: Paddle,
+  r: Raster,
+  jobs: { box: number[]; turned: boolean }[],
+  st?: PaddleStats,
+  maxRatio = 14,
+): Promise<{ words: OcrWord[]; lines: { text: string; conf: number }[] }> {
+  if (!jobs.length) return { words: [], lines: [] };
+  const shortIdx: number[] = [];
+  const shortJobs: { box: number[]; turned: boolean }[] = [];
+  for (let i = 0; i < jobs.length; i++) {
+    const [x0, y0, x1, y1] = jobs[i].box;
+    const cw = jobs[i].turned ? y1 - y0 : x1 - x0;
+    const ch = Math.max(1, jobs[i].turned ? x1 - x0 : y1 - y0);
+    if (cw / ch < maxRatio) { shortIdx.push(i); shortJobs.push(jobs[i]); }
+  }
+  const t = performance.now();
+  const results = await readCrops(p, r, shortJobs);
+  if (st) {
+    st.boxes += shortJobs.length;
+    st.recCalls += shortJobs.length;
+    st.recMs += performance.now() - t;
+  }
+  const words: OcrWord[] = [];
+  const lines: { text: string; conf: number }[] = jobs.map(() => ({ text: '', conf: 0 }));
+  for (let k = 0; k < shortJobs.length; k++) {
+    const i = shortIdx[k];
+    const read = results[k];
+    const text = read.chars.map(c => c.ch).join('');
+    const conf = Math.round(read.conf * 100);
+    lines[i] = { text, conf };
+    words.push(...decodeWordsFromCrop(read, jobs[i].box, jobs[i].turned, r.width, r.height));
+  }
+  if (st) st.wordsKept += words.length;
+  return { words, lines };
 }
 
 async function readRaster(p: Paddle, r: Raster, st?: PaddleStats, flatOnly = false): Promise<OcrWord[]> {
@@ -232,22 +314,7 @@ async function readRaster(p: Paddle, r: Raster, st?: PaddleStats, flatOnly = fal
       const flat = p2Results[p2Idx++];
       if (flat.conf > read.conf) { read = flat; vertical = false; }
     }
-    if (read.conf < 0.5) continue;
-    const len = vertical ? y1 - y0 : x1 - x0, step = len / read.T;
-    let cur: typeof read.chars = [];
-    const flush = () => {
-      const text = cur.map(c => c.ch).join('');
-      if (cur.length && /[A-Za-z0-9]/.test(text)) {
-        const a0 = Math.max(0, (cur[0].t - 0.5) * step), a1 = Math.min(len, (cur[cur.length - 1].t + 1.5) * step);
-        const conf = Math.round((cur.reduce((s, c) => s + c.p, 0) / cur.length) * 100);
-        words.push(vertical
-          ? { text, conf, vertical: true, x0: x0 / r.width, x1: x1 / r.width, y0: (y1 - a1) / r.height, y1: (y1 - a0) / r.height }
-          : { text, conf, vertical: false, x0: (x0 + a0) / r.width, x1: (x0 + a1) / r.width, y0: y0 / r.height, y1: y1 / r.height });
-      }
-      cur = [];
-    };
-    for (const c of read.chars) if (c.ch === ' ') flush(); else cur.push(c);
-    flush();
+    words.push(...decodeWordsFromCrop(read, b, vertical, r.width, r.height));
   }
   return words;
 }

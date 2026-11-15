@@ -2,7 +2,7 @@
   "name": "บ้านสำเร็จรูป 1 (ระบบประสานพิกัด) — กรมโยธาธิการและผังเมือง",
   "variant": "บ้านสำเร็จรูป1 (ระบบประสานพิกัด)ฐานรากแผ่",
   "engine": "tesseract.js (offline)",
-  "generatedAt": "2026-10-23T19:41:40.764Z",
+  "generatedAt": "2026-11-15T00:33:17.614Z",
   "report": {
     "rows": [
       {
@@ -13,7 +13,7 @@
         "boq": 8,
         "diff": -0.515,
         "pct": -6.4,
-        "verdict": "close",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -47,7 +47,7 @@
         "boq": 2,
         "diff": -0.978,
         "pct": -48.9,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -83,7 +83,7 @@
         "boq": 1,
         "diff": -0.626,
         "pct": -62.6,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -113,10 +113,10 @@
         "key": "structural_concrete_m3",
         "label": "คอนกรีตโครงสร้าง",
         "unit": "ลบ.ม.",
-        "system": 6.97,
+        "system": 6.71,
         "boq": 9,
-        "diff": -2.028,
-        "pct": -22.5,
+        "diff": -2.287,
+        "pct": -25.4,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -178,10 +178,10 @@
         "key": "formwork_m2",
         "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
         "unit": "ตร.ม.",
-        "system": 68.07,
+        "system": 67.66,
         "boq": 110,
-        "diff": -41.932,
-        "pct": -38.1,
+        "diff": -42.34,
+        "pct": -38.5,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -243,10 +243,10 @@
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
         "unit": "กก.",
-        "system": 904.56,
+        "system": 878.92,
         "boq": 1159,
-        "diff": -254.437,
-        "pct": -22,
+        "diff": -280.083,
+        "pct": -24.2,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -364,10 +364,10 @@
         "key": "rebar_RB6_kg",
         "label": "เหล็ก RB6 (SR24)",
         "unit": "กก.",
-        "system": 35.48,
+        "system": 37.1,
         "boq": 48,
-        "diff": -12.524,
-        "pct": -26.1,
+        "diff": -10.896,
+        "pct": -22.7,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -410,10 +410,10 @@
         "key": "rebar_RB9_kg",
         "label": "เหล็ก RB9 (SR24)",
         "unit": "กก.",
-        "system": 79.4,
+        "system": 82.51,
         "boq": 319,
-        "diff": -239.596,
-        "pct": -75.1,
+        "diff": -236.486,
+        "pct": -74.1,
         "verdict": "off",
         "itemIds": [
           "QS-B-015",
@@ -449,11 +449,11 @@
         "key": "rebar_DB12_kg",
         "label": "เหล็ก DB12 (SD40)",
         "unit": "กก.",
-        "system": 324.69,
+        "system": 294.31,
         "boq": 307,
-        "diff": 17.693,
-        "pct": 5.8,
-        "verdict": "close",
+        "diff": -12.691,
+        "pct": -4.1,
+        "verdict": "match",
         "itemIds": [
           "QS-C-001",
           "QS-F-002",
@@ -650,29 +650,29 @@
       {
         "key": "structural_concrete_m3",
         "label": "คอนกรีตโครงสร้าง",
-        "pct": -22.5,
+        "pct": -25.4,
         "verdict": "off"
       },
       {
         "key": "formwork_m2",
         "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
-        "pct": -38.1,
+        "pct": -38.5,
         "verdict": "off"
       },
       {
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
-        "pct": -22,
+        "pct": -24.2,
         "verdict": "off"
       },
       {
         "key": "excavation_m3",
         "label": "ขุดดิน",
         "pct": -6.4,
-        "verdict": "close"
+        "verdict": "rounding"
       }
     ],
-    "meanAbsPct": 22.3,
+    "meanAbsPct": 23.6,
     "boqRoundedToInteger": true,
     "notes": [
       "BOQ แยกคอนกรีตทับหน้าพื้นสำเร็จรูปเป็นรายการ ตร.ม. — ไม่นับรวมในคอนกรีตโครงสร้าง",
@@ -689,7 +689,7 @@
         "boq": 8,
         "diff": -0.515,
         "pct": -6.4,
-        "verdict": "close",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -723,7 +723,7 @@
         "boq": 2,
         "diff": -0.978,
         "pct": -48.9,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -759,7 +759,7 @@
         "boq": 1,
         "diff": -0.626,
         "pct": -62.6,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -789,10 +789,10 @@
         "key": "structural_concrete_m3",
         "label": "คอนกรีตโครงสร้าง",
         "unit": "ลบ.ม.",
-        "system": 6.97,
+        "system": 6.71,
         "boq": 9,
-        "diff": -2.028,
-        "pct": -22.5,
+        "diff": -2.287,
+        "pct": -25.4,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -854,10 +854,10 @@
         "key": "formwork_m2",
         "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
         "unit": "ตร.ม.",
-        "system": 68.07,
+        "system": 67.66,
         "boq": 110,
-        "diff": -41.932,
-        "pct": -38.1,
+        "diff": -42.34,
+        "pct": -38.5,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -919,10 +919,10 @@
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
         "unit": "กก.",
-        "system": 904.56,
+        "system": 878.92,
         "boq": 1159,
-        "diff": -254.437,
-        "pct": -22,
+        "diff": -280.083,
+        "pct": -24.2,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -1040,10 +1040,10 @@
         "key": "rebar_RB6_kg",
         "label": "เหล็ก RB6 (SR24)",
         "unit": "กก.",
-        "system": 35.48,
+        "system": 37.1,
         "boq": 48,
-        "diff": -12.524,
-        "pct": -26.1,
+        "diff": -10.896,
+        "pct": -22.7,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -1086,10 +1086,10 @@
         "key": "rebar_RB9_kg",
         "label": "เหล็ก RB9 (SR24)",
         "unit": "กก.",
-        "system": 79.4,
+        "system": 82.51,
         "boq": 319,
-        "diff": -239.596,
-        "pct": -75.1,
+        "diff": -236.486,
+        "pct": -74.1,
         "verdict": "off",
         "itemIds": [
           "QS-B-015",
@@ -1125,11 +1125,11 @@
         "key": "rebar_DB12_kg",
         "label": "เหล็ก DB12 (SD40)",
         "unit": "กก.",
-        "system": 324.69,
+        "system": 294.31,
         "boq": 307,
-        "diff": 17.693,
-        "pct": 5.8,
-        "verdict": "close",
+        "diff": -12.691,
+        "pct": -4.1,
+        "verdict": "match",
         "itemIds": [
           "QS-C-001",
           "QS-F-002",
@@ -1326,29 +1326,29 @@
       {
         "key": "structural_concrete_m3",
         "label": "คอนกรีตโครงสร้าง",
-        "pct": -22.5,
+        "pct": -25.4,
         "verdict": "off"
       },
       {
         "key": "formwork_m2",
         "label": "ไม้แบบ (พื้นที่ผิวสัมผัส)",
-        "pct": -38.1,
+        "pct": -38.5,
         "verdict": "off"
       },
       {
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
-        "pct": -22,
+        "pct": -24.2,
         "verdict": "off"
       },
       {
         "key": "excavation_m3",
         "label": "ขุดดิน",
         "pct": -6.4,
-        "verdict": "close"
+        "verdict": "rounding"
       }
     ],
-    "meanAbsPct": 22.3,
+    "meanAbsPct": 23.6,
     "boqRoundedToInteger": true,
     "notes": [
       "BOQ แยกคอนกรีตทับหน้าพื้นสำเร็จรูปเป็นรายการ ตร.ม. — ไม่นับรวมในคอนกรีตโครงสร้าง",
@@ -1365,7 +1365,7 @@
         "boq": 8,
         "diff": -0.515,
         "pct": -6.4,
-        "verdict": "close",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -1399,7 +1399,7 @@
         "boq": 2,
         "diff": -0.978,
         "pct": -48.9,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -1435,7 +1435,7 @@
         "boq": 1,
         "diff": -0.626,
         "pct": -62.6,
-        "verdict": "off",
+        "verdict": "rounding",
         "itemIds": [
           "QS-F-002",
           "QS-F-004",
@@ -1595,10 +1595,10 @@
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
         "unit": "กก.",
-        "system": 780.18,
+        "system": 776.3,
         "boq": 1159,
-        "diff": -378.819,
-        "pct": -32.7,
+        "diff": -382.704,
+        "pct": -33,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -1716,10 +1716,10 @@
         "key": "rebar_RB6_kg",
         "label": "เหล็ก RB6 (SR24)",
         "unit": "กก.",
-        "system": 67.33,
+        "system": 70.24,
         "boq": 48,
-        "diff": 19.33,
-        "pct": 40.3,
+        "diff": 22.236,
+        "pct": 46.3,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -1772,10 +1772,10 @@
         "key": "rebar_RB9_kg",
         "label": "เหล็ก RB9 (SR24)",
         "unit": "กก.",
-        "system": 74.96,
+        "system": 73.61,
         "boq": 319,
-        "diff": -244.04,
-        "pct": -76.5,
+        "diff": -245.391,
+        "pct": -76.9,
         "verdict": "off",
         "itemIds": [
           "QS-S-013",
@@ -1803,10 +1803,10 @@
         "key": "rebar_DB12_kg",
         "label": "เหล็ก DB12 (SD40)",
         "unit": "กก.",
-        "system": 172.9,
+        "system": 167.46,
         "boq": 307,
-        "diff": -134.099,
-        "pct": -43.7,
+        "diff": -139.539,
+        "pct": -45.5,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -2014,17 +2014,17 @@
       {
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
-        "pct": -32.7,
+        "pct": -33,
         "verdict": "off"
       },
       {
         "key": "excavation_m3",
         "label": "ขุดดิน",
         "pct": -6.4,
-        "verdict": "close"
+        "verdict": "rounding"
       }
     ],
-    "meanAbsPct": 26,
+    "meanAbsPct": 26.1,
     "boqRoundedToInteger": true,
     "notes": [
       "BOQ แยกคอนกรีตทับหน้าพื้นสำเร็จรูปเป็นรายการ ตร.ม. — ไม่นับรวมในคอนกรีตโครงสร้าง",

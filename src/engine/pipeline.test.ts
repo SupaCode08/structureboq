@@ -200,3 +200,41 @@ test('Completeness: section details never placed on a plan are reported as possi
   assert.equal(s.provenance!.fieldSources.length, 'missing');
   assert.ok(!r.completeness.some(c => c.message.includes('GB2')));
 });
+
+test('Merge: framing plan with known column sections assigns drawing support width to beams', () => {
+  const framingSheets: SheetReading[] = [
+    {
+      page: 1, sheet_type: 'framing_plan', level: 'ชั้น 1',
+      instances: [
+        { tag: 'C1', member_type: 'COLUMN', from_grid: 'A/1' },
+        { tag: 'C1', member_type: 'COLUMN', from_grid: 'A/2' },
+        { tag: 'B1', member_type: 'BEAM', from_grid: 'A/1', to_grid: 'A/2', length_m: 3.0 },
+        { tag: 'B1', member_type: 'BEAM', from_grid: 'A/2', to_grid: 'A/3', length_m: 3.0 },
+      ],
+      sections: [],
+    },
+    {
+      page: 2, sheet_type: 'section_detail', instances: [],
+      sections: [
+        { tag: 'C1', member_type: 'COLUMN', width_m: 0.25, depth_m: 0.25, main_rebar: '4-DB12' },
+        { tag: 'B1', member_type: 'BEAM', width_m: 0.2, depth_m: 0.4, top_rebar: '2-DB12', bottom_rebar: '2-DB12' },
+      ],
+    },
+  ];
+
+  const r = mergeSheetReadings(framingSheets, 'set.pdf');
+  const beams = r.members.filter(m => m.memberType === 'BEAM');
+  assert.equal(beams.length, 2);
+
+  const b1 = beams.find(b => b.gridLocation === 'A/1–A/2')!;
+  assert.equal(b1.supportColW1, 0.25);
+  assert.equal(b1.supportColW2, 0.25);
+  assert.equal(b1.provenance!.fieldSources.support, 'drawing');
+  assert.ok(b1.provenance!.evidence.some(e => e.label === 'เสารองรับ C1 @ A/1' && e.text === '0.25×0.25 ม.' && e.page === 2));
+  assert.ok(b1.provenance!.evidence.some(e => e.label === 'เสารองรับ C1 @ A/2' && e.text === '0.25×0.25 ม.' && e.page === 2));
+
+  const b2 = beams.find(b => b.gridLocation === 'A/2–A/3')!;
+  assert.equal(b2.supportColW1, 0.25);
+  assert.equal(b2.supportColW2, 0.25);
+  assert.equal(b2.provenance!.fieldSources.support, 'inferred');
+});

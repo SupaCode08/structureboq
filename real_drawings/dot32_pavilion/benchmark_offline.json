@@ -2,7 +2,7 @@
   "name": "ศาลาพักคอยแหล่งท่องเที่ยวทางวัฒนธรรม (กรมการท่องเที่ยว DOT.32/2563)",
   "variant": "boq_spread.pdf",
   "engine": "pdf text layer + tesseract.js on stroke lettering",
-  "generatedAt": "2026-10-23T19:41:42.892Z",
+  "generatedAt": "2026-11-15T00:33:20.713Z",
   "report": {
     "rows": [
       {
@@ -208,10 +208,10 @@
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
         "unit": "กก.",
-        "system": 235.88,
+        "system": 231,
         "boq": 806.95,
-        "diff": -571.065,
-        "pct": -70.8,
+        "diff": -575.951,
+        "pct": -71.4,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -286,10 +286,10 @@
         "key": "rebar_RB6_kg",
         "label": "เหล็ก RB6 (SR24)",
         "unit": "กก.",
-        "system": 31.63,
+        "system": 32.34,
         "boq": 88.47,
-        "diff": -56.843,
-        "pct": -64.3,
+        "diff": -56.129,
+        "pct": -63.4,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -358,10 +358,10 @@
         "key": "rebar_DB12_kg",
         "label": "เหล็ก DB12 (SD40)",
         "unit": "กก.",
-        "system": 204.26,
+        "system": 198.66,
         "boq": 517.88,
-        "diff": -313.622,
-        "pct": -60.6,
+        "diff": -319.222,
+        "pct": -61.6,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -439,7 +439,7 @@
       {
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
-        "pct": -70.8,
+        "pct": -71.4,
         "verdict": "off"
       },
       {
@@ -449,7 +449,7 @@
         "verdict": "off"
       }
     ],
-    "meanAbsPct": 64.7,
+    "meanAbsPct": 64.8,
     "boqRoundedToInteger": false,
     "notes": []
   },
@@ -663,10 +663,10 @@
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
         "unit": "กก.",
-        "system": 254.41,
+        "system": 248.4,
         "boq": 806.95,
-        "diff": -552.541,
-        "pct": -68.5,
+        "diff": -558.547,
+        "pct": -69.2,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -742,10 +742,10 @@
         "key": "rebar_RB6_kg",
         "label": "เหล็ก RB6 (SR24)",
         "unit": "กก.",
-        "system": 31.63,
+        "system": 32.34,
         "boq": 88.47,
-        "diff": -56.843,
-        "pct": -64.3,
+        "diff": -56.129,
+        "pct": -63.4,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -814,10 +814,10 @@
         "key": "rebar_DB12_kg",
         "label": "เหล็ก DB12 (SD40)",
         "unit": "กก.",
-        "system": 222.78,
+        "system": 216.06,
         "boq": 517.88,
-        "diff": -295.098,
-        "pct": -57,
+        "diff": -301.818,
+        "pct": -58.3,
         "verdict": "off",
         "itemIds": [
           "QS-C-001",
@@ -897,7 +897,7 @@
       {
         "key": "rebar_total_kg",
         "label": "เหล็กเสริมรวม",
-        "pct": -68.5,
+        "pct": -69.2,
         "verdict": "off"
       },
       {
@@ -907,7 +907,7 @@
         "verdict": "off"
       }
     ],
-    "meanAbsPct": 61.2,
+    "meanAbsPct": 61.3,
     "boqRoundedToInteger": false,
     "notes": []
   },

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, AlertTriangle, ShieldCheck, Info, Undo2, Eye } from 'lucide-react';
 import type { CalculatedQuantity, ExtractedMember, FieldSource, ReviewDecision } from '../engine/qsEngine';
-import { approvalFor, fieldsApprovalCannotCover } from '../engine/qsEngine';
+import { approvalFor, conflictStatuses, fieldsApprovalCannotCover } from '../engine/qsEngine';
 import { FootingRebarSets } from './FootingRebarSets';
 import { ConflictPanel } from './ConflictPanel';
 import { DuplicatePanel } from './DuplicatePanel';
@@ -243,6 +243,31 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ items, members
   const reduction = items.length ? Math.round((1 - counts.todo / items.length) * 100) : 0;
   const tracked = items.filter(i => i.provenance).length;
 
+  const readyToApprove = useMemo(
+    () => items.filter(i => {
+      if (i.status !== 'NEEDS_REVIEW' || i.review || i.memberIndex === undefined) return false;
+      const m = members[i.memberIndex];
+      if (!m || !(m.width > 0 && m.depth > 0 && m.length > 0)) return false;
+      if (i.duplicate && i.duplicate.group.classification !== 'SAME_SPECIFICATION' && !i.duplicate.group.decision) return false;
+      if (conflictStatuses(m).some(c => c.state !== 'resolved')) return false;
+      if (fieldsApprovalCannotCover(m, i.flags || []).length > 0) return false;
+      return true;
+    }),
+    [items, members],
+  );
+
+  const approveAllReady = () => {
+    if (!readyToApprove.length) return;
+    if (!reviewer.trim()) { reviewerRef.current?.focus(); return; }
+    onUpdateMembers(readyToApprove.map(it => {
+      const m = members[it.memberIndex!];
+      return {
+        index: it.memberIndex!,
+        patch: { review: approvalFor(m, 'อนุมัติรายการค่าครบทั้งหมด') },
+      };
+    }));
+  };
+
   if (!items.length) {
     return <div className={`rounded-2xl border p-8 text-center text-sm ${card} ${muted}`}>ยังไม่มีรายการ — อัปโหลดแบบหรือเลือกชุดข้อมูลก่อน</div>;
   }
@@ -265,6 +290,11 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ items, members
           <input ref={reviewerRef} value={reviewer} onChange={e => onReviewerChange?.(e.target.value)} placeholder="ชื่อ (ต้องกรอกก่อนอนุมัติ)"
             className={`h-9 w-48 rounded-md border px-2 ${reviewer.trim() ? 'border-slate-300' : 'border-amber-400 ring-1 ring-amber-200'}`} />
         </label>
+        {readyToApprove.length > 0 && (
+          <button onClick={approveAllReady} className="h-9 px-3 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium">
+            อนุมัติรายการค่าครบ ({readyToApprove.length})
+          </button>
+        )}
         <div className="inline-flex rounded-md border border-slate-300 overflow-hidden text-sm">
           {([['table', 'ตามเบอร์'], ['items', 'รายชิ้น'], ['history', `ประวัติ (${reviewLog.filter(e => !e.undoneAt).length})`]] as const).map(([m, l]) => (
             <button key={m} onClick={() => setMode(m)} className={`h-9 px-4 border-l first:border-l-0 border-slate-300 ${mode === m ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}>{l}</button>
@@ -300,7 +330,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ items, members
       )}
 
       {mode === 'table' && (
-        <SectionTable items={items} members={members} docId={docId} theme={theme} onUpdateMembers={onUpdateMembers} canApprove={!!reviewer.trim()} />
+        <SectionTable items={items} members={members} docId={docId} theme={theme} onUpdateMembers={onUpdateMembers} canApprove={!!reviewer.trim()} onRequestReviewer={() => reviewerRef.current?.focus()} />
       )}
 
       <div className={`grid grid-cols-1 xl:grid-cols-12 gap-4 ${mode !== 'items' ? 'hidden' : ''}`}>
@@ -527,8 +557,10 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({ items, members
                   </div>
                 ))}
               </div>
-              <div className={`text-[11px] font-mono break-words ${muted}`}>{selected.formulaStr}</div>
-              {selected.rebarFormulaStr && <div className={`text-[11px] font-mono break-words ${muted}`}>{selected.rebarFormulaStr}</div>}
+              <div className={`rounded-xl border p-2.5 text-xs font-mono break-words space-y-1 ${isLight ? 'bg-slate-50 border-slate-200 text-slate-700' : 'bg-slate-950 border-slate-800 text-slate-300'}`}>
+                <div><span className={`font-sans font-semibold ${muted}`}>สูตรคอนกรีต/ไม้แบบ: </span>{selected.formulaStr}</div>
+                {selected.rebarFormulaStr && <div><span className={`font-sans font-semibold ${muted}`}>สูตรเหล็กเสริม: </span>{selected.rebarFormulaStr}</div>}
+              </div>
 
               <input value={note} onChange={e => setNote(e.target.value)} placeholder="หมายเหตุผู้ตรวจ (ไม่บังคับ)"
                 className={`w-full rounded-lg border px-3 py-2 text-xs ${isLight ? 'border-slate-200' : 'border-slate-700 bg-slate-950'}`} />

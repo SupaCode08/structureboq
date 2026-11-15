@@ -12,13 +12,18 @@ export function titleBlockStrokes(small: Polyline[], widthPt: number, heightPt: 
 
 export function titleBlockVerdict(texts: string[]): { id?: string; skip: boolean; structural: boolean } {
   const ids: string[] = [];
-  for (const text of texts) {
-    const t = text.replace(/[—–]/g, '-').toUpperCase().trim();
+  const clean = texts.map(text => text.replace(/[—–]/g, '-').toUpperCase().trim()).filter(Boolean);
+  for (let i = 0; i < clean.length; i++) {
+    const t = clean[i];
     const m = t.match(/^([A-Z]{1,2})[-=_]*(\d{2})$/);
-    if (m) ids.push(`${m[1]}-${m[2]}`);
+    if (m) { ids.push(`${m[1]}-${m[2]}`); continue; }
+    // Two-line title block sheet code (e.g. "S" on one line, "01" on the next)
+    if (/^(S|ST|A|AR|EE|E|SN|M|ME|AC|ID|L)$/.test(t) && i + 1 < clean.length && /^\d{2}$/.test(clean[i + 1])) {
+      ids.push(`${t === 'ST' ? 'S' : t === 'AR' ? 'A' : t}-${clean[i + 1]}`);
+    }
   }
   const structural = ids.some(id => /^S-\d{2}$/.test(id));
-  const skipPrefix = /^(A|EE|E|SN|ID|L)-/;
+  const skipPrefix = /^(A|EE|E|SN|M|ME|AC|ID|L)-/;
   const skip = !structural && ids.some(id => skipPrefix.test(id));
   const id = skip
     ? ids.find(i => skipPrefix.test(i))

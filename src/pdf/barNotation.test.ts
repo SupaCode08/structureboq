@@ -216,3 +216,11 @@ test('a spacing with a third decimal off the 5 mm grid drops it ("มม." read 
   assert.equal((parseBarNote('ø6@0.153') as { s: number }).s, 0.15);
   assert.equal((parseBarNote('ø6@0.125') as { s: number }).s, 0.125);
 });
+
+test('beam detail dashed stirrups and unit junk before @ or $', () => {
+  assert.deepEqual(parseBarNote('—106@0.15'), { kind: 'spacing', grade: null, dia: 6, s: 0.15 });
+  assert.deepEqual(parseBarNote('——L06Ju.@0.15'), { kind: 'spacing', grade: null, dia: 6, s: 0.15 });
+  assert.deepEqual(parseBarNote('063.@0.15'), { kind: 'spacing', grade: null, dia: 6, s: 0.15 });
+  assert.deepEqual(parseBarNote('20163%.'), { kind: 'count', n: 2, grade: null, dia: 16 });
+  assert.deepEqual(parseBarNote('3016%N.'), { kind: 'count', n: 3, grade: null, dia: 16 });
+});

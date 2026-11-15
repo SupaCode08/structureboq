@@ -16,30 +16,50 @@ export interface Box { x0: number; y0: number; x1: number; y1: number; polys: nu
 const grow = (o: Box, b: Box) => { o.x0 = Math.min(o.x0, b.x0); o.y0 = Math.min(o.y0, b.y0); o.x1 = Math.max(o.x1, b.x1); o.y1 = Math.max(o.y1, b.y1); o.polys.push(...b.polys); };
 
 /** union boxes that `near` joins, until nothing changes (small n per sheet: a few thousand) */
-function mergeBoxes(bs: Box[], near: (a: Box, b: Box) => boolean): Box[] {
+function mergeBoxes(bs: Box[], near: (a: Box, b: Box) => boolean, maxDx?: number): Box[] {
   let cur = bs.map(b => ({ ...b, polys: [...b.polys] }));
   for (let changed = true; changed;) {
     changed = false;
     const out: Box[] = [];
+    const active: Box[] = [];
     for (const b of cur.sort((p, q) => p.x0 - q.x0)) {
+      if (maxDx !== undefined) {
+        const cut = b.x0 - maxDx;
+        let w = 0;
+        for (let i = 0; i < active.length; i++) {
+          if (active[i].x1 >= cut) active[w++] = active[i];
+        }
+        active.length = w;
+      }
+      const pool = maxDx !== undefined ? active : out;
       let o: Box | undefined;
-      for (let k = out.length - 1; k >= 0 && k >= out.length - 400; k--) if (near(out[k], b)) { o = out[k]; break; }
+      for (let k = pool.length - 1; k >= 0 && k >= pool.length - 400; k--) if (near(pool[k], b)) { o = pool[k]; break; }
       if (o) {
         grow(o, b);
         changed = true;
         // absorbing b expands o, which may now bridge to other boxes already in out
         for (let again = true; again;) {
           again = false;
-          for (let k = out.length - 1; k >= 0 && k >= out.length - 400; k--) {
-            if (out[k] !== o && near(out[k], o)) {
-              const [p] = out.splice(k, 1);
+          for (let k = pool.length - 1; k >= 0 && k >= pool.length - 400; k--) {
+            if (pool[k] !== o && near(pool[k], o)) {
+              const p = pool[k];
+              if (maxDx !== undefined) {
+                active.splice(k, 1);
+                const oi = out.indexOf(p);
+                if (oi >= 0) out.splice(oi, 1);
+              } else {
+                out.splice(k, 1);
+              }
               grow(o, p);
               again = true;
               break;
             }
           }
         }
-      } else out.push(b);
+      } else {
+        out.push(b);
+        if (maxDx !== undefined) active.push(b);
+      }
     }
     cur = out;
   }
@@ -56,23 +76,25 @@ export function glyphBoxes(small: Polyline[]): Box[] {
     for (const [x, y] of p) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
     return { x0, y0, x1, y1, polys: [i] };
   });
-  return mergeBoxes(pb, (a, b) => a.x0 <= b.x1 + 0.2 && b.x0 <= a.x1 + 0.2 && a.y0 <= b.y1 + 0.2 && b.y0 <= a.y1 + 0.2);
+  return mergeBoxes(pb, (a, b) => a.x0 <= b.x1 + 0.2 && b.x0 <= a.x1 + 0.2 && a.y0 <= b.y1 + 0.2 && b.y0 <= a.y1 + 0.2, 0.25);
 }
 
 export function textLines(small: Polyline[], glyphs = glyphBoxes(small)): TextLine[] {
   const horiz = (a: Box, b: Box) => {
-    const ha = a.y1 - a.y0, hb = b.y1 - b.y0, h = Math.max(ha, hb, 1.5);
+    const ha = a.y1 - a.y0, hb = b.y1 - b.y0, h = Math.min(Math.max(ha, hb, 1.5), 24);
+    if (Math.max(a.y1, b.y1) - Math.min(a.y0, b.y0) > 28) return false;
     const overlap = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
     const gap = Math.max(a.x0, b.x0) - Math.min(a.x1, b.x1);
     return overlap > 0.4 * Math.min(ha, hb, h) && gap < 0.8 * h;
   };
   const vert = (a: Box, b: Box) => {
-    const wa = a.x1 - a.x0, wb = b.x1 - b.x0, w = Math.max(wa, wb, 1.5);
+    const wa = a.x1 - a.x0, wb = b.x1 - b.x0, w = Math.min(Math.max(wa, wb, 1.5), 24);
+    if (Math.max(a.x1, b.x1) - Math.min(a.x0, b.x0) > 28) return false;
     const overlap = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
     const gap = Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1);
     return overlap > 0.4 * Math.min(wa, wb, w) && gap < 0.8 * w;
   };
-  const H = mergeBoxes(glyphs, horiz), V = mergeBoxes(glyphs, vert);
+  const H = mergeBoxes(glyphs, horiz, 24), V = mergeBoxes(glyphs, vert, 24);
   const lineOf = (ls: Box[]) => {
     const byPoly = new Map<number, number>();
     ls.forEach((L, k) => L.polys.forEach(pi => byPoly.set(pi, k)));
@@ -85,7 +107,9 @@ export function textLines(small: Polyline[], glyphs = glyphBoxes(small)): TextLi
   const groups = new Map<string, Box[]>();
   glyphs.forEach((g, gi) => {
     const nh = h.n.get(h.idx[gi]) || 1, nv = v.n.get(v.idx[gi]) || 1;
-    const key = nv > nh ? `v${v.idx[gi]}` : `h${h.idx[gi]}`;
+    const wideGlyph = (g.x1 - g.x0) > (g.y1 - g.y0) * 1.15;
+    const isVert = nv > nh || (nv === nh && nv >= 2 && wideGlyph);
+    const key = isVert ? `v${v.idx[gi]}` : `h${h.idx[gi]}`;
     const gs = groups.get(key);
     if (gs) gs.push(g); else groups.set(key, [g]);
   });
@@ -96,6 +120,156 @@ function mergeAll(bs: Box[]): Box {
   const o: Box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity, polys: [] };
   for (const b of bs) grow(o, b);
   return o;
+}
+
+export function filterTitleBlockBoilerplate(lines: TextLine[], pageW: number, pageH: number): TextLine[] {
+  const rightCount = lines.filter(L => L.box.x0 > 0.86 * pageW).length;
+  if (rightCount < 8) return lines;
+  return lines.filter(L => !(L.box.x0 > 0.86 * pageW && L.box.y1 < 0.72 * pageH));
+}
+
+export function vectorTextLines(small: Polyline[], maxGlyphPt = 28): TextLine[] {
+  const glyphs = glyphBoxes(small).filter(g => {
+    const w = g.x1 - g.x0, h = g.y1 - g.y0;
+    const mn = Math.min(w, h), mx = Math.max(w, h);
+    return mn <= maxGlyphPt && mx <= 65 && !(mx > 25 && mn < 2.2);
+  });
+  return textLines(small, glyphs).filter(L => {
+    const w = L.box.x1 - L.box.x0, h = L.box.y1 - L.box.y0;
+    const th = L.vertical ? w : h;
+    return th >= 1.2 && th <= 30 && Math.max(w, h) >= 2.8 && !(Math.min(w, h) < 0.6 && L.box.polys.length <= 2);
+  });
+}
+
+export interface StripPlacement {
+  idx: number;
+  sx: number; sy: number; sw: number; sh: number;
+  dx: number; dy: number;
+  turned: boolean;
+}
+
+/** Pack sparse crop boxes onto one compact grayscale strip for single-pass Thai Tesseract OCR. */
+export function packThaiStrip(
+  r: { data: Uint8Array; width: number; height: number },
+  items: { box: number[]; turned: boolean }[],
+): { data: Uint8Array; width: number; height: number; placements: StripPlacement[] } {
+  const pad = 16, maxW = 1400;
+  const placements: StripPlacement[] = [];
+  let cx = pad, cy = pad, rowH = 0, totalW = 0;
+  for (let i = 0; i < items.length; i++) {
+    const [x0, y0, x1, y1] = items[i].box;
+    const sw = x1 - x0, sh = y1 - y0;
+    if (sw <= 0 || sh <= 0) continue;
+    const dw = items[i].turned ? sh : sw, dh = items[i].turned ? sw : sh;
+    if (cx + dw + pad > maxW && cx > pad) { cx = pad; cy += rowH + pad; rowH = 0; }
+    placements.push({ idx: i, sx: x0, sy: y0, sw, sh, dx: cx, dy: cy, turned: items[i].turned });
+    cx += dw + pad;
+    if (cx > totalW) totalW = cx;
+    if (dh > rowH) rowH = dh;
+  }
+  const totalH = Math.max(pad * 2, cy + rowH + pad);
+  totalW = Math.max(pad * 2, totalW);
+  const out = new Uint8Array(totalW * totalH).fill(255);
+  for (const p of placements) {
+    for (let y = 0; y < p.sh; y++) for (let x = 0; x < p.sw; x++) {
+      const v = r.data[(p.sy + y) * r.width + (p.sx + x)];
+      if (p.turned) out[(p.dy + p.sw - 1 - x) * totalW + (p.dx + y)] = v;
+      else out[(p.dy + y) * totalW + (p.dx + x)] = v;
+    }
+  }
+  return { data: out, width: totalW, height: totalH, placements };
+}
+
+/** Map Tesseract words recognized on a packed strip back to normalized page coordinates. */
+export function unpackStripWords(
+  tWords: { text?: string; confidence?: number; bbox: { x0: number; y0: number; x1: number; y1: number } }[],
+  placements: StripPlacement[],
+  rW: number,
+  rH: number,
+): OcrWord[] {
+  const out: OcrWord[] = [];
+  for (const tw of tWords) {
+    const txt = (tw.text || '').trim();
+    if (!txt) continue;
+    const cx = (tw.bbox.x0 + tw.bbox.x1) / 2, cy = (tw.bbox.y0 + tw.bbox.y1) / 2;
+    const pl = placements.find(p => cx >= p.dx - 4 && cx <= p.dx + (p.turned ? p.sh : p.sw) + 4 && cy >= p.dy - 4 && cy <= p.dy + (p.turned ? p.sw : p.sh) + 4);
+    if (!pl) continue;
+    const dw = pl.turned ? pl.sh : pl.sw, dh = pl.turned ? pl.sw : pl.sh;
+    const rx0 = (tw.bbox.x0 - pl.dx) / dw, rx1 = (tw.bbox.x1 - pl.dx) / dw;
+    const ry0 = (tw.bbox.y0 - pl.dy) / dh, ry1 = (tw.bbox.y1 - pl.dy) / dh;
+    if (pl.turned) {
+      out.push({
+        text: txt, conf: Math.round(tw.confidence || 0), vertical: true,
+        x0: (pl.sx + Math.max(0, ry0) * pl.sw) / rW, x1: (pl.sx + Math.min(1, ry1) * pl.sw) / rW,
+        y0: (pl.sy + (1 - Math.min(1, rx1)) * pl.sh) / rH, y1: (pl.sy + (1 - Math.max(0, rx0)) * pl.sh) / rH,
+      });
+    } else {
+      out.push({
+        text: txt, conf: Math.round(tw.confidence || 0), vertical: false,
+        x0: (pl.sx + Math.max(0, rx0) * pl.sw) / rW, x1: (pl.sx + Math.min(1, rx1) * pl.sw) / rW,
+        y0: (pl.sy + Math.max(0, ry0) * pl.sh) / rH, y1: (pl.sy + Math.min(1, ry1) * pl.sh) / rH,
+      });
+    }
+  }
+  return out;
+}
+
+/** Combine Paddle vector-line results with single-pass Thai strip OCR for Thai/low-confidence lines, without duplicating words. */
+export async function mergeVectorOcr(
+  paddleWords: OcrWord[],
+  paddleLines: { text: string; conf: number }[] | undefined,
+  jobs: { box: number[]; turned: boolean }[],
+  rs: { data: Uint8Array; width: number; height: number },
+  recognizeThai: (strip: { data: Uint8Array; width: number; height: number }) => Promise<{ text?: string; confidence?: number; bbox: { x0: number; y0: number; x1: number; y1: number } }[]>,
+  readThaiBoxes?: (thaiJobs: { box: number[]; turned: boolean }[]) => Promise<OcrWord[]>,
+): Promise<OcrWord[]> {
+  const thaiJobs: { box: number[]; turned: boolean }[] = [];
+  if (paddleLines) {
+    for (let i = 0; i < jobs.length; i++) {
+      const { text, conf } = paddleLines[i] || { text: '', conf: 0 };
+      const hasAt = /@/.test(text);
+      const [x0, y0, x1, y1] = jobs[i].box;
+      const cw = jobs[i].turned ? y1 - y0 : x1 - x0, ch = Math.max(1, jobs[i].turned ? x1 - x0 : y1 - y0);
+      const wideProse = cw / ch >= 14;
+      const isThaiLike = wideProse || (/[a-z]{4,}/.test(text) && !hasAt) || (/[^\x20-\x7E]/.test(text) && !hasAt) || (conf < 70 && !hasAt && text.length >= 2 && !/^[\d.\-+:xX*/\\()]+$/.test(text));
+      if (isThaiLike) thaiJobs.push(jobs[i]);
+    }
+  }
+  if (!thaiJobs.length) return paddleWords;
+
+  let thaiWords: OcrWord[];
+  if (readThaiBoxes) {
+    thaiWords = await readThaiBoxes(thaiJobs);
+  } else {
+    const chunks: { box: number[]; turned: boolean }[][] = [];
+    if (thaiJobs.length > 30) {
+      const nChunks = Math.min(3, Math.ceil(thaiJobs.length / 25));
+      const per = Math.ceil(thaiJobs.length / nChunks);
+      for (let i = 0; i < thaiJobs.length; i += per) chunks.push(thaiJobs.slice(i, i + per));
+    } else {
+      chunks.push(thaiJobs);
+    }
+    thaiWords = (await Promise.all(chunks.map(async ch => {
+      const strip = packThaiStrip(rs, ch);
+      const tWords = await recognizeThai(strip);
+      return unpackStripWords(tWords, strip.placements, rs.width, rs.height);
+    }))).flat();
+  }
+
+  // Drop Paddle words that overlap a thaiJob box where Tesseract actually produced words (prevents duplicate tags/bars)
+  const coveredBoxes = thaiJobs
+    .map(({ box: [x0, y0, x1, y1] }) => ({ x0: x0 / rs.width, y0: y0 / rs.height, x1: x1 / rs.width, y1: y1 / rs.height }))
+    .filter(b => thaiWords.some(tw => {
+      const cx = (tw.x0 + tw.x1) / 2, cy = (tw.y0 + tw.y1) / 2;
+      return cx >= b.x0 && cx <= b.x1 && cy >= b.y0 && cy <= b.y1;
+    }));
+
+  const keptPaddle = paddleWords.filter(pw => {
+    const cx = (pw.x0 + pw.x1) / 2, cy = (pw.y0 + pw.y1) / 2;
+    return !coveredBoxes.some(b => cx >= b.x0 && cx <= b.x1 && cy >= b.y0 && cy <= b.y1);
+  });
+
+  return [...keptPaddle, ...thaiWords];
 }
 
 export interface LabelOcrEnv {
