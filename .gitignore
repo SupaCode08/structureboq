@@ -10,3 +10,8 @@ coverage/
 *.pdf
 
 .agy_view/
+
+# downloaded drawing archives stay local (public repo)
+*.rar
+*.zip
+real_drawings/_downloads/

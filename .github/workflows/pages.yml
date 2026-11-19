@@ -1,0 +1,48 @@
+# Every push to master rebuilds the web app and publishes it on GitHub Pages.
+# One-time setup: repo Settings -> Pages -> Source: "GitHub Actions".
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm test
+      # drawing PDFs are not kept in the repo: sample sets without their PDF are left off the site
+      - name: Keep only sample sets whose PDF is in the repo
+        run: node -e "const fs=require('fs'),f='public/datasets/index.json',j=JSON.parse(fs.readFileSync(f));j.datasets=j.datasets.filter(d=>fs.existsSync('public/'+d.pdf));fs.writeFileSync(f,JSON.stringify(j,null,2))"
+      - run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
