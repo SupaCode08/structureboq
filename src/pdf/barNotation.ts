@@ -86,7 +86,7 @@ function parseStrict(text: string): BarNote | null {
   const legs = t.match(new RegExp(`^([1-4])-?(?=${GRADE}|${SIGN})`));
   const JUNK = '[H%.\\s]{0,3}';
   m = (legs ? t.slice(legs[0].length) : t).match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
-  if (!legs) m ??= t.match(new RegExp(`^()-*(?:[1IL][0Oo]|[0OoZ2B])?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
+  if (!legs) m ??= t.match(new RegExp(`^()-*(?:[1IL][0Oo]|[0OoZ2B#])?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
   if (m) {
     const dia = Number(m[2]);
     let s = Number(m[3]);
@@ -185,10 +185,10 @@ export function barPhrases<W extends WordBox>(words: W[]): { note: BarNote; word
     const single = parseBarNote(w.text);
     const chain = [w];
     let best: { note: BarNote; n: number } | null = single ? { note: single, n: 1 } : null;
-    for (let k = 0; k < 4; k++) {
-      const last = chain[chain.length - 1], h = last.y1 - last.y0;
+    for (let k = 0; k < 5; k++) {
+      const last = chain[chain.length - 1], h = Math.max(last.y1 - last.y0, chain[0].y1 - chain[0].y0);
       const next = rows.find(o => !chain.includes(o) && !used.has(o) && (o.x0 >= last.x1 - 0.2 * h || (o.x0 > last.x0 && o.x1 > last.x1 + 0.5 * h)) && o.x0 - last.x1 < 2 * h
-        && Math.abs((o.y0 + o.y1) / 2 - (last.y0 + last.y1) / 2) < 0.4 * h);
+        && Math.abs((o.y0 + o.y1) / 2 - (last.y0 + last.y1) / 2) < 0.5 * h);
       if (!next || (!best && parseBarNote(next.text))) break;
       const wide = next.x0 - last.x1 > 1.25 * h;
       chain.push(next);
