@@ -1,23 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CheckCircle2, XCircle, ChevronLeft, ChevronRight, AlertTriangle, ShieldCheck,
-  Info, Undo2, Eye, Plus, Trash2, Map as MapIcon, FileImage, BookOpen, Table2, ListChecks, History,
+  CheckCircle2, XCircle, ChevronLeft, ChevronRight, AlertTriangle,
+  Info, Undo2, Eye, Plus, Trash2, BookOpen, Table2, ListChecks, History,
 } from 'lucide-react';
 import type { CalculatedQuantity, EvidenceRef, ExtractedMember, FieldSource, MemberType, ReviewDecision } from '../engine/qsEngine';
 import { approvalFor, conflictStatuses, fieldsApprovalCannotCover } from '../engine/qsEngine';
-import type { CompletenessFinding, SheetReading } from '../engine/sheetMerge';
+import type { CompletenessFinding } from '../engine/sheetMerge';
 import type { PageOcr } from '../pdf/types';
 import type { ReviewLogEntry } from '../engine/reviewLog';
 import { FootingRebarSets } from './FootingRebarSets';
 import { ConflictPanel } from './ConflictPanel';
 import { DuplicatePanel } from './DuplicatePanel';
 import { SourceViewer } from './SourceViewer';
-import { PlanView } from './PlanView';
 import { SectionTable, TYPE_TH, SOURCE_BADGE } from './SectionTable';
 import { ReviewHistory } from './ReviewHistory';
 import { ProjectCodePanel } from './ProjectCodePanel';
 import { RebarInput } from './RebarInput';
-import { MemberDiagram } from './MemberDiagram';
 import { createBlankMember, fieldsForInstance, type ReviewFieldDef } from './reviewFields';
 
 type QueueFilter = 'todo' | 'spot' | 'auto' | 'done' | 'all';
@@ -33,7 +31,6 @@ interface ReviewWorkspaceProps {
   onUpdateMembers: (updates: { index: number; patch: Partial<ExtractedMember> }[]) => void;
   onAddMember?: (member: ExtractedMember) => void;
   onDeleteMember?: (index: number) => void;
-  readings?: SheetReading[];
   ocrPages?: PageOcr[];
   reviewLog?: ReviewLogEntry[];
   onUndo?: (id: string) => void;
@@ -67,7 +64,6 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
   onUpdateMembers,
   onAddMember,
   onDeleteMember,
-  readings = [],
   ocrPages = [],
   reviewLog = [],
   onUndo,
@@ -76,10 +72,8 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
   onReviewerChange,
   revision,
 }) => {
-  const isLight = theme === 'light';
   const [filter, setFilter] = useState<QueueFilter>('todo');
   const [step, setStep] = useState<ReviewStep>('table');
-  const [leftTab, setLeftTab] = useState<'source' | 'plan'>('source');
   const [sectionEvidence, setSectionEvidence] = useState<EvidenceRef[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<ExtractedMember>>({});
@@ -90,7 +84,6 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
   const [newTag, setNewTag] = useState('B1');
   const [newLevel, setNewLevel] = useState('ชั้น 1');
 
-  const listRef = useRef<HTMLDivElement>(null);
   const reviewerRef = useRef<HTMLInputElement>(null);
 
   const handleSectionEvidence = useCallback((ev: EvidenceRef[]) => {
@@ -106,7 +99,6 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
     all: items.length,
   }), [items, spot]);
 
-  // Real-time project totals (excluding rejected)
   const totals = useMemo(() => {
     let vol = 0, fw = 0, rb = 0;
     for (const it of items) {
@@ -204,12 +196,6 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  useEffect(() => {
-    listRef.current?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' });
-  }, [selected?.itemId]);
-
-  const card = isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800';
-  const muted = isLight ? 'text-slate-500' : 'text-slate-400';
   const reduction = items.length ? Math.round((1 - counts.todo / items.length) * 100) : 0;
 
   const readyToApprove = useMemo(
@@ -246,7 +232,6 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
     setFilter('all');
   };
 
-  // Active evidence for the sticky Left Pane SourceViewer
   const activeEvidence: EvidenceRef[] = useMemo(() => {
     if (step === 'table' && sectionEvidence.length > 0) return sectionEvidence;
     if (selected?.provenance?.evidence?.length) {
@@ -257,7 +242,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
   }, [step, sectionEvidence, selected, items]);
 
   if (!items.length && !onAddMember) {
-    return <div className={`rounded-2xl border p-8 text-center text-sm ${card} ${muted}`}>ยังไม่มีรายการ — อัปโหลดแบบหรือเลือกชุดข้อมูลก่อน</div>;
+    return <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">ยังไม่มีรายการ — อัปโหลดแบบหรือเลือกชุดข้อมูลก่อน</div>;
   }
 
   const renderInstanceField = (f: ReviewFieldDef) => {
@@ -267,21 +252,21 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
     const value = raw === 0 && src === 'missing' && draft[f.key] === undefined ? '' : raw;
     const changed = draft[f.key] !== undefined;
     return (
-      <div key={String(f.key)} className="px-3 py-2 text-xs space-y-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className={`font-medium ${muted}`}>{f.label}{f.unit ? ` (${f.unit})` : ''}</span>
+      <div key={String(f.key)} className="space-y-1.5">
+        <div className="flex items-center justify-between gap-2 text-xs">
+          <span className="font-medium text-slate-700">{f.label}{f.unit ? ` (${f.unit})` : ''}</span>
           <div className="flex items-center gap-1">
             {src && src !== 'drawing' && src !== 'grid' && src !== 'reviewer' && !changed && value !== '' && (
               <button
                 type="button"
                 onClick={() => setDraft(d => ({ ...d, [f.key]: member[f.key] }))}
-                className="px-1.5 py-0.5 rounded border border-violet-300 text-violet-700 text-[10px] font-semibold hover:bg-violet-50"
+                className="px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 text-[11px] font-medium hover:bg-slate-100"
               >
                 ยืนยันค่า
               </button>
             )}
             {src && (
-              <span className={`px-1.5 py-0.5 rounded border text-[10px] font-semibold ${SOURCE_BADGE[changed ? 'reviewer' : src].cls}`}>
+              <span className={`px-1.5 py-0.5 rounded border text-[11px] font-medium ${SOURCE_BADGE[changed ? 'reviewer' : src].cls}`}>
                 {SOURCE_BADGE[changed ? 'reviewer' : src].th}
               </span>
             )}
@@ -298,7 +283,7 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
           <select
             value={String(value || f.options[0].value)}
             onChange={e => setDraft(d => ({ ...d, [f.key]: e.target.value }))}
-            className={`w-full rounded-md border px-2 py-1 text-xs ${isLight ? 'border-slate-200 bg-white' : 'border-slate-700 bg-slate-950'}`}
+            className="w-full h-10 rounded-lg border border-slate-200 hover:border-slate-300 focus:border-slate-900 px-3 text-sm bg-white outline-none transition-colors"
           >
             {f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -309,7 +294,9 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
             step="0.01"
             onChange={e => setDraft(d => ({ ...d, [f.key]: f.kind === 'text' ? e.target.value : Number(e.target.value) }))}
             placeholder={src === 'missing' ? 'กรอกจากแบบ' : f.placeholder}
-            className={`w-full rounded-md border px-2 py-1 font-mono text-xs ${changed ? 'border-violet-400 ring-1 ring-violet-200' : isLight ? 'border-slate-200 bg-white' : 'border-slate-700 bg-slate-950'}`}
+            className={`w-full h-10 rounded-lg border px-3 font-mono text-sm outline-none transition-colors ${
+              changed ? 'border-slate-900 ring-1 ring-slate-200 bg-white' : 'border-slate-200 hover:border-slate-300 focus:border-slate-900 bg-white'
+            }`}
           />
         )}
       </div>
@@ -317,57 +304,83 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
   };
 
   return (
-    <div className="space-y-3">
-      {/* Top Bar: Progress + Real-time BOQ Totals + Reviewer + Add Member */}
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm space-y-3">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex-1 min-w-[14rem]">
-            <div className="flex items-center gap-2 text-xs text-slate-700">
-              <span>รอตรวจ <b className="text-amber-700 tabular-nums">{counts.todo}</b> / <span className="tabular-nums">{items.length}</span> รายการ</span>
-              <span className="text-slate-300">|</span>
-              <span className="font-mono text-slate-600">
-                คอนกรีต <b className="text-slate-900">{totals.vol.toFixed(2)}</b> ลบ.ม. · ไม้แบบ <b className="text-slate-900">{totals.fw.toFixed(1)}</b> ตร.ม. · เหล็ก <b className="text-slate-900">{totals.rb.toFixed(0)}</b> กก.
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 rounded-full overflow-hidden bg-slate-200 max-w-md">
-              <div className="h-full bg-emerald-600 transition-all" style={{ width: `${reduction}%` }} />
-            </div>
+    <div className="space-y-4">
+      {/* Calm Swiss Control Strip */}
+      <div className="rounded-xl border border-slate-200 bg-white px-5 py-3.5 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Segmented Stepper */}
+          <div className="inline-flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl">
+            {([
+              ['codes', '1. รหัสโครงการ', BookOpen],
+              ['table', '2. หน้าตัดตามเบอร์', Table2],
+              ['items', `3. ตรวจรายชิ้น (${counts.todo})`, ListChecks],
+              ['history', `ประวัติ (${reviewLog.filter(e => !e.undoneAt).length})`, History],
+            ] as const).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setStep(id)}
+                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  step === id ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-700">
-            <span>ผู้ตรวจ</span>
+          {/* Right Controls: Reviewer + Actions */}
+          <div className="flex flex-wrap items-center gap-2">
             <input
               ref={reviewerRef}
+              aria-label="ชื่อผู้ตรวจ"
               value={reviewer}
               onChange={e => onReviewerChange?.(e.target.value)}
-              placeholder="ชื่อ (ต้องกรอกก่อนอนุมัติ)"
-              className={`h-8 w-44 rounded-md border px-2 text-xs ${reviewer.trim() ? 'border-slate-300' : 'border-amber-400 ring-1 ring-amber-200'}`}
+              placeholder="ชื่อผู้ตรวจ (กรอกก่อนอนุมัติ)"
+              className={`h-9 w-48 rounded-lg border px-3 text-xs outline-none transition-colors ${
+                reviewer.trim() ? 'border-slate-200 focus:border-slate-900' : 'border-amber-400 bg-amber-50/40 focus:border-[#EA580C]'
+              }`}
             />
-          </label>
+            {readyToApprove.length > 0 && (
+              <button onClick={approveAllReady} className="h-9 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition-colors">
+                อนุมัติที่พร้อม ({readyToApprove.length})
+              </button>
+            )}
+            {onAddMember && (
+              <button
+                type="button"
+                onClick={() => setShowAddForm(v => !v)}
+                className="inline-flex items-center gap-1 h-9 px-3 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>เพิ่มชิ้นส่วน</span>
+              </button>
+            )}
+          </div>
+        </div>
 
-          {readyToApprove.length > 0 && (
-            <button onClick={approveAllReady} className="h-8 px-3 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold">
-              อนุมัติค่าครบ ({readyToApprove.length})
-            </button>
-          )}
-
-          {onAddMember && (
-            <button
-              type="button"
-              onClick={() => setShowAddForm(v => !v)}
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>เพิ่มชิ้นส่วน</span>
-            </button>
-          )}
+        {/* Quiet KPI & Progress Line */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2.5 border-t border-slate-100 text-xs text-slate-600">
+          <div className="flex items-center gap-2.5 min-w-[12rem]">
+            <span>คืบหน้า <b className="font-mono text-slate-900">{reduction}%</b></span>
+            <div className="w-28 h-1.5 rounded-full overflow-hidden bg-slate-200">
+              <div className="h-full bg-[#EA580C] transition-all" style={{ width: `${reduction}%` }} />
+            </div>
+            <span className="text-slate-400">รอตรวจ {counts.todo}/{items.length}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 font-mono">
+            <span>คอนกรีต <b className="text-slate-900">{totals.vol.toFixed(2)}</b> ลบ.ม.</span>
+            <span>ไม้แบบ <b className="text-slate-900">{totals.fw.toFixed(1)}</b> ตร.ม.</span>
+            <span>เหล็ก <b className="text-slate-900">{totals.rb.toFixed(0)}</b> กก.</span>
+          </div>
         </div>
 
         {/* Inline Add Member Drawer */}
         {showAddForm && onAddMember && (
-          <form onSubmit={handleCreateMember} className="flex flex-wrap items-end gap-2 pt-2.5 border-t border-slate-100 bg-indigo-50/40 -mx-4 px-4 pb-1">
+          <form onSubmit={handleCreateMember} className="flex flex-wrap items-end gap-3 pt-3 border-t border-slate-100">
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">ประเภทชิ้นส่วน</label>
+              <label className="block text-[11px] font-medium text-slate-500 mb-1">ประเภท</label>
               <select
                 value={newType}
                 onChange={e => {
@@ -376,84 +389,65 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
                   const defTag: Record<string, string> = { FOOTING: 'F1', COLUMN: 'C1', BEAM: 'B1', SLAB: 'S1', STAIR: 'ST1', WALL: 'W1' };
                   setNewTag(defTag[t] || 'M1');
                 }}
-                className="h-8 rounded-md border border-slate-300 bg-white px-2 text-xs"
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs"
               >
                 {ADD_TYPES.map(t => <option key={t} value={t}>{TYPE_TH[t]}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">รหัส (Tag)</label>
+              <label className="block text-[11px] font-medium text-slate-500 mb-1">รหัส (Tag)</label>
               <input
                 value={newTag}
                 onChange={e => setNewTag(e.target.value)}
                 required
-                placeholder="เช่น GB1, C2, F1"
-                className="h-8 w-28 rounded-md border border-slate-300 bg-white px-2 text-xs font-mono"
+                placeholder="เช่น GB1, C2"
+                className="h-9 w-28 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">ชั้น / ตำแหน่ง</label>
+              <label className="block text-[11px] font-medium text-slate-500 mb-1">ชั้น</label>
               <input
                 value={newLevel}
                 onChange={e => setNewLevel(e.target.value)}
                 placeholder="ชั้น 1"
-                className="h-8 w-32 rounded-md border border-slate-300 bg-white px-2 text-xs"
+                className="h-9 w-28 rounded-lg border border-slate-200 bg-white px-2.5 text-xs"
               />
             </div>
-            <button type="submit" className="h-8 px-3.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">
-              บันทึกเพิ่มชิ้นส่วน
+            <button type="submit" className="h-9 px-4 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold">
+              บันทึกเพิ่ม
             </button>
-            <button type="button" onClick={() => setShowAddForm(false)} className="h-8 px-2.5 rounded-md border border-slate-300 bg-white text-xs text-slate-600">
+            <button type="button" onClick={() => setShowAddForm(false)} className="h-9 px-3 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">
               ยกเลิก
             </button>
           </form>
         )}
-
-        {/* 3-Step Guided Stepper */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
-          {([
-            ['codes', '1. พจนานุกรมรหัสโครงการ', BookOpen],
-            ['table', '2. ตารางหน้าตัดตามเบอร์', Table2],
-            ['items', `3. ตรวจรายชิ้น / ขัดแย้ง (${counts.todo})`, ListChecks],
-            ['history', `ประวัติ (${reviewLog.filter(e => !e.undoneAt).length})`, History],
-          ] as const).map(([id, label, Icon]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setStep(id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                step === id
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Completeness Alert */}
+      {/* Collapsible Completeness Notice (1 clean line instead of 4 loud crimson bars) */}
       {completeness.length > 0 && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-900 space-y-1.5">
-          <div className="font-semibold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> อาจขาดชิ้นส่วน ({completeness.length})</div>
-          {completeness.map((c, i) => (
-            <div key={i} className="flex flex-wrap items-center gap-2">
-              <span className="flex-1 min-w-[16rem]">{c.message}</span>
-              {c.suggested.length > 0 && onAddSuggested && (
-                <button onClick={() => onAddSuggested(i)} className="shrink-0 h-7 px-2.5 rounded-md bg-rose-700 hover:bg-rose-800 text-white text-xs font-medium">
-                  เพิ่ม {c.suggested.length} ชิ้นเข้าคิว
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+        <details className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-2.5 text-xs text-amber-900">
+          <summary className="cursor-pointer font-semibold flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#EA580C] shrink-0" />
+            <span>อาจมีชิ้นส่วนตกหล่น {completeness.length} รายการ (กดเพื่อดูและเพิ่มเข้าคิว)</span>
+          </summary>
+          <div className="mt-2.5 pt-2.5 border-t border-amber-200/70 space-y-2">
+            {completeness.map((c, i) => (
+              <div key={i} className="flex flex-wrap items-center justify-between gap-2">
+                <span>{c.message}</span>
+                {c.suggested.length > 0 && onAddSuggested && (
+                  <button onClick={() => onAddSuggested(i)} className="h-7 px-3 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium shrink-0">
+                    + เพิ่ม {c.suggested.length} ชิ้นเข้าคิว
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </details>
       )}
 
-      {/* History Step (Full Width) */}
+      {/* History Step */}
       {step === 'history' && (
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
           <ReviewHistory
             log={reviewLog}
             memberCount={members.length}
@@ -463,69 +457,28 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
         </div>
       )}
 
-      {/* Split-Screen Workspace for Steps 1, 2, 3 */}
+      {/* Spacious 50/50 Split-Screen Workspace */}
       {step !== 'history' && (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-          {/* LEFT PANE (Sticky): SourceViewer + Key Plan Toggle */}
-          <div className="xl:col-span-5 xl:sticky xl:top-[72px] rounded-2xl border border-slate-200 bg-white p-3 shadow-sm space-y-2">
-            <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
-              <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('source')}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-colors ${
-                    leftTab === 'source' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <FileImage className="w-3.5 h-3.5" />
-                  <span>แบบต้นฉบับ (ซูมจุดอ่าน)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('plan')}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold transition-colors ${
-                    leftTab === 'plan' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <MapIcon className="w-3.5 h-3.5" />
-                  <span>Key Plan</span>
-                </button>
-              </div>
-              <span className="text-[11px] text-slate-400">
-                {activeEvidence.length > 0 ? `พบ ${activeEvidence.length} ตำแหน่งอ้างอิง` : 'ไม่มีกรอบอ้างอิง'}
-              </span>
-            </div>
-
-            {leftTab === 'source' ? (
-              <SourceViewer
-                docId={docId}
-                evidence={activeEvidence}
-                theme={theme}
-                height={580}
-                context={items
-                  .filter(i => i.itemId !== selected?.itemId)
-                  .map(i => {
-                    const ev = i.provenance?.evidence?.[0];
-                    return ev ? { ...ev, memberType: i.memberType } : undefined;
-                  })
-                  .filter(Boolean) as any}
-              />
-            ) : (
-              <div className="max-h-[600px] overflow-auto">
-                <PlanView
-                  readings={readings}
-                  items={items}
-                  onSelectItem={it => {
-                    setSelectedId(it.itemId);
-                    setStep('items');
-                  }}
-                />
-              </div>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* LEFT PANE (Sticky 50%): Pure SourceViewer */}
+          <div className="lg:col-span-6 lg:sticky lg:top-[76px] rounded-xl border border-slate-200 bg-white p-3">
+            <SourceViewer
+              docId={docId}
+              evidence={activeEvidence}
+              theme={theme}
+              height={640}
+              context={items
+                .filter(i => i.itemId !== selected?.itemId)
+                .map(i => {
+                  const ev = i.provenance?.evidence?.[0];
+                  return ev ? { ...ev, memberType: i.memberType } : undefined;
+                })
+                .filter(Boolean) as any}
+            />
           </div>
 
-          {/* RIGHT PANE: Guided 3-Step Review Form */}
-          <div className="xl:col-span-7 min-w-0 space-y-3">
+          {/* RIGHT PANE (50%): Clean Guided Review Form */}
+          <div className="lg:col-span-6 min-w-0 space-y-4">
             {step === 'codes' && (
               <ProjectCodePanel
                 members={members}
@@ -547,113 +500,124 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
                 onRequestReviewer={() => reviewerRef.current?.focus()}
                 hideSourceViewer
                 onEvidenceChange={handleSectionEvidence}
+                onJumpToItem={(id) => {
+                  setFilter('todo');
+                  setSelectedId(id);
+                  setStep('items');
+                }}
               />
             )}
 
             {step === 'items' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-                {/* Item Queue */}
-                <div className={`lg:col-span-4 rounded-xl border flex flex-col ${card}`} style={{ maxHeight: 680 }}>
-                  <div className="p-2 grid grid-cols-3 gap-1 text-[11px] border-b border-slate-100">
+              <div className="space-y-4">
+                {/* Clean Queue Selector */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
                     {([
                       ['todo', 'ต้องตรวจ'], ['spot', 'สุ่มตรวจ'], ['done', 'ตรวจแล้ว'], ['auto', 'อัตโนมัติ'], ['all', 'ทั้งหมด'],
                     ] as [QueueFilter, string][]).map(([k, label]) => (
                       <button
                         key={k}
                         onClick={() => { setFilter(k); setSelectedId(null); }}
-                        className={`px-1.5 py-1 rounded-md border ${
-                          filter === k ? 'bg-indigo-600 border-indigo-600 text-white font-semibold' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        className={`px-2.5 py-1 rounded-lg border transition-colors ${
+                          filter === k ? 'bg-slate-900 border-slate-900 text-white font-semibold' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                         }`}
                       >
                         {label} <span className="opacity-75">{counts[k]}</span>
                       </button>
                     ))}
                   </div>
-                  <div ref={listRef} className="overflow-y-auto p-1.5 space-y-1">
-                    {queue.length === 0 && <div className={`text-xs text-center py-8 ${muted}`}>{filter === 'todo' ? 'ไม่มีรายการค้างตรวจ' : 'ไม่มีรายการ'}</div>}
-                    {queue.map(it => {
-                      const isSel = selected?.itemId === it.itemId;
-                      const topFlag = (it.flags || []).find(f => f.severity === 'block') || (it.flags || []).find(f => f.severity === 'warn');
-                      return (
-                        <button
-                          key={it.itemId}
-                          data-selected={isSel}
-                          onClick={() => setSelectedId(it.itemId)}
-                          className={`w-full text-left p-2 rounded-lg border text-xs transition-colors ${
-                            isSel ? 'bg-indigo-50 border-indigo-300' : 'border-transparent hover:bg-slate-50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            {it.review?.status === 'approved' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                              : it.review?.status === 'rejected' || it.status === 'REJECTED' ? <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                              : it.status === 'NEEDS_REVIEW' ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              : <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
-                            <span className="font-bold font-mono">{it.tag}</span>
-                            <span className={`truncate ${muted}`}>{it.gridLocation}</span>
-                            <span className={`ml-auto font-mono text-[10px] px-1 rounded ${
-                              (it.confidencePct ?? 100) >= 80 ? 'bg-emerald-100 text-emerald-700' : (it.confidencePct ?? 100) >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
-                            }`}>{it.confidencePct ?? '-'}%</span>
-                          </div>
-                          {topFlag && !it.review && <div className={`truncate mt-0.5 text-[11px] ${topFlag.severity === 'block' ? 'text-rose-600' : 'text-amber-600'}`}>{topFlag.message}</div>}
-                        </button>
-                      );
-                    })}
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => move(-1)} className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700" title="ก่อนหน้า (K)">
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <select
+                      aria-label="เลือกรายการตรวจ"
+                      value={selected?.itemId || ''}
+                      onChange={e => setSelectedId(e.target.value)}
+                      className="flex-1 h-10 rounded-lg border border-slate-200 focus:border-slate-900 bg-white px-3 text-xs font-mono text-slate-900 outline-none"
+                    >
+                      {queue.length === 0 && <option value="">ไม่มีรายการในหมวดนี้</option>}
+                      {queue.map((it, idx) => (
+                        <option key={it.itemId} value={it.itemId}>
+                          {idx + 1}/{queue.length} · {it.tag} ({TYPE_TH[it.memberType] || it.memberType}) · {it.gridLocation} [{it.confidencePct ?? '-'}%]
+                        </option>
+                      ))}
+                    </select>
+                    <button onClick={() => move(1)} className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700" title="ถัดไป (J)">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Member Inspector & Decision Form */}
-                <div className={`lg:col-span-8 rounded-xl border p-4 space-y-3 shadow-sm ${card}`}>
+                {/* Clean Member Inspector */}
+                <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
                   {selected && member ? (
                     <>
-                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-slate-100">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <input
-                              aria-label="แก้ไข Tag รายชิ้น"
-                              value={String(draft.tag ?? member.tag)}
-                              onChange={e => setDraft(d => ({ ...d, tag: e.target.value.toUpperCase() }))}
-                              className="w-24 px-2 py-0.5 rounded border border-slate-300 font-mono font-bold text-sm text-slate-900"
-                            />
-                            <span className="text-xs font-semibold text-slate-500">{TYPE_TH[selected.memberType] || selected.memberType} · {selected.itemId}</span>
-                          </div>
-                          <div className={`text-xs ${muted}`}>{selected.gridLocation} · {selected.level}</div>
+                      <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <input
+                            aria-label="แก้ไข Tag รายชิ้น"
+                            value={String(draft.tag ?? member.tag)}
+                            onChange={e => setDraft(d => ({ ...d, tag: e.target.value.toUpperCase() }))}
+                            className="w-44 h-9 px-2.5 rounded-lg border border-slate-200 focus:border-slate-900 font-mono font-bold text-sm text-slate-900 outline-none"
+                          />
+                          <span className="px-2.5 py-1 rounded-md bg-slate-100 text-xs font-semibold text-slate-700">{TYPE_TH[selected.memberType] || selected.memberType}</span>
+                          <span className="text-xs text-slate-500">{selected.gridLocation} · {selected.level}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => move(-1)} className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50"><ChevronLeft className="w-4 h-4" /></button>
-                          <button onClick={() => move(1)} className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50"><ChevronRight className="w-4 h-4" /></button>
-                          {onDeleteMember && selected.memberIndex !== undefined && (
-                            <button
-                              type="button"
-                              title="ลบชิ้นส่วนนี้ออกจากโครงการ"
-                              onClick={() => onDeleteMember(selected.memberIndex!)}
-                              className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 ml-1"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
+                        {onDeleteMember && selected.memberIndex !== undefined && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteMember(selected.memberIndex!)}
+                            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg border border-slate-200 text-slate-500 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50 text-xs transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>ลบ</span>
+                          </button>
+                        )}
                       </div>
 
                       {selected.review && (
-                        <div className={`text-xs p-2 rounded-lg border flex items-center gap-2 ${selected.review.status === 'approved' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
+                        <div className={`text-xs px-3.5 py-2.5 rounded-lg border flex items-center gap-2 ${selected.review.status === 'approved' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
                           {selected.review.status === 'approved' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                          {selected.review.status === 'approved' ? 'อนุมัติแล้ว' : 'ไม่นับรายการนี้'}{selected.review.note ? ` — ${selected.review.note}` : ''}
+                          <span>{selected.review.status === 'approved' ? 'อนุมัติแล้ว' : 'ไม่นับรายการนี้'}{selected.review.note ? ` — ${selected.review.note}` : ''}</span>
                           <button onClick={() => decide(null)} className="ml-auto inline-flex items-center gap-1 underline"><Undo2 className="w-3 h-3" />ยกเลิก</button>
                         </div>
                       )}
 
                       {selected.duplicate && selected.duplicate.group.classification !== 'SAME_SPECIFICATION' && (
-                        <DuplicatePanel
-                          key={`${selected.itemId}:${selected.duplicate.group.key}:${selected.duplicate.group.decision?.at ?? 'none'}`}
-                          group={selected.duplicate.group}
-                          items={items}
-                          members={members}
-                          reviewer={reviewer}
-                          revision={revision}
-                          onAskReviewer={() => reviewerRef.current?.focus()}
-                          onDecide={onUpdateMembers}
-                          onOpenItem={id => setSelectedId(id)}
-                        />
+                        selected.duplicate.group.blocking ? (
+                          <DuplicatePanel
+                            key={`${selected.itemId}:${selected.duplicate.group.key}:${selected.duplicate.group.decision?.at ?? 'none'}`}
+                            group={selected.duplicate.group}
+                            items={items}
+                            members={members}
+                            reviewer={reviewer}
+                            revision={revision}
+                            onAskReviewer={() => reviewerRef.current?.focus()}
+                            onDecide={onUpdateMembers}
+                            onOpenItem={id => setSelectedId(id)}
+                          />
+                        ) : (
+                          <details className="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-600">
+                            <summary className="cursor-pointer font-medium">
+                              เบอร์เดียวกัน {selected.duplicate.group.occurrences.length} ตำแหน่ง (คนละชิ้น · ไม่ต้องตัดสิน)
+                            </summary>
+                            <div className="mt-2">
+                              <DuplicatePanel
+                                key={`${selected.itemId}:${selected.duplicate.group.key}:${selected.duplicate.group.decision?.at ?? 'none'}`}
+                                group={selected.duplicate.group}
+                                items={items}
+                                members={members}
+                                reviewer={reviewer}
+                                revision={revision}
+                                onAskReviewer={() => reviewerRef.current?.focus()}
+                                onDecide={onUpdateMembers}
+                                onOpenItem={id => setSelectedId(id)}
+                              />
+                            </div>
+                          </details>
+                        )
                       )}
 
                       {member && selected.memberIndex !== undefined && !!selected.conflicts?.length && (
@@ -670,33 +634,28 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
                       )}
 
                       {selected.approvalState === 'STALE' && (
-                        <div data-stale className="text-xs p-2 rounded-lg border bg-amber-50 border-amber-200 text-amber-800 space-y-1">
+                        <div data-stale className="text-xs p-3 rounded-lg border bg-amber-50 border-amber-200 text-amber-900 space-y-1">
                           <div className="font-semibold">อนุมัติหมดอายุ — ค่าที่ใช้คำนวณเปลี่ยน ต้องอนุมัติใหม่</div>
                           <ul className="list-disc pl-4 font-mono break-all">{(selected.staleChanges || []).map((c, i) => <li key={i}>{c}</li>)}</ul>
                         </div>
                       )}
 
-                      {/* Flags */}
-                      <div className="space-y-1">
-                        {(selected.flags || []).length === 0 && selected.rejectionReasons.length === 0 && (
-                          <div className="text-xs flex items-center gap-1.5 text-emerald-700"><ShieldCheck className="w-4 h-4" /> ไม่มีข้อสงสัย</div>
-                        )}
-                        {selected.rejectionReasons.map((r, i) => (
-                          <div key={'r' + i} className="text-xs flex gap-1.5 text-rose-600"><XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />{r}</div>
-                        ))}
-                        {(selected.flags || []).map((f, i) => (
-                          <div key={i} className={`text-xs flex gap-1.5 ${f.severity === 'block' ? 'text-rose-600' : f.severity === 'warn' ? 'text-amber-700' : muted}`}>
-                            {f.severity === 'info' ? <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> : <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />}
-                            {f.message}
-                          </div>
-                        ))}
-                      </div>
+                      {((selected.flags || []).length > 0 || selected.rejectionReasons.length > 0) && (
+                        <div className="rounded-lg bg-slate-50 border border-slate-200 px-3.5 py-2.5 space-y-1">
+                          {selected.rejectionReasons.map((r, i) => (
+                            <div key={'r' + i} className="text-xs flex gap-1.5 text-rose-700"><XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />{r}</div>
+                          ))}
+                          {(selected.flags || []).map((f, i) => (
+                            <div key={i} className={`text-xs flex gap-1.5 ${f.severity === 'block' ? 'text-rose-700' : f.severity === 'warn' ? 'text-amber-800' : 'text-slate-500'}`}>
+                              {f.severity === 'info' ? <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" /> : <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />}
+                              {f.message}
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                      {/* Live Cross-Section Diagram */}
-                      <MemberDiagram item={selected} lang="th" theme={theme} />
-
-                      {/* Unified Complete Fields */}
-                      <div className="rounded-xl border border-slate-200 divide-y divide-slate-100">
+                      {/* Spacious 2-column form */}
+                      <div className="grid sm:grid-cols-2 gap-4">
                         {fieldsForInstance(member.memberType).map(renderInstanceField)}
                       </div>
 
@@ -704,28 +663,25 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
                         const cmode = ('coverMode' in draft ? draft.coverMode : member.coverMode) || '';
                         const cm = (draft.coveringCm ?? member.coveringCm ?? '') as number | '';
                         return (
-                          <div className="rounded-xl border border-slate-200 px-3 py-2 text-xs space-y-1.5" data-cover-block>
+                          <div className="rounded-lg border border-slate-200 px-3.5 py-2.5 text-xs space-y-2" data-cover-block>
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className={`w-20 shrink-0 ${muted}`}>ระยะหุ้ม</span>
+                              <span className="font-medium text-slate-600">ระยะหุ้ม</span>
                               <select value={cmode} onChange={e => setDraft(d => ({ ...d, coverMode: (e.target.value || undefined) as ExtractedMember['coverMode'] }))}
-                                className="rounded-md border border-slate-200 px-2 py-1">
-                                <option value="">อัตโนมัติ (ชิ้นนี้ → สเปก → ค่ามาตรฐาน)</option>
+                                className="h-9 rounded-lg border border-slate-200 px-2.5 bg-white">
+                                <option value="">อัตโนมัติ (ชิ้นนี้ → สเปก → มาตรฐาน)</option>
                                 <option value="FROM_DRAWING">จากแบบ</option>
                                 <option value="FROM_PROJECT_SPEC">ตามสเปกโครงการ</option>
                                 <option value="MANUAL">กรอกเอง</option>
                               </select>
                               {cmode === 'MANUAL' && (
-                                <>
-                                  <input type="number" step="0.5" value={cm} placeholder="กรอก"
-                                    onChange={e => setDraft(d => ({ ...d, coveringCm: e.target.value === '' ? undefined : Number(e.target.value) }))}
-                                    className="w-20 rounded-md border border-slate-200 px-2 py-1 font-mono" />
-                                  <span className={muted}>ซม.</span>
-                                </>
+                                <input type="number" step="0.5" value={cm} placeholder="ซม."
+                                  onChange={e => setDraft(d => ({ ...d, coveringCm: e.target.value === '' ? undefined : Number(e.target.value) }))}
+                                  className="h-9 w-20 rounded-lg border border-slate-200 px-2.5 font-mono" />
                               )}
                             </div>
                             {selected.coverM !== undefined && (
-                              <div className={muted}>
-                                ใช้จริง: <b className="font-mono text-slate-800">{(selected.coverM * 100).toFixed(1)} ซม.</b> · ที่มา: {COVER_SOURCE_TH[selected.coverSource || ''] || selected.coverSource}
+                              <div className="text-slate-500">
+                                ใช้จริง <b className="font-mono text-slate-800">{(selected.coverM * 100).toFixed(1)} ซม.</b> · {COVER_SOURCE_TH[selected.coverSource || ''] || selected.coverSource}
                               </div>
                             )}
                           </div>
@@ -746,59 +702,57 @@ export const ReviewWorkspace: React.FC<ReviewWorkspaceProps> = ({
                       )}
 
                       {Object.keys(draft).length > 0 && sameTag.length > 1 && (
-                        <label className="flex items-center gap-2 text-xs">
+                        <label className="flex items-center gap-2 text-xs text-slate-700">
                           <input type="checkbox" checked={applyToSameTag} onChange={e => setApplyToSameTag(e.target.checked)} />
                           ใช้ค่าที่แก้กับ {member.tag} ทุกตำแหน่ง ({sameTag.length} ชิ้น)
                         </label>
                       )}
 
-                      {/* Resulting Quantities */}
-                      <div className="grid grid-cols-3 gap-2 text-center">
+                      {/* Resulting Quantities Strip */}
+                      <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-100">
                         {[
                           ['คอนกรีต', selected.volumeNetM3.toFixed(3), 'ลบ.ม.'],
                           ['ไม้แบบ', selected.formworkNetM2.toFixed(2), 'ตร.ม.'],
-                          ['เหล็ก', (selected.rebarWeightKg || 0).toFixed(1), 'กก.'],
+                          ['เหล็กเสริม', (selected.rebarWeightKg || 0).toFixed(1), 'กก.'],
                         ].map(([l, v, u]) => (
-                          <div key={l} className="rounded-xl border border-slate-200 bg-slate-50 p-2">
-                            <div className={`text-[10px] ${muted}`}>{l}</div>
-                            <div className="font-mono font-bold text-sm">{v}</div>
-                            <div className={`text-[10px] ${muted}`}>{u}</div>
+                          <div key={l} className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2">
+                            <div className="text-[11px] text-slate-500">{l}</div>
+                            <div className="font-mono font-bold text-base text-slate-900">{v} <span className="text-[11px] font-normal text-slate-500">{u}</span></div>
                           </div>
                         ))}
-                      </div>
-
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-mono break-words space-y-1 text-slate-700">
-                        <div><span className={`font-sans font-semibold ${muted}`}>สูตรคอนกรีต/ไม้แบบ: </span>{selected.formulaStr}</div>
-                        {selected.rebarFormulaStr && <div><span className={`font-sans font-semibold ${muted}`}>สูตรเหล็กเสริม: </span>{selected.rebarFormulaStr}</div>}
                       </div>
 
                       <input
                         value={note}
                         onChange={e => setNote(e.target.value)}
                         placeholder="หมายเหตุผู้ตรวจ (ไม่บังคับ)"
-                        className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs"
+                        className="w-full h-9 rounded-lg border border-slate-200 focus:border-slate-900 px-3 text-xs outline-none"
                       />
 
                       {openFields.length > 0 && (
-                        <div className="text-[11px] text-amber-700">การอนุมัติทั้งชิ้นไม่ครอบช่อง {openFields.join(', ')} — แก้หรือกด "ยืนยันค่า" ในช่องนั้น แล้วบันทึก</div>
+                        <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                          ต้องแก้หรือกด "ยืนยันค่า" ในช่อง: {openFields.join(', ')} ก่อนอนุมัติ
+                        </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <button onClick={() => decide('approved')} className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
-                          <CheckCircle2 className="w-4 h-4" /> {Object.keys(draft).length ? 'บันทึก + อนุมัติ' : 'อนุมัติ'} (A)
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <button onClick={() => decide('approved')} className="h-10 inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-colors">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>{Object.keys(draft).length ? 'บันทึก + อนุมัติ' : 'อนุมัติ'} (A)</span>
                         </button>
-                        <button onClick={() => decide('rejected')} className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold">
-                          <XCircle className="w-4 h-4" /> ไม่นับ (X)
+                        <button onClick={() => decide('rejected')} className="h-10 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-slate-700 hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50 text-sm font-semibold transition-colors">
+                          <XCircle className="w-4 h-4" />
+                          <span>ไม่นับ (X)</span>
                         </button>
                       </div>
                       {Object.keys(draft).length > 0 && (
-                        <button onClick={() => decide(selected.review?.status === 'rejected' ? 'rejected' : null)} className="w-full text-xs inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">
+                        <button onClick={() => decide(selected.review?.status === 'rejected' ? 'rejected' : null)} className="w-full h-9 text-xs inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
                           <Eye className="w-3.5 h-3.5" /> บันทึกค่าแล้วดูผลก่อน (ยังไม่อนุมัติ)
                         </button>
                       )}
                     </>
                   ) : (
-                    <div className={`text-sm py-8 text-center ${muted}`}>เลือกรายการจากคิวทางซ้ายเพื่อตรวจสอบ</div>
+                    <div className="text-sm py-10 text-center text-slate-400">ไม่มีรายการในหมวดนี้</div>
                   )}
                 </div>
               </div>

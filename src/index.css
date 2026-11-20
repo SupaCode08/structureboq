@@ -6,40 +6,49 @@
  *   slate -> neutral ink on paper, blue -> the single action colour, amber -> "needs a look".
  */
 @theme {
-  --font-sans: "IBM Plex Sans Thai", "IBM Plex Sans", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans Thai", "Space Grotesk", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-slate-50: #f7f7f5;
-  --color-slate-100: #efefec;
-  --color-slate-200: #e2e2dd;
-  --color-slate-300: #cbcbc4;
-  --color-slate-400: #9a9a92;
-  --color-slate-500: #6f6f68;
-  --color-slate-600: #53534d;
-  --color-slate-700: #3d3d38;
-  --color-slate-800: #2a2a26;
-  --color-slate-900: #1c1c19;
-  --color-slate-950: #121210;
+  /* Swiss Engineering Palette (ui-ux-pro-max): Crisp Paper + Architectural Graphite + Safety Orange */
+  --color-slate-50: #F8FAFC;
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+  --color-slate-900: #0F172A;
+  --color-slate-950: #020617;
 
-  --color-blue-50: #eef3fb;
-  --color-blue-100: #dbe5f6;
-  --color-blue-200: #b8cbed;
-  --color-blue-300: #8eabe0;
-  --color-blue-400: #5f85cf;
-  --color-blue-500: #3a66bd;
-  --color-blue-600: #2453a8;
-  --color-blue-700: #1d438a;
-  --color-blue-800: #19376f;
-  --color-blue-900: #152d5a;
-  --color-blue-950: #0e1d3b;
+  --color-accent: #EA580C;
+  --color-accent-hover: #C2410C;
 
-  --color-indigo-500: #3a66bd;
-  --color-indigo-600: #2453a8;
+  --color-blue-50: #FFF7ED;
+  --color-blue-100: #FFEDD5;
+  --color-blue-200: #FED7AA;
+  --color-blue-300: #FDBA74;
+  --color-blue-400: #FB923C;
+  --color-blue-500: #EA580C;
+  --color-blue-600: #0F172A;
+  --color-blue-700: #1E293B;
+  --color-blue-800: #0F172A;
+  --color-blue-900: #0F172A;
+  --color-blue-950: #020617;
+
+  --color-indigo-50: #F1F5F9;
+  --color-indigo-100: #E2E8F0;
+  --color-indigo-200: #CBD5E1;
+  --color-indigo-500: #EA580C;
+  --color-indigo-600: #0F172A;
+  --color-indigo-700: #1E293B;
 }
 
 @layer base {
   html {
     font-size: 15px;
+    -webkit-font-smoothing: antialiased;
   }
   body {
     background: var(--color-slate-50);
@@ -50,9 +59,18 @@
   body, button, input, select, textarea {
     line-height: 1.55;
   }
+  button:not(:disabled), select:not(:disabled), summary {
+    cursor: pointer;
+  }
   :focus-visible {
-    outline: 2px solid var(--color-blue-500);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 

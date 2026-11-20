@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { ChevronDown, ChevronRight, Layers, ArrowRight } from 'lucide-react';
 import type { CalculatedQuantity, ExtractedMember, FieldSource, MemberType, EvidenceRef } from '../engine/qsEngine';
 import { approvalFor, conflictStatuses, rebarSetsFromNote, unconfirmedRequiredFields } from '../engine/qsEngine';
 import { FootingRebarSets } from './FootingRebarSets';
@@ -17,9 +17,9 @@ interface SectionTableProps {
   onUpdateMembers: (updates: { index: number; patch: Partial<ExtractedMember> }[]) => void;
   canApprove?: boolean;
   onRequestReviewer?: () => void;
-  /** When embedded inside Split-Screen ReviewWorkspace, delegate drawing display to left pane */
   hideSourceViewer?: boolean;
   onEvidenceChange?: (evidence: EvidenceRef[]) => void;
+  onJumpToItem?: (itemId: string) => void;
 }
 
 export const TYPE_TH: Record<string, string> = {
@@ -35,12 +35,12 @@ export const TYPE_TH: Record<string, string> = {
 };
 
 export const SOURCE_BADGE: Record<FieldSource, { th: string; cls: string }> = {
-  drawing: { th: 'จากแบบ', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-  grid: { th: 'จากกริด', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-  inferred: { th: 'อนุมาน', cls: 'bg-sky-50 text-sky-800 border-sky-200' },
-  assumed: { th: 'ค่าสมมติ', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
-  missing: { th: 'ไม่พบ', cls: 'bg-rose-50 text-rose-800 border-rose-200' },
-  reviewer: { th: 'ผู้ตรวจ', cls: 'bg-violet-50 text-violet-800 border-violet-200' },
+  drawing: { th: 'จากแบบ', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+  grid: { th: 'จากกริด', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+  inferred: { th: 'อนุมาน', cls: 'text-slate-600 bg-slate-100 border-slate-200' },
+  assumed: { th: 'ค่าสมมติ', cls: 'text-amber-700 bg-amber-50 border-amber-200' },
+  missing: { th: 'ไม่พบ', cls: 'text-rose-700 bg-rose-50 border-rose-200' },
+  reviewer: { th: 'ผู้ตรวจ', cls: 'text-slate-900 bg-slate-100 border-slate-300' },
 };
 
 const blankZero = (v: any) => (v === 0 || v === undefined || v === null ? '' : v);
@@ -55,11 +55,13 @@ export const SectionTable: React.FC<SectionTableProps> = ({
   onRequestReviewer,
   hideSourceViewer = false,
   onEvidenceChange,
+  onJumpToItem,
 }) => {
   const [drafts, setDrafts] = useState<Record<string, Partial<ExtractedMember>>>({});
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [showExtra, setShowExtra] = useState(false);
-  const [showDiagram, setShowDiagram] = useState(true);
+  const [showDiagram, setShowDiagram] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const groups = useMemo(() => {
     const g = new Map<string, { key: string; tag: string; type: MemberType; idx: number[]; items: CalculatedQuantity[] }>();
@@ -81,6 +83,7 @@ export const SectionTable: React.FC<SectionTableProps> = ({
 
   useEffect(() => {
     if (open && open.key !== openKey) setOpenKey(open.key);
+    setFeedback(null);
   }, [open?.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = (g: typeof groups[number], f: ReviewFieldDef) => blankZero(drafts[g.key]?.[f.key] ?? members[g.idx[0]][f.key]);
@@ -97,9 +100,16 @@ export const SectionTable: React.FC<SectionTableProps> = ({
   };
 
   const confirm = (g: typeof groups[number]) => {
-    if (!canApprove) { onRequestReviewer?.(); }
+    setFeedback(null);
+    if (!canApprove) {
+      onRequestReviewer?.();
+      setFeedback('กรุณากรอกชื่อ "ผู้ตรวจ" ด้านบนก่อนกดยืนยัน');
+      return;
+    }
     const draft = drafts[g.key] || {};
     const fields = fieldsForSection(g.type);
+    let approvedCount = 0;
+    const reasons = new Set<string>();
     onUpdateMembers(g.idx.map(i => {
       const m = members[i];
       const fs = { ...(m.provenance?.fieldSources || {}) };
@@ -114,7 +124,13 @@ export const SectionTable: React.FC<SectionTableProps> = ({
       };
       const merged = { ...m, ...draft, provenance };
       const stillMissing = !(Number(merged.width) > 0 && Number(merged.depth) > 0 && Number(merged.length) > 0);
-      const approvable = canApprove && !stillMissing && unconfirmedRequiredFields(merged).length === 0 && conflictStatuses(merged).every(c => c.state === 'resolved');
+      const unconfirmed = unconfirmedRequiredFields(merged);
+      const openConflicts = conflictStatuses(merged).filter(c => c.state !== 'resolved');
+      if (stillMissing) reasons.add('ยังมีมิติหลัก (กว้าง/ยาว/หนา) เป็น 0 หรือว่าง');
+      if (unconfirmed.length > 0) reasons.add(`ยังมีช่องที่ต้องยืนยันในขั้นที่ 3: ${unconfirmed.join(', ')}`);
+      if (openConflicts.length > 0) reasons.add(`มีข้อขัดแย้งระหว่างแบบ ${openConflicts.length} จุด`);
+      const approvable = !stillMissing && unconfirmed.length === 0 && openConflicts.length === 0;
+      if (approvable) approvedCount++;
       return {
         index: i,
         patch: {
@@ -125,8 +141,12 @@ export const SectionTable: React.FC<SectionTableProps> = ({
       };
     }));
     setDrafts(d => { const n = { ...d }; delete n[g.key]; return n; });
-    const next = groups.find(x => x.key !== g.key && needsOf(x) > 0);
-    if (next) setOpenKey(next.key);
+    if (approvedCount === g.idx.length) {
+      const next = groups.find(x => x.key !== g.key && needsOf(x) > 0);
+      if (next) setOpenKey(next.key);
+    } else if (reasons.size > 0) {
+      setFeedback(`บันทึกค่าแล้ว แต่ยังอนุมัติ ${g.tag} ไม่ครบ: ${[...reasons].join(' · ')}`);
+    }
   };
 
   const evidence = useMemo(() => {
@@ -193,10 +213,10 @@ export const SectionTable: React.FC<SectionTableProps> = ({
     const src = source(open, f);
     const val = value(open, f);
     return (
-      <div key={String(f.key)} className="block">
-        <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
-          <span className="font-medium">{f.label}{f.unit ? ` (${f.unit})` : ''}</span>
-          {src && <span className={`px-1.5 rounded border text-[10px] ${SOURCE_BADGE[src].cls}`}>{SOURCE_BADGE[src].th}</span>}
+      <div key={String(f.key)} className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-medium text-slate-700">{f.label}{f.unit ? ` (${f.unit})` : ''}</span>
+          {src && <span className={`px-1.5 py-0.5 rounded border text-[11px] font-medium ${SOURCE_BADGE[src].cls}`}>{SOURCE_BADGE[src].th}</span>}
         </div>
         {f.kind === 'rebar' ? (
           <RebarInput
@@ -209,7 +229,7 @@ export const SectionTable: React.FC<SectionTableProps> = ({
           <select
             value={String(val || f.options[0].value)}
             onChange={e => setDraftField(open.key, f.key, e.target.value)}
-            className="w-full h-8 rounded-md border border-slate-300 px-2 text-xs bg-white text-slate-900"
+            className="w-full h-10 rounded-lg border border-slate-200 hover:border-slate-300 focus:border-slate-900 px-3 text-sm bg-white text-slate-900 outline-none transition-colors"
           >
             {f.options.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -223,8 +243,8 @@ export const SectionTable: React.FC<SectionTableProps> = ({
             step="0.01"
             inputMode={f.kind === 'text' ? 'text' : 'decimal'}
             onChange={e => setDraftField(open.key, f.key, f.kind === 'text' ? e.target.value : Number(e.target.value))}
-            className={`w-full h-8 rounded-md border px-2.5 text-xs font-mono bg-white ${
-              src === 'missing' ? 'border-rose-300 bg-rose-50/30' : src === 'reviewer' ? 'border-violet-400' : 'border-slate-300'
+            className={`w-full h-10 rounded-lg border px-3 text-sm font-mono bg-white outline-none transition-colors ${
+              src === 'missing' ? 'border-rose-300 bg-rose-50/30 focus:border-rose-500' : 'border-slate-200 hover:border-slate-300 focus:border-slate-900'
             }`}
           />
         )}
@@ -232,221 +252,222 @@ export const SectionTable: React.FC<SectionTableProps> = ({
     );
   };
 
+  const firstBlockedItem = open.items.find(it => {
+    const m = it.memberIndex !== undefined ? members[it.memberIndex] : undefined;
+    return m && (conflictStatuses(m).some(c => c.state !== 'resolved') || unconfirmedRequiredFields(m).length > 0);
+  });
+  const hasConflict = open.idx.some(i => conflictStatuses(members[i]).some(c => c.state !== 'resolved'));
+
   return (
-    <div className={hideSourceViewer ? 'space-y-3' : 'grid lg:grid-cols-[260px_1fr] gap-4 items-start'}>
-      {/* Tag selector bar / sidebar */}
-      <div className={`rounded-xl border border-slate-200 bg-white overflow-hidden ${hideSourceViewer ? '' : 'lg:sticky lg:top-[72px]'}`}>
-        <div className="px-3 py-2 border-b border-slate-200 text-xs text-slate-600 flex items-center justify-between gap-2 bg-slate-50">
-          <span>{groups.length} เบอร์ · รอยืนยัน <b className="text-amber-700">{pending}</b></span>
+    <div className="space-y-4">
+      {/* Quiet Swiss Tag Rail */}
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-slate-500">
+            เลือกเบอร์ชิ้นส่วน ({groups.length} เบอร์ · รอยืนยัน <b className="text-slate-900">{pending}</b>)
+          </span>
           {readyGroups.length > 0 && (
-            <button onClick={confirmAllReady} className="px-2 py-1 rounded bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-medium shrink-0">
-              ยืนยันทั้งหมด ({readyGroups.length})
+            <button onClick={confirmAllReady} className="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors">
+              ยืนยันที่พร้อมทั้งหมด ({readyGroups.length})
             </button>
           )}
         </div>
-        <div className={hideSourceViewer ? 'flex flex-wrap gap-1.5 p-2.5 max-h-40 overflow-y-auto' : 'max-h-[70vh] overflow-y-auto'}>
+        <div className="flex flex-wrap gap-1.5 p-3 max-h-36 overflow-y-auto">
           {groups.map(g => {
             const needs = needsOf(g);
             const active = g.key === open.key;
-            if (hideSourceViewer) {
-              return (
-                <button
-                  key={g.key}
-                  onClick={() => setOpenKey(g.key)}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
-                    active
-                      ? 'bg-indigo-600 text-white border-indigo-600 font-semibold shadow-sm'
-                      : needs
-                        ? 'bg-amber-50/70 text-slate-800 border-amber-200 hover:bg-amber-100/70'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  {needs ? (
-                    <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-amber-200' : 'text-amber-600'}`} />
-                  ) : (
-                    <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-emerald-200' : 'text-emerald-600'}`} />
-                  )}
-                  <span className="font-mono">{g.tag}</span>
-                  <span className={`text-[10px] ${active ? 'text-indigo-100' : 'text-slate-400'}`}>({g.idx.length})</span>
-                </button>
-              );
-            }
-            const m = members[g.idx[0]];
-            const sum = g.type === 'SLAB' ? `หนา ${blankZero(m.length) || '?'}` : g.type === 'FOOTING' ? `${blankZero(m.width) || '?'}×${blankZero(m.depth) || '?'} หนา ${blankZero(m.length) || '?'}` : `${blankZero(m.width) || '?'}×${blankZero(m.depth) || '?'}`;
             return (
               <button
                 key={g.key}
                 onClick={() => setOpenKey(g.key)}
-                className={`w-full text-left px-3 py-2 border-b border-slate-100 flex items-center gap-2 ${active ? 'bg-blue-50' : 'hover:bg-slate-50'}`}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                  active
+                    ? 'bg-slate-900 text-white border-slate-900 font-semibold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                }`}
               >
-                {needs ? <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" /> : <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />}
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline gap-2">
-                    <span className="font-semibold font-mono text-slate-900 truncate">{g.tag}</span>
-                    <span className="text-xs text-slate-500 shrink-0">{TYPE_TH[g.type]}</span>
-                    <span className="ml-auto text-[11px] text-slate-500 shrink-0">{g.idx.length} ชิ้น{needs ? ` · รอ ${needs}` : ''}</span>
-                  </span>
-                  <span className="block text-xs font-mono text-slate-600">{sum}</span>
-                </span>
+                <span className={`w-2 h-2 rounded-full shrink-0 ${needs ? 'bg-[#EA580C]' : 'bg-emerald-500'}`} />
+                <span className="font-mono">{g.tag}</span>
+                <span className={`text-[11px] ${active ? 'text-slate-300' : 'text-slate-400'}`}>{g.idx.length}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Main section editor */}
-      <div className="space-y-3 min-w-0">
-        {!hideSourceViewer && <SourceViewer pageUrl={pageUrl} evidence={evidence} height={460} />}
+      {!hideSourceViewer && <SourceViewer pageUrl={pageUrl} evidence={evidence} height={460} />}
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-          {/* Header + Re-tag + Realtime Summary */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                aria-label="แก้ไขรหัส Tag"
-                value={String(drafts[open.key]?.tag ?? open.tag)}
-                onChange={e => setDraftField(open.key, 'tag', e.target.value.toUpperCase())}
-                className="w-24 px-2 py-1 rounded-md border border-slate-300 font-mono font-bold text-sm text-slate-900 focus:border-indigo-500 outline-none"
-                title="แก้ชื่อเบอร์ (Tag) ของกลุ่มนี้"
-              />
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-xs font-semibold text-slate-700">{TYPE_TH[open.type]}</span>
-              <span className="text-xs text-slate-600">
-                {open.idx.length} ชิ้น · คอนกรีต <b className="font-mono text-slate-900">{vol.toFixed(3)}</b> ลบ.ม. · ไม้แบบ <b className="font-mono text-slate-900">{fw.toFixed(2)}</b> ตร.ม. · เหล็ก <b className="font-mono text-slate-900">{rb.toFixed(1)}</b> กก.
-              </span>
+      {/* Spacious Swiss Section Editor */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <input
+              aria-label="แก้ไขรหัส Tag"
+              value={String(drafts[open.key]?.tag ?? open.tag)}
+              onChange={e => setDraftField(open.key, 'tag', e.target.value.toUpperCase())}
+              className="w-44 h-9 px-2.5 rounded-lg border border-slate-200 focus:border-slate-900 font-mono font-bold text-sm text-slate-900 outline-none"
+            />
+            <span className="px-2.5 py-1 rounded-md bg-slate-100 text-xs font-semibold text-slate-700">{TYPE_TH[open.type]}</span>
+            <span className="text-xs text-slate-500">
+              {open.idx.length} ชิ้น · คอนกรีต <b className="font-mono text-slate-900">{vol.toFixed(3)}</b> ลบ.ม. · ไม้แบบ <b className="font-mono text-slate-900">{fw.toFixed(2)}</b> ตร.ม. · เหล็ก <b className="font-mono text-slate-900">{rb.toFixed(1)}</b> กก.
+            </span>
+          </div>
+          {open.items[0] && (
+            <button
+              type="button"
+              onClick={() => setShowDiagram(v => !v)}
+              className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>{showDiagram ? 'ซ่อนรูปหน้าตัด' : 'ดูรูปหน้าตัด'}</span>
+            </button>
+          )}
+        </div>
+
+        {conflicts.length > 0 && (
+          <div className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5 space-y-1">
+            {conflicts.map((c, i) => <div key={i}>• {c}</div>)}
+          </div>
+        )}
+
+        {showDiagram && open.items[0] && (
+          <MemberDiagram item={open.items[0]} lang="th" theme={theme} />
+        )}
+
+        {/* Group 1: Dimensions */}
+        <div className="space-y-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">มิติหน้าตัดและสเปก</div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {dimFields.map(renderField)}
+          </div>
+        </div>
+
+        {/* Group 2: Primary Rebar */}
+        {rebarFields.length > 0 && (
+          <div className="pt-4 border-t border-slate-100 space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">เหล็กหลักและเหล็กปลอก</div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {rebarFields.map(renderField)}
             </div>
-            {open.items[0] && (
-              <button
-                type="button"
-                onClick={() => setShowDiagram(v => !v)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-slate-200 text-xs text-slate-600 hover:bg-slate-50"
-              >
-                <Layers className="w-3.5 h-3.5" />
-                <span>{showDiagram ? 'ซ่อนรูปหน้าตัด' : 'แสดงรูปหน้าตัด'}</span>
-              </button>
+          </div>
+        )}
+
+        {/* Group 3: Extra Rebar / Substructure Details */}
+        {extraFields.length > 0 && (
+          <div className="pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowExtra(v => !v)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900"
+            >
+              {showExtra || hasAnyExtraValue ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              <span>เหล็กเสริมพิเศษ / รายละเอียดเพิ่มเติม ({extraFields.length} ช่อง)</span>
+            </button>
+            {(showExtra || hasAnyExtraValue) && (
+              <div className="grid sm:grid-cols-2 gap-4 pt-3">
+                {extraFields.map(renderField)}
+              </div>
             )}
           </div>
+        )}
 
-          {conflicts.length > 0 && (
-            <ul className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 space-y-0.5">
-              {conflicts.map((c, i) => <li key={i}>• {c}</li>)}
-            </ul>
-          )}
-
-          {/* Live MemberDiagram Preview */}
-          {showDiagram && open.items[0] && (
-            <MemberDiagram item={open.items[0]} lang="th" theme={theme} />
-          )}
-
-          {/* Group 1: Dimensions */}
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-2">มิติหน้าตัดและสเปก</div>
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              {dimFields.map(renderField)}
-            </div>
-          </div>
-
-          {/* Group 2: Primary Rebar */}
-          {rebarFields.length > 0 && (
-            <div className="pt-2 border-t border-slate-100">
-              <div className="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-2">เหล็กหลักและเหล็กปลอก</div>
-              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {rebarFields.map(renderField)}
-              </div>
-            </div>
-          )}
-
-          {/* Group 3: Extra Rebar / Substructure Details (Collapsible) */}
-          {extraFields.length > 0 && (
-            <div className="pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setShowExtra(v => !v)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-indigo-700 hover:text-indigo-800 mb-2"
-              >
-                {showExtra || hasAnyExtraValue ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                <span>เหล็กเสริมพิเศษ / รายละเอียดเพิ่มเติม ({extraFields.length} ช่อง)</span>
-              </button>
-              {(showExtra || hasAnyExtraValue) && (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 pt-1">
-                  {extraFields.map(renderField)}
+        {/* Footing RebarSets */}
+        {open.type === 'FOOTING' && (() => {
+          const m0 = members[open.idx[0]];
+          const it0 = open.items[0];
+          const draft = drafts[open.key] || {};
+          const sets = 'rebarSets' in draft ? draft.rebarSets : m0.rebarSets;
+          const notes = [...new Set(open.idx.flatMap(i => members[i].rebarNotesRead || []))];
+          return (
+            <div className="space-y-3 pt-4 border-t border-slate-100">
+              {notes.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                  <span>อ่านได้จากแบบ:</span>
+                  {notes.map(note => (
+                    <button
+                      key={note}
+                      type="button"
+                      onClick={() => setDraftField(open.key, 'bottomRebar', note)}
+                      className="px-2 py-0.5 rounded-md border border-slate-200 font-mono text-xs hover:bg-slate-50 text-slate-800"
+                    >
+                      {note}
+                    </button>
+                  ))}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Footing RebarSets */}
-          {open.type === 'FOOTING' && (() => {
-            const m0 = members[open.idx[0]];
-            const it0 = open.items[0];
-            const draft = drafts[open.key] || {};
-            const sets = 'rebarSets' in draft ? draft.rebarSets : m0.rebarSets;
-            const notes = [...new Set(open.idx.flatMap(i => members[i].rebarNotesRead || []))];
-            return (
-              <div className="space-y-3 pt-3 border-t border-slate-100">
-                {notes.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
-                    <span>อ่านได้จากแบบ:</span>
-                    {notes.map(note => (
-                      <button
-                        key={note}
-                        type="button"
-                        onClick={() => setDraftField(open.key, 'bottomRebar', note)}
-                        className="px-2 py-0.5 rounded border border-slate-300 font-mono text-xs hover:bg-slate-50 text-slate-700"
-                      >
-                        {note}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {(sets || !notes.length) && (
-                  <FootingRebarSets
-                    member={m0}
-                    sets={sets}
-                    results={it0?.rebarDetails?.sets}
-                    flags={it0?.flags || []}
-                    dirty={'rebarSets' in draft}
-                    reviewer=""
-                    onChange={newSets => setDraftField(open.key, 'rebarSets', newSets)}
-                  />
-                )}
-                {notes.length > 0 && !sets && (
-                  <div className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const generated = notes.flatMap(n => rebarSetsFromNote({ ...m0, bottomRebar: n }).map(s => ({ ...s, source: 'drawing' as const })));
-                        setDraftField(open.key, 'rebarSets', generated);
-                      }}
-                      className="px-2.5 py-1 rounded-md border border-blue-300 text-blue-700 font-semibold text-xs hover:bg-blue-50"
-                    >
-                      แยกเป็นชุดเหล็กจากค่าที่อ่านได้ ({notes.length} ค่า)
-                    </button>
-                    <p className="text-[11px] text-slate-500">แต่ละค่าเป็นชุดของตัวเอง — ตรวจทิศ/ชั้นก่อนยืนยัน</p>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {open.items[0]?.formulaStr && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-700 space-y-1">
-              <div><span className="font-sans font-semibold text-slate-500">สูตรคอนกรีต/ไม้แบบ (1 ชิ้น):</span> {open.items[0].formulaStr}</div>
-              {open.items[0].rebarFormulaStr && (
-                <div><span className="font-sans font-semibold text-slate-500">สูตรเหล็กเสริม:</span> {open.items[0].rebarFormulaStr}</div>
+              {(sets || !notes.length) && (
+                <FootingRebarSets
+                  member={m0}
+                  sets={sets}
+                  results={it0?.rebarDetails?.sets}
+                  flags={it0?.flags || []}
+                  dirty={'rebarSets' in draft}
+                  reviewer=""
+                  onChange={newSets => setDraftField(open.key, 'rebarSets', newSets)}
+                />
+              )}
+              {notes.length > 0 && !sets && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const generated = notes.flatMap(n => rebarSetsFromNote({ ...m0, bottomRebar: n }).map(s => ({ ...s, source: 'drawing' as const })));
+                    setDraftField(open.key, 'rebarSets', generated);
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-medium text-xs hover:bg-slate-50"
+                >
+                  แยกเป็นชุดเหล็กจากค่าที่อ่านได้ ({notes.length} ค่า)
+                </button>
               )}
             </div>
-          )}
+          );
+        })()}
 
-          <div className="pt-1 flex flex-wrap items-center gap-2">
-            <button onClick={() => confirm(open)} className="h-9 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold">
-              {drafts[open.key] ? 'บันทึกและยืนยันเบอร์นี้' : 'ยืนยันตามที่อ่านได้'}
-            </button>
-            {drafts[open.key] && (
-              <button onClick={() => setDrafts(d => { const n = { ...d }; delete n[open.key]; return n; })} className="h-9 px-3.5 rounded-lg border border-slate-300 text-xs text-slate-700 hover:bg-slate-50">
-                ยกเลิกการแก้
+        {/* Formula summary */}
+        {open.items[0]?.formulaStr && (
+          <details className="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-600">
+            <summary className="cursor-pointer font-medium text-slate-700">ดูสูตรคำนวณ (1 ชิ้น)</summary>
+            <div className="mt-2 font-mono space-y-1 text-slate-700">
+              <div>{open.items[0].formulaStr}</div>
+              {open.items[0].rebarFormulaStr && <div>{open.items[0].rebarFormulaStr}</div>}
+            </div>
+          </details>
+        )}
+
+        {/* Clear action feedback / conflict jump */}
+        {(feedback || hasConflict) && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-2">
+            <span>
+              {feedback || `เบอร์ ${open.tag} มีข้อขัดแย้งระหว่างแบบ (ผังไม่ตรงแบบขยาย) — ต้องตัดสินในขั้นที่ 3 ก่อนจึงจะอนุมัติได้`}
+            </span>
+            {firstBlockedItem && onJumpToItem && (
+              <button
+                type="button"
+                onClick={() => onJumpToItem(firstBlockedItem.itemId)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white font-semibold shrink-0 transition-colors"
+              >
+                <span>ไปตัดสินในขั้นที่ 3</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
+        )}
+
+        {/* Primary Action Bar */}
+        <div className="pt-2 flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => confirm(open)}
+            className="h-10 px-5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-colors"
+          >
+            {drafts[open.key] ? 'บันทึกและยืนยันเบอร์นี้' : 'ยืนยันตามที่อ่านได้'}
+          </button>
+          {drafts[open.key] && (
+            <button
+              onClick={() => setDrafts(d => { const n = { ...d }; delete n[open.key]; return n; })}
+              className="h-10 px-4 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              ยกเลิกการแก้
+            </button>
+          )}
         </div>
       </div>
     </div>

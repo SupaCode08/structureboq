@@ -12,7 +12,6 @@ import { DocSourceContext } from './pdf/docContext';
 import type { PdfDoc } from './pdf/browserPipeline';
 import { ReviewWorkspace } from './components/ReviewWorkspace';
 import { ReadingLog, type ReadingLogData } from './components/ReadingLog';
-import { PlanView } from './components/PlanView';
 import { logEntryFor, addEntry, undoEntry, readingSignature, type ReviewLogEntry } from './engine/reviewLog';
 import { BoqComparison, type BoqState, type DatasetInfo } from './components/BoqComparison';
 import { UploadSection } from './components/UploadSection';
@@ -637,10 +636,6 @@ export default function App() {
           </>
         ) : empty)}
 
-        {activeTab === 'plan' && (hasProject ? (
-          <PlanView readings={readingLog?.readings || []} items={currentProject.items} onSelectItem={item => setSelectedItemForTrace(item)} />
-        ) : empty)}
-
         {activeTab === 'review' && (hasProject ? (
           <ReviewWorkspace
             items={currentProject.items}
@@ -669,7 +664,6 @@ export default function App() {
               commitMembers(next, reviewLog);
               setNotification({ message: `ลบ ${target.tag} ออกจากโครงการแล้ว`, type: 'info' });
             }}
-            readings={readingLog?.readings || []}
             ocrPages={ocrPages}
             reviewLog={reviewLog}
             onUndo={handleUndo}
