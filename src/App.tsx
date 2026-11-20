@@ -70,6 +70,7 @@ export default function App() {
   // Starts empty: nothing is shown until a drawing (or a demo) is opened
   const [currentProject, setCurrentProject] = useState<BOQProjectResult>(() => computeProject([], '', DEFAULT_MATERIAL_SPECS, DEFAULT_FACTOR_F_PARAMS));
   const [readingLog, setReadingLog] = useState<ReadingLogData | null>(null);
+  const [ocrPages, setOcrPages] = useState<any[]>([]);
   const [reviewLog, setReviewLog] = useState<ReviewLogEntry[]>([]);
   /** typed reviewer name (kept in this browser) and the opened drawing file as name · SHA-256 prefix */
   const [reviewer, setReviewer] = useState(() => { try { return localStorage.getItem('structboq_reviewer') || ''; } catch { return ''; } });
@@ -198,6 +199,7 @@ export default function App() {
     if (out.boq) swapDoc(boqDoc, { doc, key });
     const readPages = new Set(out.readings.map(r => r.page));
     setReadingLog({ readings: out.readings, skipped: out.skipped, emptyPages: out.ocrPages.map(p => p.page).filter(p => !readPages.has(p)), notes: out.mergeNotes, timing: out.timing });
+    setOcrPages(out.ocrPages || []);
     setDocVersion(v => v + 1);
     return applyExtraction({
       fileName, datasetName: opts.datasetName, reviewKey: opts.reviewKey, docId: 'local', members: out.members, completeness: out.completeness,
@@ -655,6 +657,20 @@ export default function App() {
               setNotification({ message: `เพิ่ม ${f.suggested.length} ชิ้นส่วนเข้าคิวตรวจ — กรอกค่าที่ขาดแล้วอนุมัติ`, type: 'info' });
             }}
             onUpdateMembers={handleUpdateMembers}
+            onAddMember={(m) => {
+              const next = [...activeMembers, m];
+              commitMembers(next, [...reviewLog, stamp(addEntry([m], activeMembers.length, `เพิ่มชิ้นส่วน ${m.tag} โดยผู้ตรวจ`))]);
+              setNotification({ message: `เพิ่ม ${m.tag} เข้าโครงการเรียบร้อยแล้ว`, type: 'success' });
+            }}
+            onDeleteMember={(idx) => {
+              const target = activeMembers[idx];
+              if (!target) return;
+              const next = activeMembers.filter((_, i) => i !== idx);
+              commitMembers(next, reviewLog);
+              setNotification({ message: `ลบ ${target.tag} ออกจากโครงการแล้ว`, type: 'info' });
+            }}
+            readings={readingLog?.readings || []}
+            ocrPages={ocrPages}
             reviewLog={reviewLog}
             onUndo={handleUndo}
             onOpenItem={setSelectedItemForTrace}

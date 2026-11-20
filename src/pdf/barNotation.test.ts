@@ -224,3 +224,16 @@ test('beam detail dashed stirrups and unit junk before @ or $', () => {
   assert.deepEqual(parseBarNote('20163%.'), { kind: 'count', n: 2, grade: null, dia: 16 });
   assert.deepEqual(parseBarNote('3016%N.'), { kind: 'count', n: 3, grade: null, dia: 16 });
 });
+
+test('two-zone stirrups: "RB6@0.10/0.20", "2-RB6@0.10/@0.20", "RB6@10/20ซม."', () => {
+  const n1 = parseBarNote('RB6@0.10/0.20');
+  assert.deepEqual(n1, { kind: 'spacing', grade: 'RB', dia: 6, s: 0.1, s2: 0.2 });
+  assert.equal(formatBar(n1!), 'RB6@0.10/0.20');
+
+  const n2 = parseBarNote('2-RB6@0.10/@0.20');
+  assert.deepEqual(n2, { kind: 'spacing', grade: 'RB', dia: 6, s: 0.1, s2: 0.2, legs: 2 });
+  assert.equal(formatBar(n2!), 'RB6@0.10/0.20');
+
+  const n3 = parseBarNote('ป.RB6@10/20ซม.');
+  assert.deepEqual(n3, { kind: 'spacing', grade: 'RB', dia: 6, s: 0.1, s2: 0.2 });
+});

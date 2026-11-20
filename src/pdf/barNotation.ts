@@ -17,7 +17,7 @@ export type Grade = 'RB' | 'DB' | null;
 export type BarNote =
   | { kind: 'count'; n: number; grade: Grade; dia: number }
   | { kind: 'mesh'; a: number; b: number; grade: Grade; dia: number }
-  | { kind: 'spacing'; grade: Grade; dia: number; s: number; legs?: number };
+  | { kind: 'spacing'; grade: Grade; dia: number; s: number; s2?: number; legs?: number };
 
 const SIZES = new Set([6, 9, 10, 12, 15, 16, 19, 20, 25, 28, 32]);
 const SIGN = '[ØøΦφ∅]';
@@ -85,7 +85,27 @@ function parseStrict(text: string): BarNote | null {
 
   const legs = t.match(new RegExp(`^([1-4])-?(?=${GRADE}|${SIGN})`));
   const JUNK = '[H%.\\s]{0,3}';
-  m = (legs ? t.slice(legs[0].length) : t).match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
+  const body = legs ? t.slice(legs[0].length) : t;
+  // Two-zone stirrup notation: e.g. "RB6@0.10/0.20", "2-RB6@0.10/@0.20", "RB6@10/20CM"
+  const m2z = body.match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?\\/@?(\\d*\\.?\\d+)(CM)?$`));
+  if (m2z) {
+    const dia = Number(m2z[2]);
+    let s1 = Number(m2z[3]);
+    let s2 = Number(m2z[5]);
+    if (m2z[4] || m2z[6] || s1 >= 5) s1 /= 100;
+    if (m2z[6] || m2z[4] || s2 >= 5) s2 /= 100;
+    if (sizeOk(dia) && s1 >= 0.05 && s1 <= 0.4 && s2 >= 0.05 && s2 <= 0.4) {
+      return {
+        kind: 'spacing',
+        grade: grade(m2z[1] || undefined),
+        dia,
+        s: untruncate(m2z[3], s1),
+        s2: untruncate(m2z[5], s2),
+        ...(legs ? { legs: Number(legs[1]) } : {}),
+      };
+    }
+  }
+  m = body.match(new RegExp(`^(?:${GRADE}|${SIGN})?-?(\\d{1,2})${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
   if (!legs) m ??= t.match(new RegExp(`^()-*(?:[1IL][0Oo]|[0OoZ2B#])?(6|9)${JUNK}@(\\d*\\.?\\d+)(CM)?$`));
   if (m) {
     const dia = Number(m[2]);
@@ -233,5 +253,6 @@ export function formatBar(n: BarNote, set?: Map<number, 'RB' | 'DB'>): string {
   const g = resolveGrade(n.grade, n.dia, set);
   if (n.kind === 'count') return `${n.n}-${g}${n.dia}`;
   if (n.kind === 'mesh') return `${n.a}+${n.b}-${g}${n.dia}`;
-  return `${g}${n.dia}@${n.s.toFixed(Math.abs(n.s * 100 - Math.round(n.s * 100)) > 1e-6 ? 3 : 2)}`;
+  const fmtS = (s: number) => s.toFixed(Math.abs(s * 100 - Math.round(s * 100)) > 1e-6 ? 3 : 2);
+  return n.s2 ? `${g}${n.dia}@${fmtS(n.s)}/${fmtS(n.s2)}` : `${g}${n.dia}@${fmtS(n.s)}`;
 }

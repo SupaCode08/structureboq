@@ -356,8 +356,14 @@ export interface ExtractedMember {
   notes?: string;
   topRebar?: string;
   bottomRebar?: string;
+  extraTopRebar?: string;
+  extraBottomRebar?: string;
+  sideRebar?: string;
   stirrupRebar?: string;
   distRebar?: string;
+  topMatRebar?: string;
+  tempRebar?: string;
+  pedestalHeightM?: number;
   stirrupSets?: number;
   stairRiseM?: number;
   stairRunM?: number;
@@ -478,6 +484,10 @@ export interface MaterialSpecs {
   valueSources?: Partial<Record<keyof MaterialSpecs, SpecValueSource>>;
   stockBarLengthM?: number;
   footingHookShape?: 'FULL_UPTURN' | 'STANDARD_HOOK' | 'STRAIGHT' | 'UNSPECIFIED';
+  /** DPT/วสท. standard cut ratios for extra bars & 2-zone stirrups (used when drawing omits explicit cutoff lengths) */
+  extraTopCutRatio?: number;
+  extraBottomCutRatio?: number;
+  stirrupEndZoneRatio?: number;
   leanConcreteMatRate: number;
   leanConcreteLaborRate: number;
   sandBedMatRate: number;
@@ -534,6 +544,9 @@ export const DEFAULT_MATERIAL_SPECS: MaterialSpecs = {
   footingCoveringCm: 5.0,
   stockBarLengthM: 6.0,
   footingHookShape: 'FULL_UPTURN',
+  extraTopCutRatio: 0.30,
+  extraBottomCutRatio: 0.70,
+  stirrupEndZoneRatio: 0.25,
   leanConcreteMatRate: 1750,
   leanConcreteLaborRate: 380,
   sandBedMatRate: 480,
@@ -617,6 +630,9 @@ export function normalizeMaterialSpecs(raw?: any): MaterialSpecs {
     valueSources: raw.valueSources,
     stockBarLengthM: numOptRate('stockBarLengthM', 'stock_bar_length_m') ?? DEFAULT_MATERIAL_SPECS.stockBarLengthM,
     footingHookShape: (raw?.footingHookShape || raw?.footing_hook_shape || DEFAULT_MATERIAL_SPECS.footingHookShape) as any,
+    extraTopCutRatio: numOptRate('extraTopCutRatio', 'extra_top_cut_ratio') ?? DEFAULT_MATERIAL_SPECS.extraTopCutRatio,
+    extraBottomCutRatio: numOptRate('extraBottomCutRatio', 'extra_bottom_cut_ratio') ?? DEFAULT_MATERIAL_SPECS.extraBottomCutRatio,
+    stirrupEndZoneRatio: numOptRate('stirrupEndZoneRatio', 'stirrup_end_zone_ratio') ?? DEFAULT_MATERIAL_SPECS.stirrupEndZoneRatio,
     leanConcreteMatRate: num('leanConcreteMatRate', 'lean_concrete_mat_rate'),
     leanConcreteLaborRate: num('leanConcreteLaborRate', 'lean_concrete_labor_rate'),
     sandBedMatRate: num('sandBedMatRate', 'sand_bed_mat_rate'),
@@ -862,18 +878,22 @@ export function parseBarGroups(spec?: string): BarGroup[] {
 export interface SpacedBarValidation {
   bar: string;
   spacing: number;
+  midSpacing?: number;
+  legs?: number;
   isValid: boolean;
   error?: string;
 }
 
 /**
- * Validates spaced bar specifications (e.g., "RB6@0.15m").
+ * Validates spaced bar specifications (e.g., "RB6@0.15m", "RB6@0.10/0.20", "2-RB6@0.10/0.20").
  * Explicitly rejects spacing <= 0, NaN, Infinity, or missing numeric values.
  */
 export function validateSpacedBar(spec?: string): SpacedBarValidation | null {
   if (!spec) return null;
   if (!/@/.test(spec)) return null;
-  const m = spec.match(/(DB|RB|Ø|ø)?\s*(\d{1,2})\s*(?:มม\.?|mm)?\s*@\s*(-?\d+(?:\.\d+)?|NaN|Infinity)?\s*(cm|mm|m|ม\.)?/i);
+  const legsMatch = spec.trim().match(/^([1-4])\s*[-]\s*(?=(?:DB|RB|Ø|ø|ปล|ป))/i);
+  const legs = legsMatch ? Number(legsMatch[1]) : undefined;
+  const m = spec.match(/(DB|RB|Ø|ø)?\s*(\d{1,2})\s*(?:มม\.?|mm)?\s*@\s*(-?\d+(?:\.\d+)?|NaN|Infinity)?\s*(cm|mm|m|ม\.)?(?:\s*\/\s*@?\s*(-?\d+(?:\.\d+)?|NaN|Infinity)\s*(cm|mm|m|ม\.)?)?/i);
   if (!m) return null;
   const diaNum = Number(m[2]);
   const bar = barName(m[1] === 'Ø' || m[1] === 'ø' ? undefined : m[1], isNaN(diaNum) ? 6 : diaNum);
@@ -889,7 +909,19 @@ export function validateSpacedBar(spec?: string): SpacedBarValidation | null {
   const u = (m[4] || '').toLowerCase();
   if (u === 'cm' || (spacing > 1.0 && spacing < 100)) spacing /= 100.0;
   else if (u === 'mm' || spacing >= 100) spacing /= 1000.0;
-  return { bar, spacing, isValid: true };
+
+  let midSpacing: number | undefined;
+  if (m[5] !== undefined && m[5] !== '') {
+    const rawMid = parseFloat(m[5]);
+    if (!Number.isFinite(rawMid) || rawMid <= 0) {
+      return { bar, spacing, isValid: false, error: `ระยะห่างเหล็กช่วงกลางไม่ถูกต้อง (${m[5]}) ต้องเป็นตัวเลขบวก (> 0)` };
+    }
+    midSpacing = rawMid;
+    const u2 = (m[6] || m[4] || '').toLowerCase();
+    if (u2 === 'cm' || (midSpacing > 1.0 && midSpacing < 100)) midSpacing /= 100.0;
+    else if (u2 === 'mm' || midSpacing >= 100) midSpacing /= 1000.0;
+  }
+  return { bar, spacing, ...(midSpacing ? { midSpacing } : {}), ...(legs ? { legs } : {}), isValid: true };
 }
 
 /** "RB6@0.15m" -> {bar:'RB6', spacing:0.15} */
@@ -1218,6 +1250,32 @@ export function computeDetailedRebar(
     pushBarItem(bar, dia, count * nx, lenX, `ตะแกรงก้นฐานรากแนวแกน X (${hookDesc})`, undefined, netLenX, 2 * hook, 0);
     pushBarItem(barY, diaY, count * ny, lenY, `ตะแกรงก้นฐานรากแนวแกน Y (${hookDesc})`, undefined, netLenY, 2 * hookY, 0);
     rebarFormulaStr = barY === bar ? `ตะแกรงก้นฐานราก ${nx}+${ny}-${bar} (ปลาย${hookDesc})` : `ตะแกรงก้นฐานราก ${nx}-${bar} + ${ny}-${barY} (ปลาย${hookDesc})`;
+
+    // Optional footing top mat rebar (ตะแกรงบนฐานราก)
+    if (member.topMatRebar) {
+      const topGroups = parseBarGroups(member.topMatRebar);
+      const topSpaced = validateSpacedBar(member.topMatRebar);
+      let tnx = 0, tny = 0, tbar = bar;
+      if (topGroups.length >= 2) {
+        tnx = topGroups[0].n;
+        tny = topGroups[1].n;
+        tbar = topGroups[0].bar;
+      } else if (topGroups.length === 1) {
+        tnx = topGroups[0].n;
+        tny = topGroups[0].n;
+        tbar = topGroups[0].bar;
+      } else if (topSpaced && topSpaced.isValid) {
+        tbar = topSpaced.bar;
+        tnx = Math.max(2, Math.floor((dM - 2 * cover) / topSpaced.spacing + 1e-7) + 1);
+        tny = Math.max(2, Math.floor((wM - 2 * cover) / topSpaced.spacing + 1e-7) + 1);
+      }
+      if (tnx > 0 && tny > 0) {
+        const tdia = Number(tbar.replace(/\D/g, '')) || 12;
+        pushBarItem(tbar, tdia, count * tnx, lenX, 'ตะแกรงบนฐานรากแนวแกน X', undefined, netLenX, 2 * hook, 0);
+        pushBarItem(tbar, tdia, count * tny, lenY, 'ตะแกรงบนฐานรากแนวแกน Y', undefined, netLenY, 2 * hook, 0);
+        rebarFormulaStr += ` + ตะแกรงบน ${tnx}+${tny}-${tbar}`;
+      }
+    }
   } else if (member.memberType === 'SLAB') {
     if (wiremeshM2 > 0) {
       rebarFormulaStr = `ตะแกรงเหล็กไวร์เมช Ø4mm@0.15m = ${wiremeshM2} m²`;
@@ -1234,6 +1292,8 @@ export function computeDetailedRebar(
       const layerSpecs: { layerName: string; spec: { bar: string; spacing: number } }[] = [];
       if (botVal && botVal.isValid) layerSpecs.push({ layerName: 'ล่าง', spec: { bar: botVal.bar, spacing: botVal.spacing } });
       if (topVal && topVal.isValid) layerSpecs.push({ layerName: 'บน', spec: { bar: topVal.bar, spacing: topVal.spacing } });
+      const tempVal = validateSpacedBar(member.tempRebar);
+      if (tempVal && tempVal.isValid) layerSpecs.push({ layerName: 'กันร้าว/กระจาย', spec: { bar: tempVal.bar, spacing: tempVal.spacing } });
 
       if (layerSpecs.length > 0 && wM > 0 && dM > 0) {
         const formulaParts: string[] = [];
@@ -1385,7 +1445,50 @@ export function computeDetailedRebar(
         : 'เหล็กล่างคาน (รวมระยะฝังผ่านเสา 12d)';
       pushBarItem(g.bar, diaMm, count * g.n, len, purpose, mainGrade, isCol ? lGrossM : lNetM, isCol ? 0 : 2 * 12 * db, isCol ? 40 * db : 0);
     }
-    let st: { bar: string; spacing: number } | null = null;
+
+    // Extra reinforcement & side/skin bars (Beams) — using transparent DPT/วสท. cut ratios
+    const extraNotes: string[] = [];
+    if (!isCol && member.extraTopRebar) {
+      const exTop = parseBarGroups(member.extraTopRebar);
+      const ratio = rules.extraTopCutRatio ?? 0.30;
+      for (const g of exTop) {
+        const db = barDiaM(g.bar);
+        const diaMm = Number(g.bar.replace(/\D/g, '')) || 12;
+        const netEndLen = lNetM * ratio;
+        const hookLen = 12 * db;
+        const cutLen = netEndLen + hookLen;
+        pushBarItem(g.bar, diaMm, count * g.n * 2, cutLen, `เหล็กเสริมพิเศษบนหัวเสา (มาตรฐาน ${ratio}L×2 ข้าง + งอฉาก 12d)`, mainGrade, netEndLen, hookLen, 0);
+        extraNotes.push(`เสริมพิเศษบน ${g.n}-${g.bar} (${ratio}L×2)`);
+      }
+      if (exTop.length) {
+        flags.push({ code: 'STANDARD_CUT_RATIO_USED', severity: 'info', field: 'extraTopRebar', message: `เหล็กเสริมพิเศษบนหัวเสาใช้ระยะตัดมาตรฐาน วสท. (${ratio}L ต่อข้าง — ปรับได้ในสเปกวัสดุ)` });
+      }
+    }
+    if (!isCol && member.extraBottomRebar) {
+      const exBot = parseBarGroups(member.extraBottomRebar);
+      const ratio = rules.extraBottomCutRatio ?? 0.70;
+      for (const g of exBot) {
+        const diaMm = Number(g.bar.replace(/\D/g, '')) || 12;
+        const cutLen = lNetM * ratio;
+        pushBarItem(g.bar, diaMm, count * g.n, cutLen, `เหล็กเสริมพิเศษล่างกลางช่วง (มาตรฐาน ${ratio}L)`, mainGrade, cutLen, 0, 0);
+        extraNotes.push(`เสริมพิเศษล่าง ${g.n}-${g.bar} (${ratio}L)`);
+      }
+      if (exBot.length) {
+        flags.push({ code: 'STANDARD_CUT_RATIO_USED', severity: 'info', field: 'extraBottomRebar', message: `เหล็กเสริมพิเศษล่างกลางช่วงใช้ระยะตัดมาตรฐาน วสท. (${ratio}L — ปรับได้ในสเปกวัสดุ)` });
+      }
+    }
+    if (!isCol && member.sideRebar) {
+      const side = parseBarGroups(member.sideRebar);
+      for (const g of side) {
+        const db = barDiaM(g.bar);
+        const diaMm = Number(g.bar.replace(/\D/g, '')) || 12;
+        const len = lGrossM + 2 * 12 * db;
+        pushBarItem(g.bar, diaMm, count * g.n, len, 'เหล็กข้างคาน / เหล็กกันร้าว (รวมงอฉาก 12d)', mainGrade, lNetM, 2 * 12 * db, 0);
+        extraNotes.push(`เหล็กข้าง ${g.n}-${g.bar}`);
+      }
+    }
+
+    let st: { bar: string; spacing: number; midSpacing?: number; legs?: number } | null = null;
     if (member.stirrupRebar) {
       const valSt = validateSpacedBar(member.stirrupRebar);
       if (valSt && !valSt.isValid) {
@@ -1393,7 +1496,7 @@ export function computeDetailedRebar(
         return { bars: {}, rebarFormulaStr: 'CALCULATION_BLOCKED: ' + valSt.error, assumedRatio: false, minBasis: [], flags };
       }
       if (valSt && valSt.isValid) {
-        st = { bar: valSt.bar, spacing: valSt.spacing };
+        st = { bar: valSt.bar, spacing: valSt.spacing, midSpacing: valSt.midSpacing, legs: valSt.legs };
       } else {
         flags.push({ code: 'REBAR_SPEC_UNPARSED', severity: 'block', field: 'stirrupRebar', message: `ไม่สามารถอ่านสเปคเหล็กปลอก '${member.stirrupRebar}' ได้` });
         return { bars: {}, rebarFormulaStr: 'CALCULATION_BLOCKED: Unparsed stirrup spec', assumedRatio: false, minBasis: [], flags };
@@ -1404,11 +1507,25 @@ export function computeDetailedRebar(
       minBasis.push(t.basis);
     }
     const perim = Number((2 * (Math.max(0.05, wM - 2 * cover) + Math.max(0.05, dM - 2 * cover)) + 0.10).toFixed(3));
-    const sets = Math.max(1, Math.round(member.stirrupSets || 1));
-    const nSt = Math.max(2, Math.floor(lNetM / st.spacing + 1e-7) + 1);
+    const sets = Math.max(1, Math.round(member.stirrupSets || st.legs || 1));
+    let nSt: number;
+    let stirrupDesc: string;
+    if (st.midSpacing) {
+      const endRatio = rules.stirrupEndZoneRatio ?? 0.25;
+      const endLen = lNetM * endRatio;
+      const midLen = Math.max(0, lNetM - 2 * endLen);
+      const nEnd = 2 * Math.max(1, Math.floor(endLen / st.spacing + 1e-7) + 1);
+      const nMid = midLen > 1e-6 ? Math.max(1, Math.floor(midLen / st.midSpacing + 1e-7)) : 0;
+      nSt = nEnd + nMid;
+      stirrupDesc = `${nSt}×${sets > 1 ? `${sets}-` : ''}${st.bar}@${st.spacing}/${st.midSpacing}m (ปลาย ${endRatio}L×2: ${nEnd} ปลอก, กลาง: ${nMid} ปลอก, รอบละ ${perim}m)`;
+      flags.push({ code: 'STANDARD_CUT_RATIO_USED', severity: 'info', field: 'stirrupRebar', message: `เหล็กปลอก 2 โซนใช้ระยะช่วงปลายมาตรฐาน วสท. (${endRatio}L ต่อข้าง — ปรับได้ในสเปกวัสดุ)` });
+    } else {
+      nSt = Math.max(2, Math.floor(lNetM / st.spacing + 1e-7) + 1);
+      stirrupDesc = `${nSt}×${sets > 1 ? `${sets}-` : ''}${st.bar}@${st.spacing}m (รอบละ ${perim}m)`;
+    }
     const diaSt = Number(st.bar.replace(/\D/g, '')) || 6;
     pushBarItem(st.bar, diaSt, count * sets * nSt, perim, isCol ? 'เหล็กปลอกเสา (Ties)' : 'เหล็กปลอกคาน (Stirrups)', stirrupGrade, Math.max(0.1, perim - 0.10), 0.10, 0);
-    rebarFormulaStr = `Main: ${main.map(g => `${g.n}-${g.bar}`).join(' + ')} | ${isCol ? 'Ties' : 'Stirrup'}: ${nSt}×${sets > 1 ? `${sets}-` : ''}${st.bar}@${st.spacing}m (รอบละ ${perim}m)`;
+    rebarFormulaStr = `Main: ${main.map(g => `${g.n}-${g.bar}`).join(' + ')}${extraNotes.length ? ` | ${extraNotes.join(', ')}` : ''} | ${isCol ? 'Ties' : 'Stirrup'}: ${stirrupDesc}`;
     if (minBasis.length) {
       rebarFormulaStr += ` [ค่าต่ำสุดตามมาตรฐาน: ${minBasis.join('; ')}]`;
     }

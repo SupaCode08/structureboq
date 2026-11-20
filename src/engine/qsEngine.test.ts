@@ -1048,3 +1048,46 @@ test('BEAM formulaStr contains formwork formula and formwork number matches 2d+w
 
 
 
+
+test('BEAM extra bars (support/midspan/side) & 2-zone stirrups use DPT standard cut ratios with STANDARD_CUT_RATIO_USED flag', () => {
+  const base = calculateMember({
+    tag: 'B1', memberType: 'BEAM', width: 0.2, depth: 0.4, length: 4.0,
+    topRebar: '2-DB12', bottomRebar: '2-DB12', stirrupRebar: 'RB6@0.20',
+  }, 1);
+
+  const detailed = calculateMember({
+    tag: 'B1', memberType: 'BEAM', width: 0.2, depth: 0.4, length: 4.0,
+    topRebar: '2-DB12', bottomRebar: '2-DB12',
+    extraTopRebar: '2-DB16', extraBottomRebar: '2-DB16', sideRebar: '2-DB12',
+    stirrupRebar: '2-RB6@0.10/0.20',
+  }, 1);
+
+  assert.ok((detailed.rebarWeightKg || 0) > (base.rebarWeightKg || 0), 'extra bars and 2-zone double stirrups must increase rebar weight');
+  assert.ok(detailed.rebarDetails?.barList.some(b => /เสริมพิเศษบนหัวเสา/.test(b.purpose)));
+  assert.ok(detailed.rebarDetails?.barList.some(b => /เสริมพิเศษล่างกลางช่วง/.test(b.purpose)));
+  assert.ok(detailed.rebarDetails?.barList.some(b => /เหล็กข้างคาน/.test(b.purpose)));
+  assert.ok(detailed.flags?.some(f => f.code === 'STANDARD_CUT_RATIO_USED'), 'must emit transparent STANDARD_CUT_RATIO_USED flag');
+  assert.match(detailed.rebarFormulaStr || '', /2-RB6@0\.1\/0\.2m/);
+});
+
+test('FOOTING topMatRebar and SLAB tempRebar add reinforcement cleanly', () => {
+  const fBase = calculateMember({
+    tag: 'F1', memberType: 'FOOTING', width: 1.0, depth: 1.0, length: 0.3,
+    bottomRebar: '5+5-DB12',
+  }, 1);
+  const fTop = calculateMember({
+    tag: 'F1', memberType: 'FOOTING', width: 1.0, depth: 1.0, length: 0.3,
+    bottomRebar: '5+5-DB12', topMatRebar: '5+5-DB12',
+  }, 1);
+  assert.ok((fTop.rebarWeightKg || 0) > (fBase.rebarWeightKg || 0));
+
+  const sBase = calculateMember({
+    tag: 'S1', memberType: 'SLAB', width: 3.0, depth: 4.0, length: 0.1,
+    slabType: 'CAST_IN_PLACE', bottomRebar: 'RB9@0.20',
+  }, 1);
+  const sTemp = calculateMember({
+    tag: 'S1', memberType: 'SLAB', width: 3.0, depth: 4.0, length: 0.1,
+    slabType: 'CAST_IN_PLACE', bottomRebar: 'RB9@0.20', tempRebar: 'RB6@0.25',
+  }, 1);
+  assert.ok((sTemp.rebarWeightKg || 0) > (sBase.rebarWeightKg || 0));
+});

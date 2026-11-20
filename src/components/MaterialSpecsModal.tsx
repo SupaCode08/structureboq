@@ -492,6 +492,70 @@ export const MaterialSpecsModal: React.FC<MaterialSpecsModalProps> = ({
               })}
               {specError && <div className="text-xs text-rose-400">{specError}</div>}
             </div>
+            {/* DPT / วสท. Standard Cut Ratios for Extra Bars & 2-Zone Stirrups */}
+            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+              <div className="text-xs font-bold text-amber-300">
+                {isTh ? 'สัดส่วนความยาวตัดเหล็กเสริมพิเศษและปลอก 2 โซน (มาตรฐาน วสท. / กรมโยธาฯ)' : 'Extra Rebar & 2-Zone Stirrup Cut Ratios (EIT / DPT Standard)'}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isTh
+                  ? 'ใช้เมื่อแบบขยายไม่ได้ระบุระยะตัดตรงๆ (รายการที่ใช้ค่านี้จะติดธง "มาตรฐาน" เสมอ)'
+                  : 'Used when detail drawings do not explicitly dimension cutoff lengths (items are flagged as Standard).'}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] text-slate-300 mb-1">
+                    {isTh ? 'เสริมพิเศษบนหัวเสา (ต่อข้าง)' : 'Extra Top @ Support (each end)'}
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0.10"
+                      max="0.50"
+                      value={form.extraTopCutRatio ?? 0.30}
+                      onChange={e => setForm({ ...form, extraTopCutRatio: Number(e.target.value) || 0.30 })}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono"
+                    />
+                    <span className="text-[11px] text-slate-400 font-mono">×L</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-slate-300 mb-1">
+                    {isTh ? 'เสริมพิเศษล่างกลางช่วง' : 'Extra Bottom @ Midspan'}
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0.30"
+                      max="1.00"
+                      value={form.extraBottomCutRatio ?? 0.70}
+                      onChange={e => setForm({ ...form, extraBottomCutRatio: Number(e.target.value) || 0.70 })}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono"
+                    />
+                    <span className="text-[11px] text-slate-400 font-mono">×L</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] text-slate-300 mb-1">
+                    {isTh ? 'ปลอก 2 โซน ช่วงปลาย (ต่อข้าง)' : '2-Zone Stirrup End Zone (each)'}
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="0.10"
+                      max="0.45"
+                      value={form.stirrupEndZoneRatio ?? 0.25}
+                      onChange={e => setForm({ ...form, stirrupEndZoneRatio: Number(e.target.value) || 0.25 })}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 font-mono"
+                    />
+                    <span className="text-[11px] text-slate-400 font-mono">×L</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </form>
         </div>
 
