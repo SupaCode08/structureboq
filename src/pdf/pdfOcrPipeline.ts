@@ -256,13 +256,41 @@ export async function ocrPdfPage(page: PdfJsPage, pageNo: number, env: OcrEnv, s
     kind = 'raster';
   }
   t = performance.now();
-  if (kind === 'vector_text') words = withGlyphWords(words, glyphWords(strokes.small, vp.width, vp.height, words));
+  if (kind === 'vector_text') words = restoreLeadingOne(withGlyphWords(words, glyphWords(strokes.small, vp.width, vp.height, words)), strokes.small, vp.width, vp.height);
   clock('glyphs', t);
   t = performance.now();
   const { rects, hsegs, vsegs, circles } = pageGeometry(strokes, vp.width, vp.height);
   if (kind === 'vector_text' && strokes.imageCount) rects.push(...await imageBoxesOnPage(page, env.OPS, env.imagePixels, ops));
   clock('geometry', t);
   return { page: pageNo, width: vp.width, height: vp.height, words: dedupeWords(words), rects, hsegs: kind === 'raster' && scanLines ? scanLines.h : hsegs, vsegs: kind === 'raster' && scanLines ? scanLines.v : vsegs, circles: kind === 'raster' && scanCircles ? scanCircles : circles, kind, smallStrokes: strokes.small.length };
+}
+
+/**
+ * OCR drops a bare "1" (one straight stroke, no serif) in front of a dimension's point: "1.50" comes out ".50", the
+ * dimension is rejected and the grid line it measures is lost. Put the "1" back when that stroke is drawn right
+ * before the word: across the reading direction, about one letter tall. Vertical words read bottom to top.
+ */
+export function restoreLeadingOne(words: OcrWord[], small: Polyline[], W: number, H: number): OcrWord[] {
+  const bars = small.filter(p => p.length === 2);
+  return words.map(w => {
+    if (!/^\.\d{2}$/.test(w.text.trim())) return w;
+    const v = !!w.vertical;
+    const th = v ? (w.x1 - w.x0) * W : (w.y1 - w.y0) * H; // letter height in pt
+    const one = bars.find(([[ax, ay], [bx, by]]) => {
+      const len = Math.hypot(bx - ax, by - ay);
+      if (len < 0.4 * th || len > 1.3 * th) return false;
+      if (v ? Math.abs(ay - by) > 0.3 : Math.abs(ax - bx) > 0.3) return false;
+      const mx = (ax + bx) / 2, my = (ay + by) / 2;
+      return v
+        ? mx > w.x0 * W && mx < w.x1 * W && my > w.y1 * H - 0.2 * th && my < w.y1 * H + 1.2 * th
+        : my > w.y0 * H && my < w.y1 * H && mx < w.x0 * W + 0.2 * th && mx > w.x0 * W - 1.2 * th;
+    });
+    if (!one) return w;
+    const [[ax, ay], [bx, by]] = one;
+    return v
+      ? { ...w, text: '1' + w.text.trim(), y1: Math.max(w.y1, Math.max(ay, by) / H) }
+      : { ...w, text: '1' + w.text.trim(), x0: Math.min(w.x0, Math.min(ax, bx) / W) };
+  });
 }
 
 /** Sheet number from the title block, e.g. "S-04" (bottom-right corner of Thai drawing sheets). */

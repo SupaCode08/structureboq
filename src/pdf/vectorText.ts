@@ -154,7 +154,46 @@ export function extractSmallStrokes(
       if (curves >= 2 && Math.max(w, h) >= 0.8 && Math.max(w, h) <= 4 && Math.abs(w - h) < 0.35 * Math.max(w, h)) dots.push([(x0 + x1) / 2, (y0 + y1) / 2, Math.max(w, h)]);
     }
   }
-  return { small, rects, hsegs, vsegs, circles, dots, totalPaths: total, imageCount: images };
+  return { small: keepCircles ? small : dropDashRuns(small), rects, hsegs, vsegs, circles, dots, totalPaths: total, imageCount: images };
+}
+
+/**
+ * A dashed line exported as separate dashes (a short stroke, or a filled bar drawn as two triangles) is not
+ * lettering: OCR reads a row of dashes as "๓๓๓", "EE", "Bi" and the last becomes a phantom beam tag. A run of
+ * >= 6 collinear thin dashes of like length and even gaps is a dashed line; text never lines up that many equal
+ * strokes end to end. Pieces with the same box (the two triangles of one bar) count as one dash.
+ */
+export function dropDashRuns(small: Polyline[]): Polyline[] {
+  type Seg = { idx: number[]; key: string; lo: number; hi: number };
+  const byBox = new Map<string, Seg>();
+  small.forEach((p, i) => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const [x, y] of p) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const h = x1 - x0 >= y1 - y0, long = Math.max(x1 - x0, y1 - y0), short = Math.min(x1 - x0, y1 - y0);
+    if (long < 0.8 || short > 0.5 * long) return;
+    const lo = h ? x0 : y0, hi = h ? x1 : y1;
+    const key = `${h ? 'h' : 'v'}${Math.round(((h ? y0 + y1 : x0 + x1) / 2) * 2)}`;
+    const box = `${key}:${Math.round(lo * 5)}:${Math.round(hi * 5)}`;
+    const seg = byBox.get(box);
+    if (seg) seg.idx.push(i); else byBox.set(box, { idx: [i], key, lo, hi });
+  });
+  const groups = new Map<string, Seg[]>();
+  for (const s of byBox.values()) groups.set(s.key, [...(groups.get(s.key) || []), s]);
+  const drop = new Set<number>();
+  for (const g of groups.values()) {
+    g.sort((a, b) => a.lo - b.lo);
+    let run: Seg[] = [];
+    const flush = () => { if (run.length >= 6) for (const s of run) for (const i of s.idx) drop.add(i); run = []; };
+    for (const s of g) {
+      const len = s.hi - s.lo, prev = run[run.length - 1];
+      const like = prev && Math.abs(len - (prev.hi - prev.lo)) <= 0.4 * len;
+      const gap = prev ? s.lo - prev.hi : 0;
+      if (prev && !(like && gap >= 0.1 * len && gap <= 1.5 * len)) flush();
+      run.push(s);
+    }
+    flush();
+  }
+  return drop.size ? small.filter((_, i) => !drop.has(i)) : small;
 }
 
 /** Drawn geometry as PageOcr stores it: normalized to the displayed page (0..1), rounded to 1e-4. */
