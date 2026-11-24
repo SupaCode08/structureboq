@@ -323,34 +323,46 @@ const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 /**
  * Grid labels read from the bubbles at the ends of the grid lines (`vertical`: the lines are the xs).
- * A bubble missed by OCR is filled in only when the read ones fix the order (A at the bottom: D,C,?,A).
- * undefined when nothing is read or the order is ambiguous.
+ * A bubble whose letter OCR missed is filled in when two read ones fix the order (A at the bottom: D,C,?,A).
+ * A line with no bubble at all (a cantilever edge, a secondary line) is not part of that order: it is named after
+ * its neighbour, A' below A. undefined when fewer than two are read or the order is ambiguous.
  */
 export function bubbleLabels(p: PageOcr, lines: number[], cross: number[], vertical: boolean): string[] | undefined {
   const lo = Math.min(...cross), hi = Math.max(...cross);
   const read = lines.map(at => {
-    let best: string | null = null, bestD = 0.3;
+    let t: string | null = null, bestD = 0.3, bubbled = false;
     for (const c of p.circles || []) {
       if (c[2] < 0.008 || c[2] > 0.045) continue;
       const across = vertical ? c[0] : c[1], along = vertical ? c[1] : c[0];
       const d = along < lo ? lo - along : along > hi ? along - hi : -1; // bubbles sit beyond the grid, not inside it
-      if (Math.abs(across - at) > 0.004 || d < 0 || d >= bestD) continue;
+      if (Math.abs(across - at) > 0.004 || d < 0 || d >= 0.3) continue;
+      bubbled = true;
+      if (d >= bestD) continue;
       const r = c[2] / 2, ry = (r * p.width) / p.height;
       const inside = p.words.filter(w => Math.abs(cx(w) - c[0]) < r && Math.abs(cy(w) - c[1]) < ry && /^[0-9A-Z]{1,2}$/.test(clean(w.text)));
-      if (inside.length === 1) { best = clean(inside[0].text); bestD = d; }
+      if (inside.length === 1) { t = clean(inside[0].text); bestD = d; }
     }
-    return best;
+    return { t, bubbled };
   });
-  const known = read.map((t, i) => ({ t, i })).filter(k => k.t) as { t: string; i: number }[];
-  if (known.length === lines.length) return read as string[];
+  if (read.every(r => r.t)) return read.map(r => r.t!);
+  const order = read.map((r, i) => ({ ...r, i })).filter(r => r.bubbled); // the lines the bubble sequence runs over
+  const known = order.map((r, k) => ({ t: r.t, k })).filter(r => r.t) as { t: string; k: number }[];
   if (known.length < 2) return undefined; // one read on a scan can be a stray digit: never build a whole axis from it
-  const num = known.every(k => /^\d+$/.test(k.t));
+  const num = known.every(r => /^\d+$/.test(r.t));
   const idx = (t: string) => (num ? Number(t) : LETTERS.indexOf(t));
-  if (known.some(k => idx(k.t) < 0)) return undefined;
+  if (known.some(r => idx(r.t) < 0)) return undefined;
+  const ok = (v: number) => v >= (num ? 1 : 0) && v < (num ? 100 : LETTERS.length);
   const fits = [1, -1]
-    .map(s => lines.map((_, i) => idx(known[0].t) + s * (i - known[0].i)))
-    .filter(seq => seq.every(v => v >= (num ? 1 : 0) && v < (num ? 100 : LETTERS.length)) && known.every(k => seq[k.i] === idx(k.t)));
-  return fits.length === 1 ? fits[0].map(v => (num ? String(v) : LETTERS[v])) : undefined;
+    .map(s => order.map((_, k) => idx(known[0].t) + s * (k - known[0].k)))
+    .filter(seq => seq.every(ok) && known.every(r => seq[r.k] === idx(r.t)));
+  if (fits.length !== 1) return undefined;
+  const name = new Map(order.map((r, k) => [r.i, num ? String(fits[0][k]) : LETTERS[fits[0][k]]]));
+  return lines.map((_, i) => {
+    if (name.has(i)) return name.get(i)!;
+    const ref = order.filter(r => r.i < i).pop() ?? order.find(r => r.i > i)!;
+    const primes = read.slice(Math.min(ref.i, i), Math.max(ref.i, i) + 1).filter(r => !r.bubbled).length;
+    return name.get(ref.i)! + "'".repeat(primes);
+  });
 }
 
 interface Plan {
@@ -458,7 +470,8 @@ function gridFromLines(p: PageOcr): Plan[] {
       const others = gaps.filter((_, k) => k !== i);
       const lo = fam[i].c, hi = fam[i + 1].c;
       const dimmed = dims.some(d => { const a = vertical ? cx(d.w) : cy(d.w); return a > lo + 0.2 * (hi - lo) && a < hi - 0.2 * (hi - lo) && (vertical ? !d.w.vertical : true); });
-      if (!dimmed && gaps[i] > 2 * Math.max(...others)) { out.push(cur); cur = []; }
+      const crossed = gapCrossed(p, lo, hi, Math.min(...fam.map(l => l.lo)), Math.max(...fam.map(l => l.hi)), vertical);
+      if (!dimmed && (gaps[i] > 2 * Math.max(...others) || (!crossed && gaps[i] > Math.max(...others)))) { out.push(cur); cur = []; }
       cur.push(fam[i + 1]);
     }
     out.push(cur);
@@ -526,6 +539,33 @@ function gridFromLines(p: PageOcr): Plan[] {
  * A grid that spans two drawings side by side (pile and spread-footing plans on one sheet): a gap far
  * wider than every other bay with no dimension written in it lies between drawings. Split there.
  */
+/**
+ * Inside one building some drawn line (grid, beam, wall) runs across every bay; between two drawings on one sheet
+ * none does. `vertical`: the gap lies between two vertical lines (x from lo to hi), checked within y span0..span1.
+ */
+function gapCrossed(p: PageOcr, lo: number, hi: number, span0: number, span1: number, vertical: boolean) {
+  // hsegs are [x0, y, x1], vsegs [x, y0, y1]: as [from, across, to] along the gap
+  const segs = vertical ? (p.hsegs || []).map(s => [s[0], s[1], s[2]]) : (p.vsegs || []).map(s => [s[1], s[0], s[2]]);
+  return segs.some(([a, at, b]) => a <= lo + 0.1 * (hi - lo) && b >= hi - 0.1 * (hi - lo) && at > span0 && at < span1);
+}
+
+/**
+ * Rows and columns of a dimension-chain grid come from the chain, which may run past this drawing (one chain for
+ * two drawings side by side, or the cantilever edges of the drawing beside it). An outer row or column with no
+ * line drawn on it inside this plan is not part of it. Pages without drawn lines keep the chain as it is.
+ */
+function trimUndrawn(p: PageOcr, pl: Plan): Plan {
+  if (pl.drawn || !p.hsegs?.length || !p.vsegs?.length) return pl;
+  let { xs, ys } = pl;
+  const rowDrawn = (y: number) => p.hsegs!.some(s => Math.abs(s[1] - y) < 0.003 && s[0] < xs[xs.length - 1] && s[2] > xs[0]);
+  const colDrawn = (x: number) => p.vsegs!.some(s => Math.abs(s[0] - x) < 0.003 && s[1] < ys[ys.length - 1] && s[2] > ys[0]);
+  while (ys.length > 2 && !rowDrawn(ys[ys.length - 1])) ys = ys.slice(0, -1);
+  while (ys.length > 2 && !rowDrawn(ys[0])) ys = ys.slice(1);
+  while (xs.length > 2 && !colDrawn(xs[xs.length - 1])) xs = xs.slice(0, -1);
+  while (xs.length > 2 && !colDrawn(xs[0])) xs = xs.slice(1);
+  return xs === pl.xs && ys === pl.ys ? pl : { ...pl, xs, ys };
+}
+
 function splitSideBySide(p: PageOcr, pl: Plan): Plan[] {
   const xs = pl.xs;
   if (xs.length < 4 || pl.drawn) return [pl];
@@ -534,7 +574,8 @@ function splitSideBySide(p: PageOcr, pl: Plan): Plan[] {
   for (let i = 0; i < gaps.length; i++) {
     const others = gaps.filter((_, k) => k !== i);
     const lo = xs[i], hi = xs[i + 1];
-    if (gaps[i] <= 2 * Math.max(...others)) continue;
+    const open = !gapCrossed(p, lo, hi, pl.ys[0] - 0.01, pl.ys[pl.ys.length - 1] + 0.01, true);
+    if (gaps[i] <= (open ? 1 : 2) * Math.max(...others)) continue;
     const rowY = pl.xChain.dims.map(d => cy(d.w)).filter(v => v > 0);
     if (dims.some(d => cx(d) > lo + 0.2 * (hi - lo) && cx(d) < hi - 0.2 * (hi - lo) && rowY.some(r => Math.abs(cy(d) - r) < 0.015))) continue;
     const part = (a: number, b: number): Plan => ({
@@ -557,7 +598,8 @@ function splitStacked(p: PageOcr, pl: Plan): Plan[] {
   for (let i = 0; i < gaps.length; i++) {
     const others = gaps.filter((_, k) => k !== i);
     const lo = ys[i], hi = ys[i + 1];
-    if (hi - lo < 0.15 && gaps[i] <= 1.5 * Math.max(...others)) continue;
+    const open = !gapCrossed(p, lo, hi, pl.xs[0] - 0.01, pl.xs[pl.xs.length - 1] + 0.01, false);
+    if (hi - lo < 0.15 && gaps[i] <= (open ? 1 : 1.5) * Math.max(...others)) continue;
     const colX = pl.yChain.dims.map(d => cx(d.w)).filter(v => v > 0);
     if (dims.some(d => cy(d) > lo + 0.2 * (hi - lo) && cy(d) < hi - 0.2 * (hi - lo) && colX.some(r => Math.abs(cx(d) - r) < 0.015))) continue;
     const part = (a: number, b: number): Plan => ({
@@ -1208,7 +1250,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
     }
     const tags = planTagsOf(tagWordsOf(p)).map(t => t.w);
     const pden = dens.get(p.page)!.den;
-    let plans = plansOn(p, pden, tags).flatMap(pl => splitSideBySide(p, pl)).flatMap(pl => splitStacked(p, pl)).map(pl => gridFromColumns(p, pl, pden));
+    let plans = plansOn(p, pden, tags).flatMap(pl => splitSideBySide(p, pl)).flatMap(pl => splitStacked(p, pl)).map(pl => gridFromColumns(p, trimUndrawn(p, pl), pden));
     for (const lp0 of gridFromLines(p).flatMap(pl => splitSideBySide(p, pl)).flatMap(pl => splitStacked(p, pl))) {
       const lp = gridFromColumns(p, lp0);
       if (lp.xs.length < 3 || lp.ys.length < 3) continue;

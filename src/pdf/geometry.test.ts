@@ -2,12 +2,45 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { findRings, ringsAtLineEnds, extractLines } from './scanPrep.ts';
 import { textLines } from './labelOcr.ts';
-import { fillClosed, rasterize } from './vectorText.ts';
+import { fillClosed, rasterize, dropDashRuns, type Polyline } from './vectorText.ts';
 import { mergeSheetReadings, DEFAULT_MERGE_ASSUMPTIONS, type SheetReading } from '../engine/sheetMerge.ts';
 import { boxesInRaster, imageGray } from './imageBoxes.ts';
 import { glyphWords } from './glyphRead.ts';
 import { readSheets, bubbleLabels } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
+
+test('a beam plan drawn beside the footing plan on one sheet is a beam plan, not a second footing alternative', () => {
+  const sheet: SheetReading = {
+    page: 24, sheet_type: 'footing_plan', sections: [],
+    grid: { x: [{ label: '1', offset_m: 0 }, { label: '2', offset_m: 4 }], y: [{ label: 'D', offset_m: 0 }, { label: 'C', offset_m: 4 }] },
+    instances: [
+      { tag: 'F1', member_type: 'FOOTING', from_grid: 'D/1', plan_title: 'แปลนฐานรากแผ่' },
+      { tag: 'F1', member_type: 'FOOTING', from_grid: 'D/2', plan_title: 'แปลนฐานรากแผ่' },
+      { tag: 'B4', member_type: 'BEAM', from_grid: 'D/1', to_grid: 'D/2', length_m: 4, plan_title: 'แปลนคาน ชั้น 1' },
+      { tag: 'B4', member_type: 'BEAM', from_grid: 'D/1', to_grid: 'C/1', length_m: 4, plan_title: 'แปลนคาน ชั้น 1' },
+    ],
+  };
+  const m = mergeSheetReadings([sheet], 'x.pdf', DEFAULT_MERGE_ASSUMPTIONS);
+  assert.equal(m.members.filter(x => x.memberType === 'BEAM').reduce((a, x) => a + (x.count || 1), 0), 2);
+  assert.ok(!m.notes.some(n => n.includes('ทางเลือก')));
+});
+
+test('dashed lines exported as separate dashes are dropped from lettering; letters and short dash runs stay', () => {
+  const dash = (x: number): Polyline => [[x, 100], [x + 2.1, 100]];
+  const bar = (x: number): Polyline[] => [[[x, 99], [x, 100.4], [x + 3.5, 99], [x, 99]], [[x, 100.4], [x + 3.5, 99], [x + 3.5, 100.4], [x, 100.4]]];
+  const letterB: Polyline = [[50, 90], [50, 96], [53, 95], [50, 93], [53, 91], [50, 90]];
+  const hyphen: Polyline = [[60, 93], [62, 93]];
+  const strokes = [
+    letterB, hyphen,
+    ...Array.from({ length: 10 }, (_, i) => dash(200 + i * 3.1)),
+    ...Array.from({ length: 8 }, (_, i) => bar(300 + i * 5.3)).flat(),
+    ...Array.from({ length: 4 }, (_, i) => dash(400 + i * 3.1)),
+  ];
+  const kept = dropDashRuns(strokes);
+  assert.ok(kept.includes(letterB) && kept.includes(hyphen));
+  assert.equal(kept.filter(p => p[0][0] >= 200 && p[0][0] < 380).length, 0, 'plain and bold dash runs dropped');
+  assert.equal(kept.filter(p => p[0][0] >= 400).length, 4, 'a run of 4 is not a dashed line');
+});
 
 test('a lone tag with nothing read beside it (OCR noise on a photo) is not a section; the same tag seen twice still is', () => {
   const w = (text: string, x: number, y: number): OcrWord => ({ text, conf: 40, x0: x, x1: x + 0.012, y0: y, y1: y + 0.012, vertical: false });
@@ -33,6 +66,9 @@ test('grid labels come from the bubbles, not the drawing order (A at the bottom)
   assert.deepEqual(bubbleLabels(page(t => t !== 'C' && t !== 'B'), ys, xs, false), ['D', 'C', 'B', 'A']);
   // C and A read: still certain
   assert.deepEqual(bubbleLabels(page(t => t === 'C' || t === 'A'), ys, xs, false), ['D', 'C', 'B', 'A']);
+  // an extra line past A (a cantilever edge, no bubble) is named after its neighbour, not a reason to give up
+  const ys5 = [...ys, 0.8];
+  assert.deepEqual(bubbleLabels(all, ys5, xs, false), ['D', 'C', 'B', 'A', "A'"]);
   // a single read could be a stray digit on a scan: nothing is guessed from it
   assert.equal(bubbleLabels(page(t => t === 'A'), ys, xs, false), undefined);
   assert.equal(bubbleLabels({ ...all, circles: [] }, ys, xs, false), undefined);

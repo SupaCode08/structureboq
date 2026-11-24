@@ -216,7 +216,12 @@ export function mergeSheetReadings(
   const splitPlans = (sh: SheetReading): SheetReading[] => {
     const titles = [...new Set((sh.instances || []).map(i => i.plan_title || ''))];
     if (titles.length <= 1) return [sh];
-    return titles.map(t => ({ ...sh, sheet_title: t || sh.sheet_title, instances: sh.instances.filter(i => (i.plan_title || '') === t) }));
+    // each plan keeps its own type: a beam plan drawn beside the footing plan is not another footing alternative
+    return titles.map(t => {
+      const instances = sh.instances.filter(i => (i.plan_title || '') === t);
+      const sheet_type = sh.sheet_type === 'footing_plan' && !instances.some(i => i.member_type === 'FOOTING') ? 'framing_plan' as const : sh.sheet_type;
+      return { ...sh, sheet_type, sheet_title: t || sh.sheet_title, instances };
+    });
   };
   sheets = sheets.flatMap(sh => (sh.sheet_type === 'footing_plan' || sh.sheet_type === 'framing_plan' ? splitPlans(sh) : [sh]));
   const footingPlans = sheets.filter(s => s.sheet_type === 'footing_plan');
