@@ -321,6 +321,38 @@ function findChains(words: OcrWord[], axis: 'x' | 'y', pagePt: number, den?: num
 
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
+/**
+ * Grid labels read from the bubbles at the ends of the grid lines (`vertical`: the lines are the xs).
+ * A bubble missed by OCR is filled in only when the read ones fix the order (A at the bottom: D,C,?,A).
+ * undefined when nothing is read or the order is ambiguous.
+ */
+export function bubbleLabels(p: PageOcr, lines: number[], cross: number[], vertical: boolean): string[] | undefined {
+  const lo = Math.min(...cross), hi = Math.max(...cross);
+  const read = lines.map(at => {
+    let best: string | null = null, bestD = 0.3;
+    for (const c of p.circles || []) {
+      if (c[2] < 0.008 || c[2] > 0.045) continue;
+      const across = vertical ? c[0] : c[1], along = vertical ? c[1] : c[0];
+      const d = along < lo ? lo - along : along > hi ? along - hi : -1; // bubbles sit beyond the grid, not inside it
+      if (Math.abs(across - at) > 0.004 || d < 0 || d >= bestD) continue;
+      const r = c[2] / 2, ry = (r * p.width) / p.height;
+      const inside = p.words.filter(w => Math.abs(cx(w) - c[0]) < r && Math.abs(cy(w) - c[1]) < ry && /^[0-9A-Z]{1,2}$/.test(clean(w.text)));
+      if (inside.length === 1) { best = clean(inside[0].text); bestD = d; }
+    }
+    return best;
+  });
+  const known = read.map((t, i) => ({ t, i })).filter(k => k.t) as { t: string; i: number }[];
+  if (known.length === lines.length) return read as string[];
+  if (known.length < 2) return undefined; // one read on a scan can be a stray digit: never build a whole axis from it
+  const num = known.every(k => /^\d+$/.test(k.t));
+  const idx = (t: string) => (num ? Number(t) : LETTERS.indexOf(t));
+  if (known.some(k => idx(k.t) < 0)) return undefined;
+  const fits = [1, -1]
+    .map(s => lines.map((_, i) => idx(known[0].t) + s * (i - known[0].i)))
+    .filter(seq => seq.every(v => v >= (num ? 1 : 0) && v < (num ? 100 : LETTERS.length)) && known.every(k => seq[k.i] === idx(k.t)));
+  return fits.length === 1 ? fits[0].map(v => (num ? String(v) : LETTERS[v])) : undefined;
+}
+
 interface Plan {
   xs: number[]; ys: number[]; region: [number, number, number, number]; xChain: Chain; yChain: Chain; score: number;
   /** column squares drawn on the plan (centres, normalized) */
@@ -1098,6 +1130,7 @@ export interface ReaderResult { readings: SheetReading[]; notes: string[]; vocab
 export function readSheets(pages: PageOcr[]): ReaderResult {
   const notes: string[] = [];
   const counts = new Map<string, number>();
+  const tagSeen = counts; // set-wide tag counts, under a name the page loop's bar `counts` does not shadow
   const bare = new Map<string, number>();
   // index and notes sheets still name the set's real tags: they count for the vocabulary, never for members
   for (const p of pages) {
@@ -1257,7 +1290,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
       const instances: PlanInstance[] = [];
       const planLevels: string[] = [];
       const grids: { x: GridAxisMark[]; y: GridAxisMark[] }[] = [];
-      let footingPlan = false;
+      let footingPlan = false, labelsAssumed = false;
       if (den) for (const pl of plans) for (const c of pl.columns || []) planColumnSizes.push({ ...measured(c.r, p, den), page: p.page });
       plans.forEach(pl => {
         const inside = tagWords.filter(t => cx(t.w) >= pl.region[0] && cx(t.w) <= pl.region[2] && cy(t.w) >= pl.region[1] && cy(t.w) <= pl.region[3]);
@@ -1274,8 +1307,11 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           : isSteel ? 'แปลนโครงหลังคา' : `แปลนคาน ชั้น ${++framingIdx}`;
         const level = isFooting ? 'ฐานราก' : isSteel ? 'หลังคา' : `ชั้น ${framingIdx}`;
         planLevels.push(level);
-        const xLab = pl.xLabels || pl.xs.map((_, i) => String(i + 1));
-        const yLab = pl.yLabels || pl.ys.map((_, i) => LETTERS[i]);
+        const xRead = pl.xLabels || bubbleLabels(p, pl.xs, pl.ys, true);
+        const yRead = pl.yLabels || bubbleLabels(p, pl.ys, pl.xs, false);
+        if (!xRead || !yRead) labelsAssumed = true;
+        const xLab = xRead || pl.xs.map((_, i) => String(i + 1));
+        const yLab = yRead || pl.ys.map((_, i) => LETTERS[i]);
         grids.push({
           x: pl.xs.map((v, i) => ({ label: xLab[i], offset_m: pl.drawn ? Number(pl.drawn.x.slice(0, i).reduce((m, n) => m + n, 0).toFixed(2)) : Number(((v - pl.xs[0]) / pl.xChain.scale).toFixed(2)) })),
           y: pl.ys.map((v, i) => ({ label: yLab[i], offset_m: pl.drawn ? Number(pl.drawn.y.slice(0, i).reduce((m, n) => m + n, 0).toFixed(2)) : Number(((v - pl.ys[0]) / pl.yChain.scale).toFixed(2)) })),
@@ -1464,7 +1500,7 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
         grid: grids[0],
         instances,
         sections: [],
-        notes: [...(den ? [`มาตราส่วน 1:${den}`] : []), ...(gridFromReference ? ['กริดจากแผ่นแบบแม่แบบเดียวกัน (อ่านเส้นบอกระยะไม่ได้)'] : [])],
+        notes: [...(den ? [`มาตราส่วน 1:${den}`] : []), ...(gridFromReference ? ['กริดจากแผ่นแบบแม่แบบเดียวกัน (อ่านเส้นบอกระยะไม่ได้)'] : []), ...(labelsAssumed ? ['ชื่อกริดสมมติตามลำดับ (อ่านวงกลมชื่อกริดไม่ได้) — ตรวจกับแบบ'] : [])],
       });
       tagWords = tagWords.filter(t => !plans.some(pl => inRegion(pl, t.w)));
       if (!tagWords.length) continue;
@@ -1722,6 +1758,9 @@ export function readSheets(pages: PageOcr[]): ReaderResult {
           if (sec.width_m && sec.depth_m && !sec.section_conflicts) sec.confidence = Math.max(sec.confidence ?? 0, bars.length ? 0.9 : 0.82);
         }
       }
+      // a tag seen once in the whole set with nothing read beside it is not a section: OCR noise on a photo, hatch or logo reads as "B1"
+      const nothingRead = [sec.width_m, sec.depth_m, sec.thickness_m, sec.plan_w_m, sec.top_rebar, sec.bottom_rebar, sec.main_rebar, sec.stirrup].every(v => v == null);
+      if (nothingRead && parts.every(q => (tagSeen.get(q.tag) ?? 0) < 2)) continue;
       const prev = sections.find(s => s.tag === sec.tag && s.variant === sec.variant);
       const score = (s: SectionDef) => [s.width_m, s.depth_m, s.thickness_m, s.top_rebar, s.plan_w_m].filter(v => v != null).length;
       if (!prev) sections.push(sec);

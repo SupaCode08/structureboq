@@ -6,8 +6,37 @@ import { fillClosed, rasterize } from './vectorText.ts';
 import { mergeSheetReadings, DEFAULT_MERGE_ASSUMPTIONS, type SheetReading } from '../engine/sheetMerge.ts';
 import { boxesInRaster, imageGray } from './imageBoxes.ts';
 import { glyphWords } from './glyphRead.ts';
-import { readSheets } from './sheetReader.ts';
+import { readSheets, bubbleLabels } from './sheetReader.ts';
 import type { OcrWord, PageOcr } from './types.ts';
+
+test('a lone tag with nothing read beside it (OCR noise on a photo) is not a section; the same tag seen twice still is', () => {
+  const w = (text: string, x: number, y: number): OcrWord => ({ text, conf: 40, x0: x, x1: x + 0.012, y0: y, y1: y + 0.012, vertical: false });
+  const page = (n: number, words: OcrWord[]): PageOcr => ({ page: n, width: 1190, height: 842, words, rects: [], hsegs: [], vsegs: [], circles: [] });
+  assert.deepEqual(readSheets([page(1, [w('B1', 0.45, 0.48)])]).readings, []);
+  const twice = readSheets([page(1, [w('B1', 0.45, 0.48)]), page(2, [w('B1', 0.3, 0.6)])]).readings;
+  assert.ok(twice.some(r => r.sections.some(s => s.tag === 'B1')));
+});
+
+test('grid labels come from the bubbles, not the drawing order (A at the bottom), gaps filled only when the order is certain', () => {
+  const xs = [0.3, 0.55, 0.7], ys = [0.2, 0.42, 0.53, 0.72];
+  const mark = (x: number, y: number, t: string) => ({ c: [x, y, 0.02] as [number, number, number], w: { text: t, conf: 95, x0: x - 0.004, x1: x + 0.004, y0: y - 0.006, y1: y + 0.006, vertical: false } });
+  const marks = [
+    ...['1', '2', '3'].map((t, i) => mark(xs[i], 0.1, t)),
+    ...['D', 'C', 'B', 'A'].map((t, i) => mark(0.15, ys[i], t)),
+    mark(0.3, 0.3, 'X'), // a section mark inside the grid, on line 1: not a grid bubble
+  ];
+  const page = (keep: (t: string) => boolean): PageOcr => ({ page: 1, width: 1190, height: 842, words: marks.filter(m => keep(m.w.text)).map(m => m.w), circles: marks.map(m => m.c), rects: [], hsegs: [], vsegs: [] });
+  const all = page(() => true);
+  assert.deepEqual(bubbleLabels(all, xs, ys, true), ['1', '2', '3']);
+  assert.deepEqual(bubbleLabels(all, ys, xs, false), ['D', 'C', 'B', 'A']);
+  // OCR missed C and B: D and A fix the order
+  assert.deepEqual(bubbleLabels(page(t => t !== 'C' && t !== 'B'), ys, xs, false), ['D', 'C', 'B', 'A']);
+  // C and A read: still certain
+  assert.deepEqual(bubbleLabels(page(t => t === 'C' || t === 'A'), ys, xs, false), ['D', 'C', 'B', 'A']);
+  // a single read could be a stray digit on a scan: nothing is guessed from it
+  assert.equal(bubbleLabels(page(t => t === 'A'), ys, xs, false), undefined);
+  assert.equal(bubbleLabels({ ...all, circles: [] }, ys, xs, false), undefined);
+});
 
 /** blank binary raster (255 = paper) with helpers to draw ink */
 function canvas(W: number, H: number) {
