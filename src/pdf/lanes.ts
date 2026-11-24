@@ -11,10 +11,13 @@ export async function mapLanes<T, R>(items: T[], lanes: number, fn: (item: T, in
   return out;
 }
 
-/** Lanes the machine can feed: four OCR workers per lane, so one lane per four logical cores, 1 to 3; one on small-memory devices. */
+/**
+ * Lanes the machine can feed: four OCR workers per lane (~0.5–1 GB), so one lane per four logical cores, at most 2.
+ * One lane when memory is under 8 GB or unknown (Firefox and Safari do not report it; Chrome reports at most 8).
+ */
 export function laneCount(cores: number | undefined, deviceMemoryGB: number | undefined): number {
-  if (deviceMemoryGB !== undefined && deviceMemoryGB < 8) return 1;
-  return Math.max(1, Math.min(3, Math.floor((cores || 4) / 4)));
+  if (deviceMemoryGB === undefined || deviceMemoryGB < 8) return 1;
+  return Math.max(1, Math.min(2, Math.floor((cores || 4) / 4)));
 }
 
 /** Runs the given jobs one at a time even when started together (a scan page's GPU read must not overlap another's). */

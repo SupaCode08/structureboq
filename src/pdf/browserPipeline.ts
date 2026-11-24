@@ -934,7 +934,6 @@ export async function terminateAllWorkers(): Promise<void> {
     try { const w = await thaiWorkerPromise; await w?.terminate?.(); } catch {}
     thaiWorkerPromise = null;
   }
-  clearPageCache();
 }
 
 const titleBlockPromises: (Promise<any> | null)[] = [];
@@ -1014,6 +1013,7 @@ export async function extractInBrowser(
 
   const onAbort = () => {
     terminateAllWorkers();
+    clearPageCache();
   };
   opts.abortSignal?.addEventListener('abort', onAbort, { once: true });
 
@@ -1270,5 +1270,8 @@ export async function extractInBrowser(
     };
   } finally {
     opts.abortSignal?.removeEventListener('abort', onAbort);
+    // the OCR workers hold hundreds of MB each: free them once the file is read (the next file starts them again).
+    // awaited so a new run cannot pick up a worker that is being terminated
+    await terminateAllWorkers();
   }
 }

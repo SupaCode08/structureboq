@@ -30,12 +30,13 @@ test('lanes: a failing page rejects the whole read', async () => {
   await assert.rejects(mapLanes([1, 2, 3], 2, async x => { if (x === 2) throw new Error('boom'); await sleep(2); return x; }), /boom/);
 });
 
-test('lane count: a lane per four cores, 1 to 3, one on small memory', () => {
-  assert.equal(laneCount(12, 8), 3);
-  assert.equal(laneCount(8, undefined), 2);
+test('lane count: a lane per four cores, 1 to 2, one on small or unknown memory', () => {
+  assert.equal(laneCount(12, 8), 2);
+  assert.equal(laneCount(8, 8), 2);
+  assert.equal(laneCount(8, undefined), 1);
   assert.equal(laneCount(4, 8), 1);
   assert.equal(laneCount(2, 8), 1);
-  assert.equal(laneCount(32, 8), 3);
+  assert.equal(laneCount(32, 8), 2);
   assert.equal(laneCount(12, 4), 1);
   assert.equal(laneCount(undefined, undefined), 1);
 });

@@ -302,7 +302,9 @@ export function prepareEmbeddedScan(
   rotate90: boolean,
   opts: EmbeddedScanOpts = {},
 ) {
-  const targetLong = (pageLongPt * (opts.dpi ?? 400)) / 72;
+  // 400 dpi on A3 is ~6600 px; on A1 it would be ~13000 px (~125 MB a copy, several copies live): cap the long side
+  // shortcut: fixed 9000 px cap (~270 dpi on A1), measure A1/A2 scans with check_ocr_current before raising or lowering it
+  const targetLong = Math.min(9000, (pageLongPt * (opts.dpi ?? 400)) / 72);
   const k = Math.min(3, Math.max(1, targetLong / Math.max(W, H)));
   let prep = opts.raw ? { data: gray, width: W, height: H } : prepareScan(gray, W, H, k);
   if (!opts.raw && !opts.noDeskew) {
